@@ -1,9 +1,9 @@
 :root {
     --tree-indent: 15px;
-    --row-h: 28px;
+    --row-h: 24px;
     --connector: var(--foreground);
     --drop-accent: #2563eb;
-    --slot-height: 12px;
+    --slot-height: 6px;
     --slot-highlight: color-mix(in srgb, var(--drop-accent) 10%, transparent);
     --hover-tint: color-mix(in srgb, var(--drop-accent) 12%, transparent);
   }
@@ -76,7 +76,7 @@
   
   .dropOver {
     background: var(--hover-tint);
-    border-radius: 6px;
+    border-radius: 3px;
     outline: 2px dashed color-mix(in srgb, var(--drop-accent) 80%, transparent);
     outline-offset: -2px;
     transition: background-color .12s ease, outline-color .12s ease;
@@ -101,7 +101,7 @@
     position: relative;
     height: var(--slot-height);
     margin-left: calc(var(--tree-indent) - 1px);
-    border-radius: 6px;
+    border-radius: 3px;
   }
   
   .dropSlotOver {
