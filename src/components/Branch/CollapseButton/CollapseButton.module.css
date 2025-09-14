@@ -1,0 +1,37 @@
+
+.chevronBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+.chevronBtn:hover { background: var(--hover-tint); }
+  
+.chevron {
+    transition: transform .18s ease;
+    transform: rotate(0deg);
+}
+.chevronExpanded { transform: rotate(90deg); } 
+  
+
+.collapse {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows .22s ease, opacity .18s ease;
+    margin-left: 24px;
+}
+.expanded {
+    grid-template-rows: 1fr;
+    opacity: 1;
+}
+.collapseInner {
+    overflow: hidden; 
+}
+  

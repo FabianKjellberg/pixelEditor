@@ -1,12 +1,28 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --btn-bg: #f3f4f6;                         
+  --btn-fg: #111827;
+  --btn-bg-hover: color-mix(in srgb, var(--btn-bg), black 8%);
+  --btn-fg-hover: #4a4a4a;
+  --hover-tint: rgba(0,0,0,.05);
+  --input-bg: #ffffff;
+  --input-border: #d1d5db;
+  --input-fg: inherit;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --btn-bg: #1f2937;                        
+    --btn-fg: #f9fafb;
+    --btn-bg-hover: color-mix(in srgb, var(--btn-bg), white 8%);
+    --btn-fg-hover: #b0b0b0;
+    --hover-tint: rgba(255,255,255,.08);
+    --input-bg: #111827;   
+    --input-border: #374151; 
+    --input-fg: #f9fafb;    
   }
 }
 

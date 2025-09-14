@@ -1,37 +1,86 @@
-'use client';
-
 import styles from "@/components/Branch/Branch.module.css"
-import { useEffect, useState } from "react"
-import { branch } from "../Tree/Tree";
+import { EditableTitle } from "./EditableTitle/EditableTitle";
+import { CollapseButton } from "./CollapseButton/CollapseButton";
+import { DragableBranch } from "./DragableBranch/DragableBranch";
+import { DropSlot } from "./DropSlot";
 
-export interface branchProps { branch : branch}
+export interface branchProps { 
+    branch : branch, 
+    updateTree : (path : number[], branch: branch) => void,
+    moveBranch: (dragId: string, targetId: string) => void;
+    moveBranchAtIndex: (dragId: string, parentId: string, i: number) => void;
+    path : number[]
+}
 
-export default function Branch(branchProps : branchProps){
-    const [subBranches, setSubBranches] = useState<branch[]>(branchProps.branch.subBranches || [])
-    const [collapseButtonText, setCollapseButtonText] = useState<String>("^")
-    const [collapsed, setCollapsed] = useState<Boolean>(false)
+const makeId = () =>
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2);
 
-    const collapseOnClick = () : void => {
-        setCollapseButtonText(collapsed ? "^" : "v") 
-        setCollapsed((prev) => !prev)
-    }
+export interface branch {
+    id: string
+    subBranches: branch[]
+    collapsed: boolean
+    title: string
+    description?: string
+}
+
+export default function Branch({branch, updateTree, path, moveBranch, moveBranchAtIndex} : branchProps){
 
     const addBranch = () : void => {
-        setSubBranches((prev) => [...prev, {collapsed: false}])
+        const nextChildren = [
+            ...branch.subBranches,
+            { id: makeId(), collapsed: false, subBranches: [], title : "Process Title" }
+          ];
+          updateTree(path, { ...branch, subBranches: nextChildren });
     }
     
     return (
         <>  
             <div className={styles.wholeBranch}>
                 <div className={styles.branch}>
-                    <button onClick={() => collapseOnClick()}>{collapseButtonText}</button>
-                    <input defaultValue={"branch"}></input>  
+                    <DragableBranch
+                        nodeId={branch.id}
+                        onMove={moveBranch}
+                        dragEnabled={true}
+                        className={styles.branch}
+                        overClassName={styles.dropOver}
+                    >
+                        <CollapseButton 
+                            expanded={!branch.collapsed}
+                            controlsId={`children-${branch.id}`}
+                            onToggle={() => updateTree (path, {...branch, collapsed: !branch.collapsed})}
+                        />
+                        <EditableTitle 
+                            title={branch.title}
+                            onChange={(title) => updateTree(path, {...branch, title})}
+                        />
+                    </DragableBranch>
                 </div> 
-                {!collapsed && <div className={styles.subBranches}>
-                    {subBranches.map((branch) => (
-                        <Branch branch={branch}/>       
+                
+                {/* SUB BRANCHES */}
+                {!branch.collapsed && <div className={styles.subBranches}>
+                    
+                    <DropSlot parentId={branch.id} index={0} onMoveAtIndex={moveBranchAtIndex} />
+
+                    {branch.subBranches?.map((subBranch, index) => (
+                        <div key={subBranch.id}>
+                            <Branch 
+                            branch={subBranch}
+                            updateTree={updateTree}
+                            path={[...path, index]}
+                            moveBranch={moveBranch}
+                            moveBranchAtIndex={moveBranchAtIndex}
+                            /> 
+                            <DropSlot parentId={branch.id} index={index + 1} onMoveAtIndex={moveBranchAtIndex} />
+                        </div>   
                     ))}
-                    <button onClick={() => addBranch()}>new subbranch</button>
+                    <button 
+                        className={styles.branchAddBranch}
+                        onClick={() => addBranch()}
+                    >
+                        <p>Add Sub-branch</p>
+                    </button>
                 </div>}
             </div>   
         </>
