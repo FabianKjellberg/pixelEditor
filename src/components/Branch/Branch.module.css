@@ -1,0 +1,14 @@
+.branch{
+    display:flex;
+    align-items: center;
+    
+    
+}
+
+.subBranches{
+    margin-left: 15px;
+}
+
+.wholeBranch{
+    border-left: 1px dotted black;
+}
