@@ -1,6 +1,6 @@
 import Image from "next/image";
 import styles from "./page.module.css";
-import Tree from "@/components/Tree/Tree";
+import Tree from "@/components/FileTree/Tree/Tree";
 
 export default function Home() {
   const test : number = 5

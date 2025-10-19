@@ -1,21 +1,19 @@
-import SpriteCanvas from "@/components/SpriteCanvas/SpriteCanvas"
-import styles from "./page.module.css"
-import type { layer } from "@/models/createSpriteModels"
-
-const mockLayers : layer[] = []
+import styles from './page.module.css';
+import Canvas from '@/components/SpriteCreator/Canvas/Canvas';
+import Menu from '@/components/SpriteCreator/Menu/Menu';
+import { LayerProvider } from '@/context/LayerContext';
+import { ToolProvider } from '@/context/ToolContext';
 
 const CreateSprite = () => {
-
-    return (
-        <>
-            <div className={styles.createSprite}>
-                <div className={styles.spriteCanvas}>
-                    <SpriteCanvas layers={mockLayers}/>
-                </div>
-            </div>
-            
-        </>
-    )
-
-}
-export default CreateSprite
+  return (
+    <div className={styles.createSprite}>
+      <LayerProvider>
+        <ToolProvider>
+          <Menu />
+          <Canvas />
+        </ToolProvider>
+      </LayerProvider>
+    </div>
+  );
+};
+export default CreateSprite;

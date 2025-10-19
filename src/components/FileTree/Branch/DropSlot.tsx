@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import styles from "@/components/Branch/Branch.module.css"
+import styles from "@/components/FileTree/Branch/Branch.module.css"
 
 type DropSlotProps = {
   parentId: string;

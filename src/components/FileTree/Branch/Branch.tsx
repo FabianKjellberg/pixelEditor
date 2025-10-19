@@ -1,4 +1,4 @@
-import styles from "@/components/Branch/Branch.module.css"
+import styles from "@/components/FileTree/Branch/Branch.module.css"
 import { EditableTitle } from "./EditableTitle/EditableTitle";
 import { CollapseButton } from "./CollapseButton/CollapseButton";
 import { DragableBranch } from "./DragableBranch/DragableBranch";

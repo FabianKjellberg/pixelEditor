@@ -1,6 +1,4 @@
-.createSprite {
+.clickHandlerComponent {
   height: 100vh;
   width: 100%;
-
-  display: flex;
 }

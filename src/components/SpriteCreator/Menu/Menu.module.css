@@ -1,0 +1,15 @@
+.toolContainer {
+  border: 1px solid gray;
+  margin: 5px;
+}
+.toolsHeader {
+  text-align: center;
+  padding: 5px;
+  text-decoration: underline;
+}
+
+.toolIconContainer {
+  padding: 5px;
+  display: flex;
+  gap: 5px;
+}

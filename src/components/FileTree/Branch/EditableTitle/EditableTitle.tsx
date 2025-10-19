@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import styles from "@/components/Branch/EditableTitle/EditableTitle.module.css"
+import styles from "@/components/FileTree/Branch/EditableTitle/EditableTitle.module.css"
 import React from "react";
 
 interface editableTitleProps {
