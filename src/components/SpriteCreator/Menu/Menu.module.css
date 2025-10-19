@@ -1,6 +1,6 @@
 .toolContainer {
   border: 1px solid gray;
-  margin: 5px;
+  margin: 10px;
 }
 .toolsHeader {
   text-align: center;
@@ -9,7 +9,14 @@
 }
 
 .toolIconContainer {
-  padding: 5px;
+  padding: 8px;
   display: flex;
-  gap: 5px;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.toolIconRow {
+  gap: 8px;
+  display: flex;
+  flex-direction: row;
 }

@@ -1,5 +1,21 @@
 .toolButton {
-  background-color: white;
-  width: 50px;
-  height: 50px;
+  background-color: #f2cef5;
+  font-family: 'DePixel';
+  font-weight: 400px;
+  padding: 2px;
+  border: 6px outset #821f8b !important;
+}
+
+.toolButton[aria-pressed='true'] {
+  border: 6px inset #821f8b !important;
+  outline: 3px dashed #ae5cb6;
+  background: #d5a3da;
+}
+
+.icon {
+  width: 64px;
+  height: 64px;
+  display: block;
+  object-fit: contain;
+  image-rendering: pixelated;
 }

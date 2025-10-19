@@ -5,14 +5,9 @@ import type { ITool } from '@/models/Tools/Tools';
 
 // Example fallback tool so the app has something usable by default
 class NoopTool implements ITool {
-  onMove(x: number, y: number): void {
-    throw new Error('Method not implemented.');
-  }
-  onUp(x: number, y: number): void {
-    throw new Error('Method not implemented.');
-  }
-  id = 'noop';
-  name = 'No tool';
+  name: string = 'noop';
+  onMove(x: number, y: number): void {}
+  onUp(x: number, y: number): void {}
   onDown = (_x: number, _y: number) => {};
 }
 

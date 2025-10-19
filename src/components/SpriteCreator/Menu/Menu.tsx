@@ -1,7 +1,8 @@
 import styles from './Menu.module.css';
 
-import Eraser from './Eraser/Eraser';
-import PenTool from './PenTool/PenTool';
+import EraserComponent from './EraserComponent/EraserComponent';
+import PenToolComponent from './PenToolComponent/PenToolComponent';
+import MoveComponent from './MoveComponent/MoveComponent';
 
 const Menu = () => {
   return (
@@ -9,8 +10,13 @@ const Menu = () => {
       <div className={styles.toolContainer}>
         <p className={styles.toolsHeader}>Tools</p>
         <div className={styles.toolIconContainer}>
-          <PenTool />
-          <Eraser />
+          <div className={styles.toolIconRow}>
+            <PenToolComponent />
+            <EraserComponent />
+          </div>
+          <div className={styles.toolIconRow}>
+            <MoveComponent />
+          </div>
         </div>
       </div>
     </div>

@@ -26,19 +26,33 @@
   }
 }
 
+/* Choose your default cut here — example uses WIDE (Breit) as 400 */
 @font-face {
-  font-family: 'Pixeled';
-  src: url('/fonts/Pixeled.ttf') format('truetype');
+  font-family: 'DePixel';
+  src: url('/fonts/depixel/DePixelBreit.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
+/* Map bold to the matching bold cut (Fett/Halbfett) */
+@font-face {
+  font-family: 'DePixel';
+  src: url('/fonts/depixel/DePixelBreitFett.ttf') format('truetype'); /* or Halbfett if that's what you have */
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 html,
-body {
+body,
+p {
   max-width: 100vw;
   overflow-x: hidden;
-  font-family: 'Pixeled', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  html,
+  body {
+    font-family: 'DePixel', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  }
 }
 
 body {

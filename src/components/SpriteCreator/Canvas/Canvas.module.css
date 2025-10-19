@@ -1,7 +1,7 @@
 .spriteCanvas {
   width: 100%;
   height: 100vh;
-  border: 1px solid black;
+  border: 4px inset rgb(150, 90, 90);
 }
 .canvases {
   position: fixed;

@@ -5,8 +5,7 @@ import LayerCanvas from './LayerCanvas/LayerCanvas';
 import styles from './Canvas.module.css';
 import ClickHandler from './ClickHandler/ClickHandler';
 import { useLayerContext } from '@/context/LayerContext';
-import { config } from '@/config/env';
-import { useEffect } from 'react';
+import ActiveLayerHighlighter from './Highlighter/ActiveLayerHighlighter';
 
 const Canvas = () => {
   const { allLayers } = useLayerContext();
@@ -20,6 +19,9 @@ const Canvas = () => {
           {allLayers.map((layer, index) => (
             <LayerCanvas key={index} layer={layer} />
           ))}
+        </div>
+        <div className={styles.canvases}>
+          <ActiveLayerHighlighter />
         </div>
         <div className={styles.canvases}>
           <ClickHandler />

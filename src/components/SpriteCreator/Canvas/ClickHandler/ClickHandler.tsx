@@ -6,14 +6,13 @@ import { useToolContext } from '@/context/ToolContext';
 import { PenTool } from '@/models/Tools/PenTool';
 import { useLayerContext } from '@/context/LayerContext';
 import { config } from '@/config/env';
-import { Cordinate } from '@/models/Layer';
 import { getPixelPositions } from '@/util/LayerUtil';
 
 const ClickHandler = () => {
   const { activeTool, setActiveTool } = useToolContext();
   const { setActiveLayer, activeLayer } = useLayerContext();
 
-  //Should not be set here. it should be set in the while selecting a tool :)
+  //Should not be set here. it should be set in the while selecting a tool :) !TODO fix this
   useEffect(() => {
     const penTool = new PenTool(setActiveLayer, activeLayer);
 
@@ -21,7 +20,6 @@ const ClickHandler = () => {
   }, []);
 
   const onPointerDown: React.PointerEventHandler<HTMLDivElement> = (e) => {
-    console.log(activeLayer);
     const c = getPixelPositions(e, config.pixelSize);
     activeTool.onDown(c.x - activeLayer.xPos, c.y - activeLayer.yPos);
   };

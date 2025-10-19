@@ -1,14 +1,24 @@
-export interface Layer {
+export type Layer = {
   xPos: number;
   yPos: number;
   width: number;
   height: number;
 
   pixels: Uint32Array;
-}
+};
 
-export interface Cordinate {
+export type Cordinate = {
   x: number;
   y: number;
-}
-export interface GrowthNumbers {}
+};
+export type OutOfBoundItem = {
+  outOfBounds: boolean;
+  dir: Direction;
+};
+
+export type Direction = {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+};
