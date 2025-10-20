@@ -2,7 +2,7 @@
 
 import { useLayerContext } from '@/context/LayerContext';
 import { config } from '@/config/env';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import styles from './ActiveLayerHighlighter.module.css';
 
 const ActiveLayerHighlighter = () => {

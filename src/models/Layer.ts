@@ -1,4 +1,6 @@
 export type Layer = {
+  name: string
+  
   xPos: number;
   yPos: number;
   width: number;

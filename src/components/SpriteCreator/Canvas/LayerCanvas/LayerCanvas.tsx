@@ -12,6 +12,7 @@ interface LayerCanvasProps {
 const LayerCanvas = ({ layer }: LayerCanvasProps) => {
   const drawGrid = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
+    ctx.imageSmoothingEnabled = false;
     for (let i: number = 0; i < layer.height; i++) {
       for (let j: number = 0; j < layer.width; j++) {
         const px = layer.pixels[getPixelIndex(i, layer.width, j)];
@@ -46,7 +47,7 @@ const LayerCanvas = ({ layer }: LayerCanvasProps) => {
         ref={canvasRef}
         width={config.canvasWidth}
         height={config.canvasHeight}
-        style={{ position: 'fixed' }}
+        style={{ position: 'fixed', imageRendering: 'pixelated' }}
       />
     </>
   );

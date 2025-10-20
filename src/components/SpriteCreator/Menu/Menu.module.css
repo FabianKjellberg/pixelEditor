@@ -1,6 +1,21 @@
+.menu {
+  height: 100vh;
+  display: flex;
+}
+
+.menuContainer{
+  overflow: hidden;
+  overflow-y: scroll;
+}
+
 .toolContainer {
-  border: 1px solid gray;
+  border: 2px solid gray;
   margin: 10px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overflow-y: scroll;
 }
 .toolsHeader {
   text-align: center;

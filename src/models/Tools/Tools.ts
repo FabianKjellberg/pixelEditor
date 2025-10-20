@@ -1,3 +1,10 @@
+import { Layer } from "../Layer";
+
+export type IToolDeps = {
+  getLayer: () => Layer | undefined;
+  setLayer: (layer: Layer) => void;
+}
+
 export interface ITool {
   name: string;
   onDown(x: number, y: number): void;

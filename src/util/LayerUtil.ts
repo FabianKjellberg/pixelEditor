@@ -14,10 +14,12 @@ export function createLayer(
   height: number,
   xPos: number = 0,
   yPos: number = 0,
+  name: string,
 ): Layer {
   const pixels = new Uint32Array(width * height);
   pixels.fill(rgbaToInt(0, 0, 0, 0));
   return {
+    name,
     xPos,
     yPos,
     width,
@@ -43,7 +45,7 @@ export function increaseLayerBoundary(dir: Direction, l: Layer): Layer {
   const newYPos = oL.yPos - dir.top;
 
   //new Layer with updated dimensions and positioning
-  const nL = createLayer(wNew, hNew, newXPos, newYPos);
+  const nL = createLayer(wNew, hNew, newXPos, newYPos, oL.name);
 
   const widthLeftOffset = dir.left;
   const hegihtTopOffset = dir.top * wNew;
@@ -68,15 +70,14 @@ export function decreaseLayerBoundary(dir: Direction, l: Layer) {
 
   //early return if the height or width would not exist :)
   if (wNew <= 0 || hNew <= 0) {
-    console.log('wow, nothing left??');
-    return createLayer(0, 0, 0, 0);
+    return createLayer(0, 0, 0, 0, oL.name);
   }
 
   const newXPos = oL.xPos + dir.left;
   const newYPos = oL.yPos + dir.top;
 
   //new layer with update dimensions and positioning
-  const nL = createLayer(wNew, hNew, newXPos, newYPos);
+  const nL = createLayer(wNew, hNew, newXPos, newYPos, oL.name);
 
   const widthLeftOffset = dir.left;
   const heightTopOffset = dir.top * oL.width;

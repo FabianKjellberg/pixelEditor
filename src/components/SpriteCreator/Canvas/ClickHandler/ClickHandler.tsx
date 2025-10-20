@@ -9,16 +9,9 @@ import { config } from '@/config/env';
 import { getPixelPositions } from '@/util/LayerUtil';
 
 const ClickHandler = () => {
-  const { activeTool, setActiveTool } = useToolContext();
-  const { setActiveLayer, activeLayer } = useLayerContext();
-
-  //Should not be set here. it should be set in the while selecting a tool :) !TODO fix this
-  useEffect(() => {
-    const penTool = new PenTool(setActiveLayer, activeLayer);
-
-    setActiveTool(penTool);
-  }, []);
-
+  const { activeTool } = useToolContext();
+  const { activeLayer } = useLayerContext();
+  
   const onPointerDown: React.PointerEventHandler<HTMLDivElement> = (e) => {
     const c = getPixelPositions(e, config.pixelSize);
     activeTool.onDown(c.x - activeLayer.xPos, c.y - activeLayer.yPos);

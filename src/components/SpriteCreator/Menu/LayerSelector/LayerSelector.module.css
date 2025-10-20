@@ -1,3 +1,27 @@
 .layerContainer {
-  padding: 5px;
+  padding: 4px;
+  display: flex;
+  gap: 4px;
+  flex-direction: column;
+}
+
+.layerItem {
+  width: 100%;
+  padding: 4px;
+  border: 2px solid gray;
+  text-align: center;
+}
+
+.layerItemSelected {
+  width: 100%;
+  padding: 4px;
+  border: 2px solid gray;
+  background-color: gray;
+  outline: 2px solid #54Fe3a;
+  text-align: center;
+}
+
+.layerItem:hover {
+  cursor: pointer;
+  background-color: gray;
 }

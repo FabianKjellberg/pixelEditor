@@ -3,14 +3,14 @@
 import ToolButton from '../ToolButton/ToolButton';
 import { PenTool } from '@/models/Tools/PenTool';
 import { useLayerContext } from '@/context/LayerContext';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useToolContext } from '@/context/ToolContext';
 
 const PenToolComponent = () => {
-  const { activeLayer, setActiveLayer } = useLayerContext();
+  const { getActiveLayer, setActiveLayer } = useLayerContext();
   const { setActiveTool } = useToolContext();
 
-  const defaultTool: PenTool = new PenTool(setActiveLayer, activeLayer);
+  const defaultTool: PenTool = useMemo(() => (new PenTool({setLayer: setActiveLayer, getLayer: getActiveLayer})),[getActiveLayer,setActiveLayer]);
 
   useEffect(() => {
     setActiveTool(defaultTool);

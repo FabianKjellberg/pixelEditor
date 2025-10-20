@@ -1,6 +1,6 @@
 import { getPixelIndex } from '@/helpers/color';
 import { Layer } from '../Layer';
-import { ITool } from './Tools';
+import { ITool, IToolDeps } from './Tools';
 import { config } from '@/config/env';
 import { createLayer, increaseLayerBoundary, outOfBoundFinder } from '@/util/LayerUtil';
 
@@ -15,26 +15,31 @@ export class PenTool implements ITool {
   public selectedColor: number | null = config.defaultColor;
 
   //Constructor make sure that the tool accesses the currently selected layer
-  constructor(private setLayer: (layer: Layer) => void, private layer: Layer) {}
+  constructor(private toolDeps: IToolDeps) {}
   //Interface methods
   onDown(x: number, y: number): void {
+    let layer = this.toolDeps.getLayer()
+    if(layer == undefined) return;
+    
     //if the layer doesnt have any pixels in it. create it
-    if (this.layer.width == 0 && this.layer.height == 0) {
-      this.layer = createLayer(1, 1, x, y);
+    if (layer.width == 0 && layer.height == 0) {
+      layer = createLayer(1,1,x,y, layer.name);
 
       x = 0;
       y = 0;
     }
-
-    this.draw(x, y);
+    this.draw(x, y, layer)
     this.drawing = true;
   }
   onMove(x: number, y: number): void {
-    if (this.drawing && !(this.lastX == x && this.lastY == y)) {
-      this.draw(x, y);
-      this.lastX = x;
-      this.lastY = y;
-    }
+    if (!(this.drawing && !(this.lastX == x && this.lastY == y))) return;
+    
+    const layer = this.toolDeps.getLayer();
+    if(layer == undefined) return;
+
+    this.draw(x, y, layer);
+    this.lastX = x;
+    this.lastY = y;    
   }
   onUp(x: number, y: number): void {
     this.drawing = false;
@@ -43,24 +48,21 @@ export class PenTool implements ITool {
   }
 
   //Other Methods
-  private draw = (x: number, y: number): void => {
+  private draw = (x: number, y: number, layer: Layer): void => {
     if (!this.selectedColor) {
       this.selectedColor = config.defaultColor; //!TODO maybe implement toast??? to tell user to to select color?
     }
 
-    let newLayer = this.layer;
-
-    const boundsItem = outOfBoundFinder(x, y, newLayer.width, newLayer.height);
+    const boundsItem = outOfBoundFinder(x, y, layer.width, layer.height);
     if (boundsItem.outOfBounds) {
-      newLayer = increaseLayerBoundary(boundsItem.dir, newLayer);
+      layer = increaseLayerBoundary(boundsItem.dir, layer);
 
       x = x + boundsItem.dir.left;
       y = y + boundsItem.dir.top;
     }
 
-    newLayer.pixels[getPixelIndex(y, newLayer.width, x)] = this.selectedColor >>> 0;
+    layer.pixels[getPixelIndex(y, layer.width, x)] = this.selectedColor >>> 0;
 
-    this.layer = newLayer;
-    this.setLayer({ ...newLayer, pixels: newLayer.pixels.slice() });
+    this.toolDeps.setLayer({ ...layer, pixels: layer.pixels.slice() });
   };
 }

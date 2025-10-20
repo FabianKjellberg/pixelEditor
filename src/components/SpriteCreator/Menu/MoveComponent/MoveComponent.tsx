@@ -5,11 +5,11 @@ import ToolButton from '../ToolButton/ToolButton';
 import { MoveTool } from '@/models/Tools/MoveTool';
 
 const MoveComponent = () => {
-  const { activeLayer, setActiveLayer } = useLayerContext();
+  const { getActiveLayer, setActiveLayer } = useLayerContext();
 
   return (
     <>
-      <ToolButton icon="/icons/arrowicon.png" tool={new MoveTool(setActiveLayer, activeLayer)} />
+      <ToolButton icon="/icons/arrowicon.png" tool={new MoveTool({setLayer: setActiveLayer, getLayer: getActiveLayer})} />
     </>
   );
 };

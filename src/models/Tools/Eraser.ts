@@ -1,4 +1,4 @@
-import { ITool } from './Tools';
+import { ITool, IToolDeps } from './Tools';
 import { Direction, Layer } from '../Layer';
 import { outOfBoundFinder, tryReduceLayerSize } from '@/util/LayerUtil';
 import { getPixelIndex, rgbaToInt } from '@/helpers/color';
@@ -13,7 +13,7 @@ export class Eraser implements ITool {
   private lastY: number | null = null;
 
   //Constructor make sure that the tool accesses the currently selected layer
-  constructor(private setLayer: (layer: Layer) => void, private layer: Layer) {}
+  constructor(private toolDeps: IToolDeps) {}
 
   /** -- INTERFACE METHODS -- **/
   onDown(x: number, y: number): void {
@@ -35,24 +35,25 @@ export class Eraser implements ITool {
 
   /** -- OTHER METHODS -- **/
   private erase = (x: number, y: number): void => {
-    const bounadryItem = outOfBoundFinder(x, y, this.layer.width, this.layer.height);
-
-    let newLayer = { ...this.layer };
+    let layer = this.toolDeps.getLayer();
+    if(layer == undefined) return;
+    
+    const bounadryItem = outOfBoundFinder(x, y, layer.width, layer.height);
 
     if (bounadryItem.outOfBounds) return;
 
-    newLayer.pixels[getPixelIndex(y, newLayer.width, x)] = rgbaToInt(0, 0, 0, 0);
+    layer.pixels[getPixelIndex(y, layer.width, x)] = rgbaToInt(0, 0, 0, 0);
 
+    //see if eraser toucher boundary
     const reduceDirection: Direction = {
       left: x === 0 ? 1 : 0,
       top: y === 0 ? 1 : 0,
-      right: x === newLayer.width - 1 ? 1 : 0,
-      bottom: y === newLayer.height - 1 ? 1 : 0,
+      right: x === layer.width - 1 ? 1 : 0,
+      bottom: y === layer.height - 1 ? 1 : 0,
     };
 
-    newLayer = tryReduceLayerSize(reduceDirection, newLayer);
+    layer = tryReduceLayerSize(reduceDirection, layer);
 
-    this.layer = newLayer;
-    this.setLayer({ ...newLayer, pixels: newLayer.pixels.slice() });
+    this.toolDeps.setLayer({ ...layer, pixels: layer.pixels.slice() });
   };
 }
