@@ -3,6 +3,7 @@ import styles from './Menu.module.css';
 import EraserComponent from './EraserComponent/EraserComponent';
 import PenToolComponent from './PenToolComponent/PenToolComponent';
 import MoveComponent from './MoveComponent/MoveComponent';
+import LayerSelector from './LayerSelector/LayerSelector';
 
 const Menu = () => {
   return (
@@ -18,6 +19,9 @@ const Menu = () => {
             <MoveComponent />
           </div>
         </div>
+      </div>
+      <div className={styles.toolContainer}>
+        <LayerSelector />
       </div>
     </div>
   );

@@ -42,7 +42,12 @@ const LayerCanvas = ({ layer }: LayerCanvasProps) => {
 
   return (
     <>
-      <canvas ref={canvasRef} width={config.canvasWidth} height={config.canvasHeight} />
+      <canvas
+        ref={canvasRef}
+        width={config.canvasWidth}
+        height={config.canvasHeight}
+        style={{ position: 'fixed' }}
+      />
     </>
   );
 };
