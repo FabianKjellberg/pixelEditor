@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import styles from './ClickHandler.module.css';
 import { useToolContext } from '@/context/ToolContext';
-import { PenTool } from '@/models/Tools/PenTool';
 import { useLayerContext } from '@/context/LayerContext';
 import { config } from '@/config/env';
 import { getPixelPositions } from '@/util/LayerUtil';
@@ -11,20 +9,20 @@ import { getPixelPositions } from '@/util/LayerUtil';
 const ClickHandler = () => {
   const { activeTool } = useToolContext();
   const { activeLayer } = useLayerContext();
-  
+
   const onPointerDown: React.PointerEventHandler<HTMLDivElement> = (e) => {
     const c = getPixelPositions(e, config.pixelSize);
-    activeTool.onDown(c.x - activeLayer.xPos, c.y - activeLayer.yPos);
+    activeTool.onDown(c.x - activeLayer.rect.x, c.y - activeLayer.rect.y);
   };
 
   const onPointerMove: React.PointerEventHandler<HTMLDivElement> = (e) => {
     const c = getPixelPositions(e, config.pixelSize);
-    activeTool.onMove(c.x - activeLayer.xPos, c.y - activeLayer.yPos);
+    activeTool.onMove(c.x - activeLayer.rect.x, c.y - activeLayer.rect.y);
   };
 
   const onPointerUp: React.PointerEventHandler<HTMLDivElement> = (e) => {
     const c = getPixelPositions(e, config.pixelSize);
-    activeTool.onUp(c.x - activeLayer.xPos, c.y - activeLayer.yPos);
+    activeTool.onUp(c.x - activeLayer.rect.x, c.y - activeLayer.rect.y);
   };
 
   return (
