@@ -36,20 +36,20 @@ export class Eraser implements ITool {
   /** -- OTHER METHODS -- **/
   private erase = (x: number, y: number): void => {
     let layer = this.toolDeps.getLayer();
-    if(layer == undefined) return;
-    
-    const bounadryItem = outOfBoundFinder(x, y, layer.width, layer.height);
+    if (layer == undefined) return;
+
+    const bounadryItem = outOfBoundFinder(x, y, layer.rect.width, layer.rect.height);
 
     if (bounadryItem.outOfBounds) return;
 
-    layer.pixels[getPixelIndex(y, layer.width, x)] = rgbaToInt(0, 0, 0, 0);
+    layer.pixels[getPixelIndex(y, layer.rect.width, x)] = rgbaToInt(0, 0, 0, 0);
 
     //see if eraser toucher boundary
     const reduceDirection: Direction = {
       left: x === 0 ? 1 : 0,
       top: y === 0 ? 1 : 0,
-      right: x === layer.width - 1 ? 1 : 0,
-      bottom: y === layer.height - 1 ? 1 : 0,
+      right: x === layer.rect.width - 1 ? 1 : 0,
+      bottom: y === layer.rect.height - 1 ? 1 : 0,
     };
 
     layer = tryReduceLayerSize(reduceDirection, layer);

@@ -11,9 +11,9 @@ export class MoveTool implements ITool {
 
   onDown(x: number, y: number): void {
     const layer = this.toolDeps.getLayer();
-    if(layer == undefined) return;
-    
-    const boundsItem = outOfBoundFinder(x, y, layer.width, layer.height);
+    if (layer == undefined) return;
+
+    const boundsItem = outOfBoundFinder(x, y, layer.rect.width, layer.rect.height);
     //early return if you click out of bounds
     if (boundsItem.outOfBounds) return;
 
@@ -33,8 +33,8 @@ export class MoveTool implements ITool {
     const layer = this.toolDeps.getLayer();
     if (layer == undefined) return;
 
-    layer.xPos += x - this.lastX;
-    layer.yPos += y - this.lastY;
+    layer.rect.x += x - this.lastX;
+    layer.rect.y += y - this.lastY;
     this.toolDeps.setLayer({ ...layer });
   }
   onUp(x: number, y: number): void {

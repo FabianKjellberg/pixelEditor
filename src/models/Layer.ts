@@ -1,10 +1,7 @@
 export type Layer = {
-  name: string
-  
-  xPos: number;
-  yPos: number;
-  width: number;
-  height: number;
+  name: string;
+
+  rect: Rectangle;
 
   pixels: Uint32Array;
 };
@@ -23,4 +20,11 @@ export type Direction = {
   top: number;
   right: number;
   bottom: number;
+};
+
+export type Rectangle = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 };

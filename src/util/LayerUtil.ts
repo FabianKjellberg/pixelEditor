@@ -1,5 +1,5 @@
 import { getPixelIndex, rgbaToInt } from '@/helpers/color';
-import { Cordinate, Direction, Layer, OutOfBoundItem } from '@/models/Layer';
+import { Cordinate, Direction, Layer, OutOfBoundItem, Rectangle } from '@/models/Layer';
 
 /**
  *
@@ -9,21 +9,12 @@ import { Cordinate, Direction, Layer, OutOfBoundItem } from '@/models/Layer';
  * @param yPos
  * @returns
  */
-export function createLayer(
-  width: number,
-  height: number,
-  xPos: number = 0,
-  yPos: number = 0,
-  name: string,
-): Layer {
-  const pixels = new Uint32Array(width * height);
+export function createLayer(rect: Rectangle, name: string): Layer {
+  const pixels = new Uint32Array(rect.width * rect.height);
   pixels.fill(rgbaToInt(0, 0, 0, 0));
   return {
     name,
-    xPos,
-    yPos,
-    width,
-    height,
+    rect,
     pixels,
   };
 }
@@ -36,61 +27,61 @@ export function createLayer(
  */
 export function increaseLayerBoundary(dir: Direction, l: Layer): Layer {
   //original layer
-  const oL = { ...l };
+  const OriginalLayer = { ...l };
 
-  const wNew = dir.left + oL.width + dir.right;
-  const hNew = dir.top + oL.height + dir.bottom;
+  const width = dir.left + OriginalLayer.rect.width + dir.right;
+  const height = dir.top + OriginalLayer.rect.height + dir.bottom;
 
-  const newXPos = oL.xPos - dir.left;
-  const newYPos = oL.yPos - dir.top;
+  const x = OriginalLayer.rect.x - dir.left;
+  const y = OriginalLayer.rect.y - dir.top;
 
   //new Layer with updated dimensions and positioning
-  const nL = createLayer(wNew, hNew, newXPos, newYPos, oL.name);
+  const layer = createLayer({ width, height, x, y }, OriginalLayer.name);
 
   const widthLeftOffset = dir.left;
-  const hegihtTopOffset = dir.top * wNew;
+  const hegihtTopOffset = dir.top * width;
 
   //overwrite the newly created array with the old array
-  for (let y: number = 0; y < oL.height; y++) {
-    for (let x: number = 0; x < oL.width; x++) {
-      const src = getPixelIndex(y, oL.width, x);
-      const dest = widthLeftOffset + hegihtTopOffset + wNew * y + x;
-      nL.pixels[dest] = oL.pixels[src];
+  for (let y: number = 0; y < OriginalLayer.rect.height; y++) {
+    for (let x: number = 0; x < OriginalLayer.rect.width; x++) {
+      const src = getPixelIndex(y, OriginalLayer.rect.width, x);
+      const dest = widthLeftOffset + hegihtTopOffset + width * y + x;
+      layer.pixels[dest] = OriginalLayer.pixels[src];
     }
   }
 
-  return nL;
+  return layer;
 }
 
 export function decreaseLayerBoundary(dir: Direction, l: Layer) {
-  const oL = { ...l };
+  const OriginalLayer = { ...l };
 
-  const wNew = oL.width - (dir.left + dir.right);
-  const hNew = oL.height - (dir.top + dir.bottom);
+  const width = OriginalLayer.rect.width - (dir.left + dir.right);
+  const height = OriginalLayer.rect.height - (dir.top + dir.bottom);
 
   //early return if the height or width would not exist :)
-  if (wNew <= 0 || hNew <= 0) {
-    return createLayer(0, 0, 0, 0, oL.name);
+  if (width <= 0 || width <= 0) {
+    return createLayer({ width: 0, height: 0, x: 0, y: 0 }, OriginalLayer.name);
   }
 
-  const newXPos = oL.xPos + dir.left;
-  const newYPos = oL.yPos + dir.top;
+  const x = OriginalLayer.rect.x + dir.left;
+  const y = OriginalLayer.rect.y + dir.top;
 
   //new layer with update dimensions and positioning
-  const nL = createLayer(wNew, hNew, newXPos, newYPos, oL.name);
+  const layer = createLayer({ width, height, x, y }, OriginalLayer.name);
 
   const widthLeftOffset = dir.left;
-  const heightTopOffset = dir.top * oL.width;
+  const heightTopOffset = dir.top * OriginalLayer.rect.width;
 
-  for (let y: number = 0; y < nL.height; y++) {
-    for (let x: number = 0; x < nL.width; x++) {
-      const src = widthLeftOffset + heightTopOffset + oL.width * y + x;
-      const dest = getPixelIndex(y, nL.width, x);
-      nL.pixels[dest] = oL.pixels[src];
+  for (let y: number = 0; y < layer.rect.height; y++) {
+    for (let x: number = 0; x < layer.rect.width; x++) {
+      const src = widthLeftOffset + heightTopOffset + OriginalLayer.rect.width * y + x;
+      const dest = getPixelIndex(y, layer.rect.width, x);
+      layer.pixels[dest] = OriginalLayer.pixels[src];
     }
   }
 
-  return nL;
+  return layer;
 }
 
 /**
@@ -143,9 +134,9 @@ export function tryReduceLayerSize(dir: Direction, layer: Layer): Layer {
 
   //getLeftCount
   if (dir.left > 0) {
-    while (!boundFound && leftCount < layer.width) {
-      for (let i: number = 0; i < layer.height; i++) {
-        if (layer.pixels[i * layer.width + leftCount] !== EMPTY) {
+    while (!boundFound && leftCount < layer.rect.width) {
+      for (let i: number = 0; i < layer.rect.height; i++) {
+        if (layer.pixels[i * layer.rect.width + leftCount] !== EMPTY) {
           boundFound = true;
           break;
         }
@@ -157,9 +148,9 @@ export function tryReduceLayerSize(dir: Direction, layer: Layer): Layer {
 
   //getTopCount
   if (dir.top > 0) {
-    while (!boundFound && topCount < layer.height) {
-      for (let i: number = 0; i < layer.width; i++) {
-        if (layer.pixels[topCount * layer.width + i] !== EMPTY) {
+    while (!boundFound && topCount < layer.rect.height) {
+      for (let i: number = 0; i < layer.rect.width; i++) {
+        if (layer.pixels[topCount * layer.rect.width + i] !== EMPTY) {
           boundFound = true;
           break;
         }
@@ -171,9 +162,9 @@ export function tryReduceLayerSize(dir: Direction, layer: Layer): Layer {
 
   //getRightCount
   if (dir.right > 0) {
-    while (!boundFound && rightCount < layer.width) {
-      for (let i: number = 0; i < layer.height; i++) {
-        if (layer.pixels[i * layer.width + layer.width - rightCount - 1] !== EMPTY) {
+    while (!boundFound && rightCount < layer.rect.width) {
+      for (let i: number = 0; i < layer.rect.height; i++) {
+        if (layer.pixels[i * layer.rect.width + layer.rect.width - rightCount - 1] !== EMPTY) {
           boundFound = true;
           break;
         }
@@ -185,9 +176,9 @@ export function tryReduceLayerSize(dir: Direction, layer: Layer): Layer {
 
   //getBottomCount
   if (dir.bottom > 0) {
-    while (!boundFound && bottomCount < layer.height) {
-      for (let i: number = 0; i < layer.width; i++) {
-        if (layer.pixels[(layer.height - bottomCount - 1) * layer.width + i] !== EMPTY) {
+    while (!boundFound && bottomCount < layer.rect.height) {
+      for (let i: number = 0; i < layer.rect.width; i++) {
+        if (layer.pixels[(layer.rect.height - bottomCount - 1) * layer.rect.width + i] !== EMPTY) {
           boundFound = true;
           break;
         }

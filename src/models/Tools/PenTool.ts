@@ -18,28 +18,28 @@ export class PenTool implements ITool {
   constructor(private toolDeps: IToolDeps) {}
   //Interface methods
   onDown(x: number, y: number): void {
-    let layer = this.toolDeps.getLayer()
-    if(layer == undefined) return;
-    
+    let layer = this.toolDeps.getLayer();
+    if (layer == undefined) return;
+
     //if the layer doesnt have any pixels in it. create it
-    if (layer.width == 0 && layer.height == 0) {
-      layer = createLayer(1,1,x,y, layer.name);
+    if (layer.rect.width == 0 && layer.rect.height == 0) {
+      layer = createLayer({ width: 1, height: 1, x, y }, layer.name);
 
       x = 0;
       y = 0;
     }
-    this.draw(x, y, layer)
+    this.draw(x, y, layer);
     this.drawing = true;
   }
   onMove(x: number, y: number): void {
     if (!(this.drawing && !(this.lastX == x && this.lastY == y))) return;
-    
+
     const layer = this.toolDeps.getLayer();
-    if(layer == undefined) return;
+    if (layer == undefined) return;
 
     this.draw(x, y, layer);
     this.lastX = x;
-    this.lastY = y;    
+    this.lastY = y;
   }
   onUp(x: number, y: number): void {
     this.drawing = false;
@@ -53,7 +53,7 @@ export class PenTool implements ITool {
       this.selectedColor = config.defaultColor; //!TODO maybe implement toast??? to tell user to to select color?
     }
 
-    const boundsItem = outOfBoundFinder(x, y, layer.width, layer.height);
+    const boundsItem = outOfBoundFinder(x, y, layer.rect.width, layer.rect.height);
     if (boundsItem.outOfBounds) {
       layer = increaseLayerBoundary(boundsItem.dir, layer);
 
@@ -61,7 +61,7 @@ export class PenTool implements ITool {
       y = y + boundsItem.dir.top;
     }
 
-    layer.pixels[getPixelIndex(y, layer.width, x)] = this.selectedColor >>> 0;
+    layer.pixels[getPixelIndex(y, layer.rect.width, x)] = this.selectedColor >>> 0;
 
     this.toolDeps.setLayer({ ...layer, pixels: layer.pixels.slice() });
   };

@@ -1,7 +1,7 @@
 'use client';
 
 import BackgroundCanvas from './BackgroundCanvas/BackgroundCanvas';
-import LayerCanvas from './LayerCanvas/LayerCanvas';
+import LayerCanvasOld from './LayerCanvasOld/LayerCanvasOld';
 import styles from './Canvas.module.css';
 import ClickHandler from './ClickHandler/ClickHandler';
 import { useLayerContext } from '@/context/LayerContext';
@@ -17,7 +17,7 @@ const Canvas = () => {
         </div>
         <div className={styles.canvases}>
           {allLayers.map((layer, index) => (
-            <LayerCanvas key={index} layer={layer} />
+            <LayerCanvasOld key={index} layer={layer} />
           ))}
         </div>
         <div className={styles.canvases}>

@@ -1,19 +1,28 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import type { Layer } from '@/models/Layer';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import type { Layer, Rectangle } from '@/models/Layer';
 import { createLayer } from '@/util/LayerUtil';
 
-const defaultLayer: Layer[] = [createLayer(0, 0, 0, 0, "Layer 1")];
+const defaultRect: Rectangle = { x: 0, y: 0, width: 0, height: 0 };
+const defaultLayer: Layer[] = [createLayer(defaultRect, 'Layer 1')];
 
 type LayerContextValue = {
   allLayers: Layer[];
   activeLayerIndex: number;
   setActiveLayerIndex: (index: number) => void;
-  
-  activeLayer: Layer
+
+  activeLayer: Layer;
   getActiveLayer: () => Layer | undefined;
-  setActiveLayer: (layer: Layer) => void 
+  setActiveLayer: (layer: Layer) => void;
 
   addLayer: (layer: Layer, index: number) => void;
 };
@@ -27,27 +36,31 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
   const allLayersRef = useRef(allLayers);
   const activeLayerIndexRef = useRef(activeLayerIndex);
 
-  useEffect(() => {allLayersRef.current = allLayers},[allLayers]);
-  useEffect(() => { activeLayerIndexRef.current = activeLayerIndex; }, [activeLayerIndex]);
+  useEffect(() => {
+    allLayersRef.current = allLayers;
+  }, [allLayers]);
+  useEffect(() => {
+    activeLayerIndexRef.current = activeLayerIndex;
+  }, [activeLayerIndex]);
 
   const getActiveLayer = useCallback(() => {
     const idx = activeLayerIndexRef.current;
     return allLayersRef.current[idx];
-  },[])
+  }, []);
 
   const setActiveLayer = useCallback((layer: Layer) => {
-    console.log(layer)
-    
-    setAllLayers(prev => {
+    console.log(layer);
+
+    setAllLayers((prev) => {
       const idx = activeLayerIndexRef.current;
       if (idx < 0 || idx >= prev.length) return prev;
       const next = prev.slice();
       next[idx] = layer;
       return next;
-    })
-  },[])
+    });
+  }, []);
 
-  const activeLayer = useMemo(() => (allLayers[activeLayerIndex]),[allLayers, activeLayerIndex])
+  const activeLayer = useMemo(() => allLayers[activeLayerIndex], [allLayers, activeLayerIndex]);
 
   const addLayer = useCallback(
     (layer: Layer, index?: number) => {
@@ -64,10 +77,10 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       allLayers,
       activeLayerIndex,
       setActiveLayerIndex,
-      
+
       activeLayer,
       getActiveLayer,
-      setActiveLayer, 
+      setActiveLayer,
 
       addLayer,
     }),
