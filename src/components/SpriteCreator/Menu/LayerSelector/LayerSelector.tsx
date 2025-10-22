@@ -15,7 +15,7 @@ const LayerSelector = () => {
         </div>
       ))}
 
-      <button onClick={() => addLayer(createLayer(0, 0, 0, 0, "Layer "+(allLayers.length+1)), allLayers.length)}>+</button>
+      <button onClick={() => addLayer(createLayer({width: 0,height: 0, x:0, y:0}, "Layer "+(allLayers.length+1)), allLayers.length)}>+</button>
     </div> 
   );
 };

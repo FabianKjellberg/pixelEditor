@@ -4,6 +4,7 @@ import EraserComponent from './EraserComponent/EraserComponent';
 import PenToolComponent from './PenToolComponent/PenToolComponent';
 import MoveComponent from './MoveComponent/MoveComponent';
 import LayerSelector from './LayerSelector/LayerSelector';
+import ColorPicker from './ColorPicker/ColorPicker';
 
 const Menu = () => {
   return (
@@ -24,6 +25,10 @@ const Menu = () => {
         <div className={styles.toolContainer}>
           <p className={styles.toolsHeader}>Layers</p>
           <LayerSelector />
+        </div>
+        <div className={styles.toolContainer}>
+          <p className={styles.toolsHeader}>Color Picker</p>
+          <ColorPicker />
         </div>
       </div>
     </div>

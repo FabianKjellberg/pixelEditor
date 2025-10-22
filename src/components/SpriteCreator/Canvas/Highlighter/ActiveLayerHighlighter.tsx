@@ -10,17 +10,17 @@ const ActiveLayerHighlighter = () => {
 
   const highLightStyle = useMemo(
     () => ({
-      width: activeLayer.width * config.pixelSize,
-      height: activeLayer.height * config.pixelSize,
-      left: activeLayer.xPos * config.pixelSize,
-      top: activeLayer.yPos * config.pixelSize,
+      width: activeLayer.rect.width * config.pixelSize,
+      height: activeLayer.rect.height * config.pixelSize,
+      left: activeLayer.rect.x * config.pixelSize,
+      top: activeLayer.rect.y * config.pixelSize,
     }),
     [activeLayer],
   );
 
   return (
     <>
-      {activeLayer.height > 0 && activeLayer.width > 0 && (
+      {activeLayer.rect.height > 0 && activeLayer.rect.width > 0 && (
         <div style={highLightStyle} className={styles.layerHighlight} />
       )}
     </>

@@ -1,8 +1,10 @@
 import { Layer } from "../Layer";
 
 export type IToolDeps = {
-  getLayer: () => Layer | undefined;
-  setLayer: (layer: Layer) => void;
+  getLayer?: () => Layer | undefined;
+  setLayer?: (layer: Layer) => void;
+  getColor?: () => number | undefined;
+  setColor?: (color: number) => void
 }
 
 export interface ITool {

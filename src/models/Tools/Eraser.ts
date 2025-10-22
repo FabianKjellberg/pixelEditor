@@ -35,7 +35,7 @@ export class Eraser implements ITool {
 
   /** -- OTHER METHODS -- **/
   private erase = (x: number, y: number): void => {
-    let layer = this.toolDeps.getLayer();
+    let layer = this.toolDeps.getLayer?.();
     if (layer == undefined) return;
 
     const bounadryItem = outOfBoundFinder(x, y, layer.rect.width, layer.rect.height);
@@ -54,6 +54,6 @@ export class Eraser implements ITool {
 
     layer = tryReduceLayerSize(reduceDirection, layer);
 
-    this.toolDeps.setLayer({ ...layer, pixels: layer.pixels.slice() });
+    this.toolDeps.setLayer?.({ ...layer, pixels: layer.pixels.slice() });
   };
 }

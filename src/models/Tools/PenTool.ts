@@ -10,15 +10,13 @@ export class PenTool implements ITool {
   private drawing: boolean = false;
   //variables to make sure that move doesnt try to draw every move if it has already drew on the pixel
   private lastX: number | null = null;
-  private lastY: number | null = null;
-  //variable to set the color that should be painted
-  public selectedColor: number | null = config.defaultColor;
+  private lastY: number | null = null;  
 
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {}
   //Interface methods
   onDown(x: number, y: number): void {
-    let layer = this.toolDeps.getLayer();
+    let layer = this.toolDeps.getLayer?.() || undefined;
     if (layer == undefined) return;
 
     //if the layer doesnt have any pixels in it. create it
@@ -44,7 +42,7 @@ export class PenTool implements ITool {
     if (this.lastX == x && this.lastY == y) return;
 
     //fetch the layer from context
-    const layer = this.toolDeps.getLayer();
+    const layer = this.toolDeps.getLayer?.() || undefined;
     if (layer == undefined) return;
 
     //draw
@@ -59,8 +57,11 @@ export class PenTool implements ITool {
 
   //Other Methods
   private draw = (x: number, y: number, layer: Layer): void => {
-    if (!this.selectedColor) {
-      this.selectedColor = config.defaultColor; //!TODO maybe implement toast??? to tell user to to select color?
+    
+    let selectedColor = this.toolDeps.getColor?.() || undefined;
+    console.log(selectedColor)
+    if (!selectedColor) {
+      selectedColor = config.defaultColor; //!TODO maybe implement toast??? to tell user to to select color?
     }
 
     //Item showing if and how much a cordinated is outside a given rect (relative terms)
@@ -77,10 +78,12 @@ export class PenTool implements ITool {
     }
 
     //update the layer pixels !TODO helper method to overwrite one array to the other for different sizes and shapes
-    layer.pixels[getPixelIndex(y, layer.rect.width, x)] = this.selectedColor >>> 0;
+    layer.pixels[getPixelIndex(y, layer.rect.width, x)] = selectedColor;
+
+    console.log(layer)
 
     //Update the true layer in layercontext !TODO make it redraw affected area.
-    this.toolDeps.setLayer({ ...layer, pixels: layer.pixels.slice() });
+    this.toolDeps.setLayer?.({ ...layer, pixels: layer.pixels.slice() });
 
     //cordinates for last last drawn place pixel
     this.lastX = x;

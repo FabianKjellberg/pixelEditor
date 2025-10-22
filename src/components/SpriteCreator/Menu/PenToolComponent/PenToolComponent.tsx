@@ -8,9 +8,9 @@ import { useToolContext } from '@/context/ToolContext';
 
 const PenToolComponent = () => {
   const { getActiveLayer, setActiveLayer } = useLayerContext();
-  const { setActiveTool } = useToolContext();
+  const { setActiveTool, getColor } = useToolContext();
 
-  const defaultTool: PenTool = useMemo(() => (new PenTool({setLayer: setActiveLayer, getLayer: getActiveLayer})),[getActiveLayer,setActiveLayer]);
+  const defaultTool: PenTool = useMemo(() => (new PenTool({setLayer: setActiveLayer, getLayer: getActiveLayer, getColor})),[getActiveLayer,setActiveLayer]);
 
   useEffect(() => {
     setActiveTool(defaultTool);

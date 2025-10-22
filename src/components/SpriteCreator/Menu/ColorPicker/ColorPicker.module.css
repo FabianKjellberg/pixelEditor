@@ -1,0 +1,27 @@
+.colorContainer{
+    padding: 12px;
+    padding-right: 20px;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap:12px;
+}
+
+.colorInput{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.colorInput input{
+ width: 100%;
+ border: 0;
+ padding: 2px;
+ font-size: 16px;
+ text-align: center;
+}
+
+.colorInput input:focus{
+    outline: 2px solid #54Fe3a;
+}
