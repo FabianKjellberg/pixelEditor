@@ -22,14 +22,42 @@ type LayerContextValue = {
 
   activeLayer: Layer;
   getActiveLayer: () => Layer | undefined;
-  setActiveLayer: (layer: Layer) => void;
+  setActiveLayer: (layer: Layer, dirtyRectangle: Rectangle) => void;
 
   addLayer: (layer: Layer, index: number) => void;
+
+  redrawVersion: number;
+  consumeDirty: () => Rectangle[];
+  markDirty: (dirty: Rectangle) => void;
 };
 
 const LayerContext = createContext<LayerContextValue | undefined>(undefined);
 
 export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
+  const [redrawVersion, setRedrawVersion] = useState(0);
+  const dirtyQueueRef = useRef<Rectangle[]>([]);
+
+  const pushDirty = useCallback(
+    (dirtyRect: Rectangle): void => {
+      dirtyQueueRef.current.push(dirtyRect);
+
+      //push change
+      setRedrawVersion((v) => v + 1);
+    },
+    [redrawVersion, dirtyQueueRef],
+  );
+
+  const consumeDirty = useCallback((): Rectangle[] => {
+    //fetch queue
+    const queue = dirtyQueueRef.current;
+
+    //reset queue
+    dirtyQueueRef.current = [];
+
+    //return queue
+    return queue;
+  }, [dirtyQueueRef]);
+
   const [allLayers, setAllLayers] = useState<Layer[]>(defaultLayer);
   const [activeLayerIndex, setActiveLayerIndex] = useState<number>(0);
 
@@ -48,17 +76,20 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
     return allLayersRef.current[idx];
   }, []);
 
-  const setActiveLayer = useCallback((layer: Layer) => {
-    console.log(layer);
+  const setActiveLayer = useCallback(
+    (layer: Layer, dirtyRectangle: Rectangle) => {
+      setAllLayers((prev) => {
+        const idx = activeLayerIndexRef.current;
+        if (idx < 0 || idx >= prev.length) return prev;
+        const next = prev.slice();
+        next[idx] = layer;
+        return next;
+      });
 
-    setAllLayers((prev) => {
-      const idx = activeLayerIndexRef.current;
-      if (idx < 0 || idx >= prev.length) return prev;
-      const next = prev.slice();
-      next[idx] = layer;
-      return next;
-    });
-  }, []);
+      pushDirty(dirtyRectangle);
+    },
+    [pushDirty],
+  );
 
   const activeLayer = useMemo(() => allLayers[activeLayerIndex], [allLayers, activeLayerIndex]);
 
@@ -83,8 +114,23 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       setActiveLayer,
 
       addLayer,
+
+      redrawVersion,
+      consumeDirty,
+      markDirty: pushDirty,
     }),
-    [allLayers, activeLayerIndex, getActiveLayer, setActiveLayer, addLayer],
+    [
+      allLayers,
+      activeLayerIndex,
+      setActiveLayerIndex,
+      activeLayer,
+      getActiveLayer,
+      setActiveLayer,
+      addLayer,
+      redrawVersion,
+      consumeDirty,
+      pushDirty,
+    ],
   );
 
   return <LayerContext.Provider value={value}>{children}</LayerContext.Provider>;

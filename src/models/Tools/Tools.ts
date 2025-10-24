@@ -1,11 +1,11 @@
-import { Layer } from "../Layer";
+import { Layer, Rectangle } from '../Layer';
 
 export type IToolDeps = {
   getLayer?: () => Layer | undefined;
-  setLayer?: (layer: Layer) => void;
+  setLayer?: (layer: Layer, dirtyRectangle: Rectangle) => void;
   getColor?: () => number | undefined;
-  setColor?: (color: number) => void
-}
+  setColor?: (color: number) => void;
+};
 
 export interface ITool {
   name: string;

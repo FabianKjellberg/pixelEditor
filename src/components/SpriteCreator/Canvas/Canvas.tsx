@@ -6,6 +6,7 @@ import styles from './Canvas.module.css';
 import ClickHandler from './ClickHandler/ClickHandler';
 import { useLayerContext } from '@/context/LayerContext';
 import ActiveLayerHighlighter from './Highlighter/ActiveLayerHighlighter';
+import LayerCanvas from './LayerCanvas/LayerCanvas';
 
 const Canvas = () => {
   const { allLayers } = useLayerContext();
@@ -16,9 +17,11 @@ const Canvas = () => {
           <BackgroundCanvas />
         </div>
         <div className={styles.canvases}>
-          {allLayers.map((layer, index) => (
+          {/*allLayers.map((layer, index) => (
             <LayerCanvasOld key={index} layer={layer} />
-          ))}
+          ))*/}
+
+          <LayerCanvas />
         </div>
         <div className={styles.canvases}>
           <ActiveLayerHighlighter />

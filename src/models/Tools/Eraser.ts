@@ -1,6 +1,12 @@
 import { ITool, IToolDeps } from './Tools';
-import { Direction, Layer } from '../Layer';
-import { outOfBoundFinder, tryReduceLayerSize } from '@/util/LayerUtil';
+import { Direction, Layer, Rectangle } from '../Layer';
+import {
+  createLayer,
+  outOfBoundFinder,
+  rectanglesIntersecting,
+  stampLayer,
+  tryReduceLayerSize,
+} from '@/util/LayerUtil';
 import { getPixelIndex, rgbaToInt } from '@/helpers/color';
 
 export class Eraser implements ITool {
@@ -11,6 +17,8 @@ export class Eraser implements ITool {
   //variables to make sure that move doesnt try to draw every move if it has already drew on the pixel
   private lastX: number | null = null;
   private lastY: number | null = null;
+
+  private size: number = 2;
 
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {}
@@ -23,8 +31,6 @@ export class Eraser implements ITool {
   onMove(x: number, y: number): void {
     if (this.erasing && !(this.lastX == x && this.lastY == y)) {
       this.erase(x, y);
-      this.lastX = x;
-      this.lastY = y;
     }
   }
   onUp(x: number, y: number): void {
@@ -38,22 +44,63 @@ export class Eraser implements ITool {
     let layer = this.toolDeps.getLayer?.();
     if (layer == undefined) return;
 
-    const bounadryItem = outOfBoundFinder(x, y, layer.rect.width, layer.rect.height);
+    this.lastX = x;
+    this.lastY = y;
 
-    if (bounadryItem.outOfBounds) return;
+    //Update the coridnates based on the size of the pen stroke
+    x = x - Math.floor(this.size / 2);
+    y = y - Math.floor(this.size / 2);
 
-    layer.pixels[getPixelIndex(y, layer.rect.width, x)] = rgbaToInt(0, 0, 0, 0);
+    //boundary of the rectangle of the stamped pen stroke relative to its own layer
+    const stampRectangle: Rectangle = { x: x, y: y, width: this.size, height: this.size };
 
-    //see if eraser toucher boundary
-    const reduceDirection: Direction = {
-      left: x === 0 ? 1 : 0,
-      top: y === 0 ? 1 : 0,
-      right: x === layer.rect.width - 1 ? 1 : 0,
-      bottom: y === layer.rect.height - 1 ? 1 : 0,
+    //return early if stamp outside of layer
+    if (
+      !rectanglesIntersecting(stampRectangle, {
+        x: 0,
+        y: 0,
+        width: layer.rect.width,
+        height: layer.rect.height,
+      })
+    ) {
+      console.log('returning because stamp isnt intersecting with the selected layer');
+      console.log(stampRectangle, layer.rect);
+      return;
+    }
+
+    layer = stampLayer(createLayer(stampRectangle, ''), layer);
+
+    const leftEdgeRectangle: Rectangle = { x: 0, y: 0, width: 1, height: layer.rect.height };
+    const topEdgeRectangle: Rectangle = { x: 0, y: 0, width: layer.rect.width, height: 1 };
+    const rightEdgeRectangle: Rectangle = {
+      x: layer.rect.width - 1,
+      y: 0,
+      width: 1,
+      height: layer.rect.height,
+    };
+    const bottomEdgeRectangle: Rectangle = {
+      x: 0,
+      y: layer.rect.height - 1,
+      width: layer.rect.width,
+      height: 1,
     };
 
-    layer = tryReduceLayerSize(reduceDirection, layer);
+    //see if eraser toucher boundary
+    const intersectEdges: Direction = {
+      left: rectanglesIntersecting(stampRectangle, leftEdgeRectangle) ? 1 : 0,
+      top: rectanglesIntersecting(stampRectangle, topEdgeRectangle) ? 1 : 0,
+      right: rectanglesIntersecting(stampRectangle, rightEdgeRectangle) ? 1 : 0,
+      bottom: rectanglesIntersecting(stampRectangle, bottomEdgeRectangle) ? 1 : 0,
+    };
 
-    this.toolDeps.setLayer?.({ ...layer, pixels: layer.pixels.slice() });
+    const redrawRectangle: Rectangle = {
+      x: layer.rect.x + stampRectangle.x,
+      y: layer.rect.y + stampRectangle.y,
+      width: stampRectangle.width,
+      height: stampRectangle.height,
+    };
+
+    layer = tryReduceLayerSize(intersectEdges, layer);
+    this.toolDeps.setLayer?.(layer, redrawRectangle);
   };
 }

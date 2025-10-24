@@ -1,8 +1,8 @@
 import { getPixelIndex } from '@/helpers/color';
-import { Layer } from '../Layer';
+import { Layer, Rectangle } from '../Layer';
 import { ITool, IToolDeps } from './Tools';
 import { config } from '@/config/env';
-import { createLayer, increaseLayerBoundary, outOfBoundFinder } from '@/util/LayerUtil';
+import { createLayer, increaseLayerBoundary, outOfBoundFinder, stampLayer } from '@/util/LayerUtil';
 
 export class PenTool implements ITool {
   //variable to know if the pen is "held down" on the canvas
@@ -10,7 +10,9 @@ export class PenTool implements ITool {
   private drawing: boolean = false;
   //variables to make sure that move doesnt try to draw every move if it has already drew on the pixel
   private lastX: number | null = null;
-  private lastY: number | null = null;  
+  private lastY: number | null = null;
+
+  private size: number = 2;
 
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {}
@@ -57,36 +59,49 @@ export class PenTool implements ITool {
 
   //Other Methods
   private draw = (x: number, y: number, layer: Layer): void => {
-    
-    let selectedColor = this.toolDeps.getColor?.() || undefined;
-    console.log(selectedColor)
-    if (!selectedColor) {
-      selectedColor = config.defaultColor; //!TODO maybe implement toast??? to tell user to to select color?
-    }
+    //get selected color from dependencies
+    const selectedColor: number = this.toolDeps.getColor?.() || config.defaultColor;
+
+    //cordinates for last last drawn place pixel, change before we modify the x and y values
+    this.lastX = x;
+    this.lastY = y;
+
+    //Update the coridnates based on the size of the pen stroke
+    x = x - Math.floor(this.size / 2);
+    y = y - Math.floor(this.size / 2);
+
+    //boundary of the rectangle of the stamped pen stroke relative to its own layer
+    const stampRectangle = { x: x, y: y, width: this.size, height: this.size };
 
     //Item showing if and how much a cordinated is outside a given rect (relative terms)
-    const boundsItem = outOfBoundFinder(x, y, layer.rect.width, layer.rect.height);
-
+    const boundsItem = outOfBoundFinder(stampRectangle, layer.rect.width, layer.rect.height);
+    console.log(boundsItem);
     //If the cordinate is out of bounds
     if (boundsItem.outOfBounds) {
       //Increase the layer boundary with the given directions and get a new updated layer
       layer = increaseLayerBoundary(boundsItem.dir, layer);
 
+      console.log(layer);
       //update the cordinates with the new layer size and position
       x = x + boundsItem.dir.left;
       y = y + boundsItem.dir.top;
     }
 
-    //update the layer pixels !TODO helper method to overwrite one array to the other for different sizes and shapes
-    layer.pixels[getPixelIndex(y, layer.rect.width, x)] = selectedColor;
+    //create a layer that will replace part of another shape
+    const strokeShape: Layer = createLayer(stampRectangle, layer.name, selectedColor);
 
-    console.log(layer)
+    //replace part of the old layer with the new stroke
+    layer = stampLayer(strokeShape, layer);
+
+    const redrawRectangle: Rectangle = {
+      x: layer.rect.x + stampRectangle.x,
+      y: layer.rect.y + stampRectangle.y,
+      width: stampRectangle.width,
+      height: stampRectangle.height,
+    };
+    console.log(redrawRectangle);
 
     //Update the true layer in layercontext !TODO make it redraw affected area.
-    this.toolDeps.setLayer?.({ ...layer, pixels: layer.pixels.slice() });
-
-    //cordinates for last last drawn place pixel
-    this.lastX = x;
-    this.lastY = y;
+    this.toolDeps.setLayer?.({ ...layer }, redrawRectangle);
   };
 }

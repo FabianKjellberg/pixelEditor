@@ -9,9 +9,9 @@ import { Cordinate, Direction, Layer, OutOfBoundItem, Rectangle } from '@/models
  * @param yPos
  * @returns
  */
-export function createLayer(rect: Rectangle, name: string): Layer {
+export function createLayer(rect: Rectangle, name: string, colorInt?: number): Layer {
   const pixels = new Uint32Array(rect.width * rect.height);
-  pixels.fill(rgbaToInt(0, 0, 0, 0));
+  pixels.fill(colorInt ?? rgbaToInt(0, 0, 0, 0));
   return {
     name,
     rect,
@@ -105,11 +105,11 @@ export function getPixelPositions(e: any, pixelSize: number): Cordinate {
   return { x: xPos, y: yPos };
 }
 
-export function outOfBoundFinder(x: number, y: number, w: number, h: number): OutOfBoundItem {
-  const growthLeft = x < 0 ? -x : 0;
-  const growthTop = y < 0 ? -y : 0;
-  const growthRight = x >= w ? x - (w - 1) : 0;
-  const growthBottom = y >= h ? y - (h - 1) : 0;
+export function outOfBoundFinder(r: Rectangle, w: number, h: number): OutOfBoundItem {
+  const growthLeft = r.x < 0 ? -r.x : 0;
+  const growthTop = r.y < 0 ? -r.y : 0;
+  const growthRight = r.x + r.width >= w ? r.x + r.width - w : 0;
+  const growthBottom = r.y + r.height >= h ? r.y + r.height - h : 0;
 
   return {
     outOfBounds: growthBottom != 0 || growthLeft != 0 || growthTop != 0 || growthRight != 0,
@@ -200,5 +200,30 @@ export function tryReduceLayerSize(dir: Direction, layer: Layer): Layer {
       top: topCount,
     },
     layer,
+  );
+}
+
+export function stampLayer(stamp: Layer, originaLayer: Layer): Layer {
+  for (let y = 0; y < stamp.rect.height; y++) {
+    for (let x = 0; x < stamp.rect.width; x++) {
+      const originalIndex = getPixelIndex(
+        stamp.rect.y + y,
+        originaLayer.rect.width,
+        stamp.rect.x + x,
+      );
+      const stampIndex = getPixelIndex(y, stamp.rect.width, x);
+      originaLayer.pixels[originalIndex] = stamp.pixels[stampIndex];
+    }
+  }
+
+  return originaLayer;
+}
+
+export function rectanglesIntersecting(r1: Rectangle, r2: Rectangle): boolean {
+  return (
+    r1.x <= r2.x + r2.width - 1 &&
+    r2.x <= r1.x + r1.width - 1 &&
+    r1.y <= r2.y + r2.height - 1 &&
+    r2.y <= r1.y + r1.height - 1
   );
 }
