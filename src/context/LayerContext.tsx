@@ -25,6 +25,7 @@ type LayerContextValue = {
   setActiveLayer: (layer: Layer, dirtyRectangle: Rectangle) => void;
 
   addLayer: (layer: Layer, index: number) => void;
+  renameLayer: (name: string, layerIndex: number) => void;
 
   redrawVersion: number;
   consumeDirty: () => Rectangle[];
@@ -103,6 +104,15 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
     [allLayers],
   );
 
+  const renameLayer = useCallback(
+    (name: string, layerIndex: number) => {
+      setAllLayers((prev) =>
+        prev.map((layer, index) => (index === layerIndex ? { ...layer, name } : layer)),
+      );
+    },
+    [allLayers, setAllLayers],
+  );
+
   const value = useMemo(
     () => ({
       allLayers,
@@ -114,6 +124,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       setActiveLayer,
 
       addLayer,
+      renameLayer,
 
       redrawVersion,
       consumeDirty,
@@ -127,6 +138,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       getActiveLayer,
       setActiveLayer,
       addLayer,
+      renameLayer,
       redrawVersion,
       consumeDirty,
       pushDirty,
@@ -139,7 +151,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
 export const useLayerContext = () => {
   const ctx = useContext(LayerContext);
   if (!ctx) {
-    throw new Error('useMenuContext must be used within <ToolProvider>');
+    throw new Error('cant access context from here');
   }
   return ctx;
 };

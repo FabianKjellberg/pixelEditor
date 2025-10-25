@@ -68,7 +68,17 @@ export class Eraser implements ITool {
       return;
     }
 
+    console.log('stampRect: ', stampRectangle, ' layerRect: ', layer.rect);
+
     layer = stampLayer(createLayer(stampRectangle, ''), layer);
+
+    console.log('START');
+    for (let y = 0; y < layer.rect.height; y++) {
+      console.log(
+        layer.pixels.slice(y * layer.rect.width, y * layer.rect.width + layer.rect.width),
+      );
+    }
+    console.log('END');
 
     const leftEdgeRectangle: Rectangle = { x: 0, y: 0, width: 1, height: layer.rect.height };
     const topEdgeRectangle: Rectangle = { x: 0, y: 0, width: layer.rect.width, height: 1 };

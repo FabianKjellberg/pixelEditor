@@ -205,12 +205,28 @@ export function tryReduceLayerSize(dir: Direction, layer: Layer): Layer {
 
 export function stampLayer(stamp: Layer, originaLayer: Layer): Layer {
   for (let y = 0; y < stamp.rect.height; y++) {
+    //check in boundary
+    const yOffset = stamp.rect.y + y;
+    //go to next layer if not inside the height boundary yet
+    if (yOffset < 0) continue;
+    //end whole loop if the max height has been reached
+    if (yOffset >= originaLayer.rect.height) {
+      y = stamp.rect.height;
+      continue;
+    }
+
     for (let x = 0; x < stamp.rect.width; x++) {
-      const originalIndex = getPixelIndex(
-        stamp.rect.y + y,
-        originaLayer.rect.width,
-        stamp.rect.x + x,
-      );
+      let xOffset = stamp.rect.x + x;
+
+      //go to next x loop if not in boundary yet
+      if (xOffset < 0) continue;
+      //go to next y loop if reached end of the x boundary
+      if (xOffset >= originaLayer.rect.width) {
+        x = stamp.rect.width;
+        continue;
+      }
+
+      const originalIndex = getPixelIndex(yOffset, originaLayer.rect.width, xOffset);
       const stampIndex = getPixelIndex(y, stamp.rect.width, x);
       originaLayer.pixels[originalIndex] = stamp.pixels[stampIndex];
     }
@@ -226,4 +242,18 @@ export function rectanglesIntersecting(r1: Rectangle, r2: Rectangle): boolean {
     r1.y <= r2.y + r2.height - 1 &&
     r2.y <= r1.y + r1.height - 1
   );
+}
+
+export function combineRectangles(r1: Rectangle, r2: Rectangle): Rectangle {
+  const x1 = Math.min(r1.x, r2.x);
+  const y1 = Math.min(r1.y, r2.y);
+  const x2 = Math.max(r1.x + r1.width, r2.x + r2.width);
+  const y2 = Math.max(r1.y + r1.height, r2.y + r2.height);
+
+  return {
+    x: x1,
+    y: y1,
+    width: x2 - x1,
+    height: y2 - y1,
+  };
 }

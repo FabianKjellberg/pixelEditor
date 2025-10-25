@@ -4,19 +4,31 @@ import { useLayerContext } from '@/context/LayerContext';
 import { config } from '@/config/env';
 import { useEffect, useMemo } from 'react';
 import styles from './ActiveLayerHighlighter.module.css';
+import { useCanvasContext } from '@/context/CanvasContext';
 
 const ActiveLayerHighlighter = () => {
   const { activeLayer } = useLayerContext();
+  const { pixelSize, width, height } = useCanvasContext();
 
-  const highLightStyle = useMemo(
-    () => ({
-      width: activeLayer.rect.width * config.pixelSize,
-      height: activeLayer.rect.height * config.pixelSize,
-      left: activeLayer.rect.x * config.pixelSize,
-      top: activeLayer.rect.y * config.pixelSize,
-    }),
-    [activeLayer],
-  );
+  const highLightStyle = useMemo(() => {
+    const realX = activeLayer.rect.x * pixelSize;
+    const realY = activeLayer.rect.y * pixelSize;
+    let realW = activeLayer.rect.width * pixelSize;
+    let realH = activeLayer.rect.height * pixelSize;
+
+    realX < 0 ? 0 : realX;
+    realY < 0 ? 0 : realY;
+
+    realW = realW > width * pixelSize - realX ? width * pixelSize - realX : realW;
+    realH = realH > height * pixelSize - realY ? height * pixelSize - realY : realH;
+
+    return {
+      width: realW,
+      height: realH,
+      left: realX,
+      top: realY,
+    };
+  }, [activeLayer, pixelSize, width, height]);
 
   return (
     <>

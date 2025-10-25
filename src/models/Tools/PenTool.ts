@@ -21,15 +21,6 @@ export class PenTool implements ITool {
     let layer = this.toolDeps.getLayer?.() || undefined;
     if (layer == undefined) return;
 
-    //if the layer doesnt have any pixels in it. create it
-    if (layer.rect.width == 0 && layer.rect.height == 0) {
-      layer = createLayer({ width: 1, height: 1, x, y }, layer.name);
-
-      //from canvas cordinates to layer specific
-      x = 0;
-      y = 0;
-    }
-
     //Draw
     this.draw(x, y, layer);
 
@@ -70,21 +61,37 @@ export class PenTool implements ITool {
     x = x - Math.floor(this.size / 2);
     y = y - Math.floor(this.size / 2);
 
+    //if the layer doesnt have any pixels in it. create it
+    if (layer.rect.width == 0 && layer.rect.height == 0) {
+      layer = createLayer(
+        {
+          width: this.size,
+          height: this.size,
+          x: x,
+          y: y,
+        },
+        layer.name,
+      );
+
+      //from canvas cordinates to layer specific
+      x = 0;
+      y = 0;
+    }
+
     //boundary of the rectangle of the stamped pen stroke relative to its own layer
     const stampRectangle = { x: x, y: y, width: this.size, height: this.size };
 
     //Item showing if and how much a cordinated is outside a given rect (relative terms)
     const boundsItem = outOfBoundFinder(stampRectangle, layer.rect.width, layer.rect.height);
-    console.log(boundsItem);
+    //console.log(boundsItem);
     //If the cordinate is out of bounds
     if (boundsItem.outOfBounds) {
       //Increase the layer boundary with the given directions and get a new updated layer
       layer = increaseLayerBoundary(boundsItem.dir, layer);
 
-      console.log(layer);
       //update the cordinates with the new layer size and position
-      x = x + boundsItem.dir.left;
-      y = y + boundsItem.dir.top;
+      stampRectangle.x = x + boundsItem.dir.left;
+      stampRectangle.y = y + boundsItem.dir.top;
     }
 
     //create a layer that will replace part of another shape
@@ -99,7 +106,7 @@ export class PenTool implements ITool {
       width: stampRectangle.width,
       height: stampRectangle.height,
     };
-    console.log(redrawRectangle);
+    //console.log(redrawRectangle);
 
     //Update the true layer in layercontext !TODO make it redraw affected area.
     this.toolDeps.setLayer?.({ ...layer }, redrawRectangle);

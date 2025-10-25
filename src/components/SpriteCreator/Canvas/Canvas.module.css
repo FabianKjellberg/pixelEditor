@@ -1,9 +1,52 @@
 .spriteCanvas {
-  width: 100%;
+  /* this area takes the remaining space next to your menu */
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 4px;
   height: 100vh;
-  border: 4px inset rgb(150, 90, 90);
+  display: grid;
+  place-items: center; /* center the whole frame */
 }
-.canvases {
-  position: fixed;
+
+/* the visible frame (border) that we center */
+.frame {
+  outline: 4px inset rgb(150, 90, 90);
+
+  width: min(100%, var(--canvas-w));
+  height: min(100%, var(--canvas-h));
+
+  /* keep scrollbars inside the frame */
+  overflow: hidden;
+
+  /* make the viewport fill the frame */
+  display: grid;
+}
+
+/* the ONLY scroll container */
+.viewport {
+  overflow: auto;
   width: 100%;
+  height: 100%;
+}
+
+/* the stacked drawing surface (actual canvas size) */
+.stack {
+  position: relative;
+  width: var(--canvas-w);
+  height: var(--canvas-h);
+}
+
+/* every layer covers the stack */
+.stack > * {
+  position: absolute;
+  inset: 0;
+}
+
+/* crisp pixels */
+.stack canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
 }

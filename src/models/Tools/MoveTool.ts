@@ -1,5 +1,6 @@
-import { outOfBoundFinder } from '@/util/LayerUtil';
+import { combineRectangles, outOfBoundFinder } from '@/util/LayerUtil';
 import { ITool, IToolDeps } from './Tools';
+import { Rectangle } from '../Layer';
 
 export class MoveTool implements ITool {
   name: string = 'moveTool';
@@ -10,10 +11,14 @@ export class MoveTool implements ITool {
   constructor(private toolDeps: IToolDeps) {}
 
   onDown(x: number, y: number): void {
-    const layer = this.toolDeps.getLayer();
+    const layer = this.toolDeps.getLayer?.() || undefined;
     if (layer == undefined) return;
 
-    const boundsItem = outOfBoundFinder(x, y, layer.rect.width, layer.rect.height);
+    const boundsItem = outOfBoundFinder(
+      { x, y, width: 1, height: 1 },
+      layer.rect.width,
+      layer.rect.height,
+    );
     //early return if you click out of bounds
     if (boundsItem.outOfBounds) return;
 
@@ -30,12 +35,17 @@ export class MoveTool implements ITool {
     //early return if it hasnt moved
     if (this.lastX === x && this.lastY === y) return;
 
-    const layer = this.toolDeps.getLayer();
+    const layer = this.toolDeps.getLayer?.();
     if (layer == undefined) return;
+
+    const originalRectangle = { ...layer.rect };
 
     layer.rect.x += x - this.lastX;
     layer.rect.y += y - this.lastY;
-    this.toolDeps.setLayer({ ...layer });
+
+    const dirtyRectangle: Rectangle = combineRectangles(originalRectangle, layer.rect);
+
+    this.toolDeps.setLayer?.({ ...layer }, dirtyRectangle);
   }
   onUp(x: number, y: number): void {
     this.moving = false;

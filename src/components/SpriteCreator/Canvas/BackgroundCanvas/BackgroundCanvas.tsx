@@ -2,23 +2,30 @@
 
 import { useEffect, useRef } from 'react';
 import { config } from '@/config/env';
+import { useCanvasContext } from '@/context/CanvasContext';
+import { he } from 'zod/locales';
 
-const BackgroundCanvas = ({}) => {
+const BackgroundCanvas = () => {
+  const { pixelSize, width, height } = useCanvasContext();
+
   const drawGrid = (ctx: CanvasRenderingContext2D) => {
-    let verticalCounter: number = 0;
-    let horizontalCounter: number = 0;
+    const originalPixelSize = pixelSize;
+    let pSize = pixelSize;
 
-    for (let i = 0; i < config.canvasHeight; i += config.pixelSize) {
-      for (let j = 0; j < config.canvasWidth; j += config.pixelSize) {
-        const strokeColor =
-          ((verticalCounter % 2) + (horizontalCounter % 2)) % 2 == 0 ? '#FFFFFF' : '#DDDDDD';
+    if (pixelSize < 10) pSize = 10;
+
+    let jCount: number = 0;
+    let iCount: number = 0;
+    for (let i = 0; i < height * originalPixelSize; i += pSize) {
+      for (let j = 0; j < width * originalPixelSize; j += pSize) {
+        const strokeColor = (jCount + (iCount % 2)) % 2 == 0 ? '#FFFFFF' : '#DDDDDD';
 
         ctx.fillStyle = strokeColor;
-        ctx.fillRect(j, i, config.pixelSize, config.pixelSize);
-
-        horizontalCounter++;
+        ctx.fillRect(j, i, pSize, pSize);
+        jCount++;
       }
-      verticalCounter++;
+      jCount = 0;
+      iCount++;
     }
   };
 
@@ -32,11 +39,11 @@ const BackgroundCanvas = ({}) => {
     if (!ctx) return;
 
     drawGrid(ctx);
-  }, []);
+  }, [pixelSize, width, height]);
 
   return (
     <>
-      <canvas ref={canvasRef} width={config.canvasWidth} height={config.canvasWidth} />
+      <canvas ref={canvasRef} width={width * pixelSize} height={height * pixelSize} />
     </>
   );
 };

@@ -5,6 +5,7 @@ import PenToolComponent from './PenToolComponent/PenToolComponent';
 import MoveComponent from './MoveComponent/MoveComponent';
 import LayerSelector from './LayerSelector/LayerSelector';
 import ColorPicker from './ColorPicker/ColorPicker';
+import RedrawEverything from './redrawEverythingDEV/RedrawEverything';
 
 const Menu = () => {
   return (
@@ -30,6 +31,7 @@ const Menu = () => {
           <p className={styles.toolsHeader}>Color Picker</p>
           <ColorPicker />
         </div>
+        <RedrawEverything />
       </div>
     </div>
   );
