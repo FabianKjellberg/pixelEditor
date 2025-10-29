@@ -3,13 +3,13 @@
   display: flex;
 }
 
-.menuContainer{
+.menuContainer {
   overflow: hidden;
   overflow-y: scroll;
 }
 
 .toolContainer {
-  border: 2px solid gray;
+  border: 2px solid var(--border);
   margin: 10px;
   max-height: 500px;
   display: flex;

@@ -9,13 +9,17 @@
   --input-bg: #ffffff;
   --input-border: #d1d5db;
   --input-fg: inherit;
+
+  --border: #888888;
+  --highlight: #54fe3a;
+  --invert-icon-color: none;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
-    --btn-bg: #1f2937;
+    --btn-bg: #696969;
     --btn-fg: #f9fafb;
     --btn-bg-hover: color-mix(in srgb, var(--btn-bg), white 8%);
     --btn-fg-hover: #b0b0b0;
@@ -23,6 +27,10 @@
     --input-bg: #111827;
     --input-border: #374151;
     --input-fg: #f9fafb;
+
+    --border: #888888;
+    --highlight: #54fe3a;
+    --invert-icon-color: brightness(0) invert(1);
   }
 }
 

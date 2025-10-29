@@ -22,26 +22,64 @@ class NoopTool implements ITool {
 type ToolContextValue = {
   activeTool: ITool;
   setActiveTool: (tool: ITool) => void;
-  color: number;
-  getColor: () => number;
-  setColor: (color: number) => void;
+  primaryColor: number;
+  getPrimaryColor: () => number;
+  setPrimaryColor: (color: number) => void;
+  secondaryColor: number;
+  getSecondaryColor: () => number;
+  setSecondaryColor: (color: number) => void;
+  flipPrimarySecondary: () => void;
 };
 
 const ToolContext = createContext<ToolContextValue | undefined>(undefined);
 
 export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeTool, setActiveTool] = useState<ITool>(new NoopTool());
-  const [color, setColor] = useState<number>(0x000000ff);
+  const [primaryColor, setPrimaryColor] = useState<number>(0xffffffff);
+  const [secondaryColor, setSecondaryColor] = useState<number>(0x000000ff);
 
-  const colorRef = useRef(color);
+  const primaryColorRef = useRef(primaryColor);
+  const secondaryColorRef = useRef(secondaryColor);
   useEffect(() => {
-    colorRef.current = color;
-  }, [color]);
-  const getColor = useCallback(() => colorRef.current, []);
+    primaryColorRef.current = primaryColor;
+  }, [primaryColor]);
+  useEffect(() => {
+    secondaryColorRef.current = secondaryColor;
+  }, [secondaryColor]);
+  const getPrimaryColor = useCallback(() => primaryColorRef.current, []);
+  const getSecondaryColor = useCallback(() => secondaryColorRef.current, []);
+
+  const flipPrimarySecondary = () => {
+    const primaryColorTemp = primaryColorRef.current;
+    const secondaryColorTemp = secondaryColorRef.current;
+
+    setPrimaryColor(secondaryColorTemp);
+    setSecondaryColor(primaryColorTemp);
+  };
 
   const value = useMemo(
-    () => ({ activeTool, setActiveTool, setColor, getColor, color }),
-    [activeTool, setActiveTool, setColor, getColor, color],
+    () => ({
+      activeTool,
+      setActiveTool,
+      setPrimaryColor,
+      getPrimaryColor,
+      primaryColor,
+      setSecondaryColor,
+      getSecondaryColor,
+      secondaryColor,
+      flipPrimarySecondary,
+    }),
+    [
+      activeTool,
+      setActiveTool,
+      setPrimaryColor,
+      getPrimaryColor,
+      primaryColor,
+      setSecondaryColor,
+      getSecondaryColor,
+      secondaryColor,
+      flipPrimarySecondary,
+    ],
   );
 
   return <ToolContext.Provider value={value}>{children}</ToolContext.Provider>;

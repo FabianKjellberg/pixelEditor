@@ -5,6 +5,7 @@ import styles from './LayerSelector.module.css';
 import { createLayer } from '@/util/LayerUtil';
 import { useState } from 'react';
 import { useContextMenuContext } from '@/context/ContextMenuContext/ContextMenuContext';
+import LayerContextMenu from './LayerContextMenu/LayerContextMenu';
 
 const LayerSelector = () => {
   const { allLayers, activeLayerIndex, setActiveLayerIndex, addLayer, renameLayer } =
@@ -15,8 +16,10 @@ const LayerSelector = () => {
 
   const handleRightClick = (e: React.MouseEvent<HTMLDivElement>, index: number) => {
     e.preventDefault();
-    const hej = <p>This is a context menu</p>;
-    onShow(hej, e.pageX, e.pageY);
+
+    const contextMenu = <LayerContextMenu index={index} setEditTitleIndex={setEditTitleIndex} />;
+
+    onShow(contextMenu, e.pageX, e.pageY);
   };
 
   return (

@@ -12,7 +12,7 @@ export class PenTool implements ITool {
   private lastX: number | null = null;
   private lastY: number | null = null;
 
-  private size: number = 2;
+  private size: number = 1;
 
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {}
@@ -51,7 +51,7 @@ export class PenTool implements ITool {
   //Other Methods
   private draw = (x: number, y: number, layer: Layer): void => {
     //get selected color from dependencies
-    const selectedColor: number = this.toolDeps.getColor?.() || config.defaultColor;
+    const selectedColor: number = this.toolDeps.getPrimaryColor?.() || config.defaultColor;
 
     //cordinates for last last drawn place pixel, change before we modify the x and y values
     this.lastX = x;

@@ -1,27 +1,44 @@
-.colorContainer{
-    padding: 12px;
-    padding-right: 20px;
-    padding-left: 20px;
-    display: flex;
-    flex-direction: column;
-    gap:12px;
+.colorWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 20px;
 }
 
-.colorInput{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
+.colorContainer {
+  width: 130px;
+  height: 130px;
+  display: flex;
+  position: relative;
 }
 
-.colorInput input{
- width: 100%;
- border: 0;
- padding: 2px;
- font-size: 16px;
- text-align: center;
+.secondaryColor {
+  width: 70px;
+  height: 70px;
+  border: 3px solid var(--border);
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
 }
 
-.colorInput input:focus{
-    outline: 2px solid #54Fe3a;
+.primaryColor {
+  width: 70px;
+  height: 70px;
+  border: 3px solid var(--border);
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+.flipButton {
+  height: 40px;
+  width: 40px;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  background: none;
+}
+
+.flipButton:hover {
+  background: var(--btn-bg-hover);
 }

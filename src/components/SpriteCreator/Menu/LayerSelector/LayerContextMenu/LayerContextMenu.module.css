@@ -1,0 +1,35 @@
+.layerContextCointainers {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.layerContextTitle {
+  padding: 6px;
+  padding-left: 18px;
+  padding-right: 18px;
+  text-decoration: underline;
+  background-color: var(--background);
+  width: 100%;
+  text-align: center;
+}
+
+.layerContextButtons {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.layerContextButtons button {
+  text-align: start;
+  border: none;
+  width: 100%;
+  padding: 5px;
+  border-top: 2px solid var(--border);
+  background-color: var(--background);
+}
+
+.layerContextButtons button:enabled:hover {
+  background-color: var(--btn-bg-hover);
+}

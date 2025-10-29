@@ -8,7 +8,7 @@
 .breakLine {
   width: 100%;
   height: 2px;
-  border: 1px solid gray;
+  border: 1px solid var(--border);
   margin-top: 4px;
   margin-bottom: 4px;
 }
@@ -20,15 +20,15 @@
   justify-content: center;
   width: 100%;
   box-sizing: border-box;
-  min-width: 0; /* allow children to shrink */
+  min-width: 0;
   padding: 6px 8px;
   text-align: center;
 }
 
 .changeNameInput {
-  flex: 1 1 0; /* grow, shrink, base 0 so content width doesn't force row */
-  min-width: 0; /* allow shrinking below min-content */
-  width: 0; /* kill intrinsic width in flexbox */
+  flex: 1 1 0;
+  min-width: 0;
+  width: 0;
   max-width: 100%;
   box-sizing: border-box;
 
@@ -44,19 +44,19 @@
 .layerItem {
   width: 100%;
   padding: 4px;
-  border: 2px solid gray;
+  border: 2px solid var(--border);
   text-align: center;
 }
 
 .layerItemSelected {
   width: 100%;
   padding: 4px;
-  border: 2px solid gray;
-  outline: 2px solid #54fe3a;
+  border: 2px solid var(--border);
+  outline: 2px solid var(--highlight);
   text-align: center;
 }
 
 .layerItem:hover {
   cursor: pointer;
-  background-color: gray;
+  background-color: var(--btn-bg-hover);
 }

@@ -12,7 +12,7 @@ const BackgroundCanvas = () => {
     const originalPixelSize = pixelSize;
     let pSize = pixelSize;
 
-    if (pixelSize < 10) pSize = 10;
+    if (pixelSize < 5) pSize = 5;
 
     let jCount: number = 0;
     let iCount: number = 0;

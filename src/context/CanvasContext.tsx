@@ -1,10 +1,9 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-const defaultPixelSize: number = 25;
-const defaultWidth: number = 10;
-const defaultHeight: number = 10;
+const defaultWidth: number = 124;
+const defaultHeight: number = 64;
 
 type CanvasContextValue = {
   setDimensions: (width: number, height: number) => void;
@@ -18,9 +17,16 @@ type CanvasContextValue = {
 const CanvasContext = createContext<CanvasContextValue | undefined>(undefined);
 
 export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
-  const [pixelSize, setPixelSize] = useState<number>(defaultPixelSize);
+  const [pixelSize, setPixelSize] = useState<number>(1);
   const [width, setWidth] = useState<number>(defaultWidth);
   const [height, setHeight] = useState<number>(defaultHeight);
+
+  useEffect(() => {
+    const pixelHeight: number = Math.floor(window.innerHeight / defaultHeight);
+    const pixelWidth: number = Math.floor((window.innerWidth - 200) / defaultWidth);
+
+    setPixelSize(pixelHeight < pixelWidth ? pixelHeight : pixelWidth);
+  }, []);
 
   const setDimensions = useCallback(
     (width: number, height: number) => {

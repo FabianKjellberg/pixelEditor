@@ -23,6 +23,8 @@ type LayerContextValue = {
   activeLayer: Layer;
   getActiveLayer: () => Layer | undefined;
   setActiveLayer: (layer: Layer, dirtyRectangle: Rectangle) => void;
+  deleteLayer: (index: number) => void;
+  moveLayer: (from: number, to: number) => void;
 
   addLayer: (layer: Layer, index: number) => void;
   renameLayer: (name: string, layerIndex: number) => void;
@@ -89,7 +91,34 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
 
       pushDirty(dirtyRectangle);
     },
-    [pushDirty],
+    [pushDirty, allLayers],
+  );
+
+  const deleteLayer = useCallback(
+    (index: number) => {
+      if (allLayers.length <= 1) return;
+
+      const dirtyRect = allLayers[index].rect;
+
+      if (index >= allLayers.length - 1) {
+        setActiveLayerIndex(index - 1);
+      }
+
+      if (index <= activeLayerIndex)
+        setActiveLayerIndex(activeLayerIndex - 1 < 0 ? 0 : activeLayerIndex - 1);
+
+      if (activeLayerIndex >= allLayers.length - 1) {
+        setActiveLayerIndex(activeLayerIndex - 1);
+      }
+
+      setAllLayers((prev) => {
+        const i = index == null ? prev.length : Math.max(0, Math.min(index, prev.length));
+        return [...prev.slice(0, i), ...prev.slice(i + 1)];
+      });
+
+      pushDirty(dirtyRect);
+    },
+    [allLayers, setAllLayers, activeLayerIndex, setActiveLayerIndex],
   );
 
   const activeLayer = useMemo(() => allLayers[activeLayerIndex], [allLayers, activeLayerIndex]);
@@ -113,6 +142,47 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
     [allLayers, setAllLayers],
   );
 
+  const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max));
+
+  const moveLayer = useCallback(
+    (from: number, to: number) => {
+      const activeLayerName = allLayers[activeLayerIndex].name;
+
+      const newLayers = (): Layer[] => {
+        if (allLayers.length === 0) return allLayers;
+
+        const fromIdx = clamp(from, 0, allLayers.length - 1);
+        let toIdx = clamp(to, 0, allLayers.length);
+
+        if (fromIdx === toIdx) return allLayers;
+
+        const item = allLayers[fromIdx];
+        const without = [...allLayers.slice(0, fromIdx), ...allLayers.slice(fromIdx + 1)];
+
+        if (toIdx > fromIdx) toIdx -= 1;
+
+        toIdx = clamp(toIdx, 0, without.length);
+
+        return [...without.slice(0, toIdx), item, ...without.slice(toIdx)];
+      };
+
+      let newIndex: number = 0;
+      for (let i: number = 0; i < allLayers.length; i++) {
+        if (newLayers()[i].name === activeLayerName) {
+          newIndex = i;
+          i = allLayers.length;
+          continue;
+        }
+      }
+
+      pushDirty(allLayers[from].rect);
+
+      setAllLayers(newLayers());
+      setActiveLayerIndex(newIndex);
+    },
+    [allLayers, setAllLayers, setActiveLayerIndex, activeLayerIndex],
+  );
+
   const value = useMemo(
     () => ({
       allLayers,
@@ -122,6 +192,8 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       activeLayer,
       getActiveLayer,
       setActiveLayer,
+      deleteLayer,
+      moveLayer,
 
       addLayer,
       renameLayer,
@@ -137,6 +209,8 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       activeLayer,
       getActiveLayer,
       setActiveLayer,
+      deleteLayer,
+      moveLayer,
       addLayer,
       renameLayer,
       redrawVersion,

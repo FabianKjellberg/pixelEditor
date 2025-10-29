@@ -3,8 +3,10 @@ import { Layer, Rectangle } from '../Layer';
 export type IToolDeps = {
   getLayer?: () => Layer | undefined;
   setLayer?: (layer: Layer, dirtyRectangle: Rectangle) => void;
-  getColor?: () => number | undefined;
-  setColor?: (color: number) => void;
+  getPrimaryColor?: () => number | undefined;
+  setPrimaryColor?: (color: number) => void;
+  getSecondaryColor?: () => number | undefined;
+  setSecondaryColor?: (color: number) => void;
 };
 
 export interface ITool {

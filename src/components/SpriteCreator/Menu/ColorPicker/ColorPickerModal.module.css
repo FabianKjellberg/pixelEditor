@@ -1,0 +1,5 @@
+.canvasSliderContainer {
+  padding: 8px;
+  display: flex;
+  gap: 25px;
+}
