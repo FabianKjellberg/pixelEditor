@@ -47,7 +47,7 @@ export class MoveTool implements ITool {
 
     this.toolDeps.setLayer?.({ ...layer }, dirtyRectangle);
   }
-  onUp(x: number, y: number): void {
+  onUp(_x: number, _y: number): void {
     this.moving = false;
     this.lastX = null;
     this.lastY = null;

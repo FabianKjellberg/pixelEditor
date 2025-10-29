@@ -84,7 +84,7 @@ const LayerCanvas = () => {
 
     const p = pixelSize;
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(scratchRef.current as any, ix * p, iy * p, w * p, h * p);
+    ctx.drawImage(scratchRef.current!, ix * p, iy * p, w * p, h * p);
   };
 
   const redrawArea = (ctx: CanvasRenderingContext2D, r: Rectangle) => {
