@@ -1,7 +1,6 @@
 'use client';
 
 import { useCanvasContext } from '@/context/CanvasContext';
-import { useLayerContext } from '@/context/LayerContext';
 import { useEffect } from 'react';
 
 const RedrawEverything = () => {

@@ -4,7 +4,7 @@ import ColorPickerCanvas from './ColorPickerModalComponents/ColorPickerCanvas';
 import styles from './ColorPickerModal.module.css';
 import ColorPickerSlider from './ColorPickerModalComponents/ColorPickerSlider';
 import { useEffect, useMemo, useState } from 'react';
-import { hsb100ToRgb, hsvToRgb, intToRGB, rgbaToInt, rgbToHsb100 } from '@/helpers/color';
+import { hsb100ToRgb, intToRGB, rgbaToInt, rgbToHsb100 } from '@/helpers/color';
 import { Hsb100, RGBAobj } from '@/models/Tools/Color';
 
 type ColorPickerModalProps = {
@@ -21,15 +21,13 @@ export type hsvObject = {
 const ColorPickerModal = ({ setColor, color }: ColorPickerModalProps) => {
   const rgba = useMemo((): RGBAobj => intToRGB(color), [color]);
 
-  console.log(rgbToHsb100(rgba));
-
   const [hsv, setHsv] = useState<Hsb100>(rgbToHsb100(rgba));
 
   useEffect(() => {
     const rgb: RGBAobj = hsb100ToRgb(hsv.h, hsv.s, hsv.b);
 
     setColor(rgbaToInt(rgb.r, rgb.g, rgb.b, 255));
-  }, [hsv]);
+  }, [hsv, setColor]);
 
   return (
     <>

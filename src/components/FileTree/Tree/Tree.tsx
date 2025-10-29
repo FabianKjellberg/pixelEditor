@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import Branch, { branch } from '../Branch/Branch';
 
 type Branch = branch;
@@ -140,7 +140,7 @@ export default function Tree() {
         const adjustedIndex = sameParent && originalIndex < index ? index - 1 : index;
 
         const targetParentNodePath = findPathById(withoutDrag, parentId)!;
-        let maxLen = (() => {
+        const maxLen = (() => {
           let node = withoutDrag;
           for (const i of targetParentNodePath) node = node.subBranches[i];
           return node.subBranches.length;

@@ -90,7 +90,10 @@ export function decreaseLayerBoundary(dir: Direction, l: Layer) {
  * @param pixelSize
  * @returns
  */
-export function getPixelPositions(e: any, pixelSize: number): Cordinate {
+export function getPixelPositions<T extends Element>(
+  e: React.PointerEvent<T>,
+  pixelSize: number,
+): Cordinate {
   const el = e.currentTarget;
   const rect = el.getBoundingClientRect();
 
@@ -216,7 +219,7 @@ export function stampLayer(stamp: Layer, originaLayer: Layer): Layer {
     }
 
     for (let x = 0; x < stamp.rect.width; x++) {
-      let xOffset = stamp.rect.x + x;
+      const xOffset = stamp.rect.x + x;
 
       //go to next x loop if not in boundary yet
       if (xOffset < 0) continue;

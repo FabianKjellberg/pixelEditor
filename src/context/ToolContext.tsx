@@ -14,8 +14,8 @@ import type { ITool } from '@/models/Tools/Tools';
 // Example fallback tool so the app has something usable by default
 class NoopTool implements ITool {
   name: string = 'noop';
-  onMove(x: number, y: number): void {}
-  onUp(x: number, y: number): void {}
+  onMove(_x: number, _y: number): void {}
+  onUp(_x: number, _y: number): void {}
   onDown = (_x: number, _y: number) => {};
 }
 
@@ -49,13 +49,13 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
   const getPrimaryColor = useCallback(() => primaryColorRef.current, []);
   const getSecondaryColor = useCallback(() => secondaryColorRef.current, []);
 
-  const flipPrimarySecondary = () => {
+  const flipPrimarySecondary = useCallback(() => {
     const primaryColorTemp = primaryColorRef.current;
     const secondaryColorTemp = secondaryColorRef.current;
 
     setPrimaryColor(secondaryColorTemp);
     setSecondaryColor(primaryColorTemp);
-  };
+  }, [setPrimaryColor, setSecondaryColor]);
 
   const value = useMemo(
     () => ({

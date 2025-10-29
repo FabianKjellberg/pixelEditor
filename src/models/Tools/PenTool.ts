@@ -1,4 +1,3 @@
-import { getPixelIndex } from '@/helpers/color';
 import { Layer, Rectangle } from '../Layer';
 import { ITool, IToolDeps } from './Tools';
 import { config } from '@/config/env';
@@ -18,7 +17,7 @@ export class PenTool implements ITool {
   constructor(private toolDeps: IToolDeps) {}
   //Interface methods
   onDown(x: number, y: number): void {
-    let layer = this.toolDeps.getLayer?.() || undefined;
+    const layer = this.toolDeps.getLayer?.() || undefined;
     if (layer == undefined) return;
 
     //Draw
@@ -41,7 +40,7 @@ export class PenTool implements ITool {
     //draw
     this.draw(x, y, layer);
   }
-  onUp(x: number, y: number): void {
+  onUp(_x: number, _y: number): void {
     //reset value on up
     this.drawing = false;
     this.lastX = null;

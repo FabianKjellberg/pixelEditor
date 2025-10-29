@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 type DragableBranchProps = {
   nodeId: string;
   onMove: (dragId: string, targetId: string) => void;
   dragEnabled?: boolean;
-  className?: string;        
-  overClassName?: string;    
-  handleClassName?: string;  
+  className?: string;
+  overClassName?: string;
   children: React.ReactNode;
 };
 
@@ -16,7 +15,6 @@ export const DragableBranch = React.memo(function DragableBranch({
   dragEnabled = true,
   className,
   overClassName,
-  handleClassName,
   children,
 }: DragableBranchProps) {
   const [isOver, setIsOver] = useState(false);
@@ -26,13 +24,13 @@ export const DragableBranch = React.memo(function DragableBranch({
       e.preventDefault();
       return;
     }
-    e.dataTransfer.setData("application/x-branch", nodeId);
-    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData('application/x-branch', nodeId);
+    e.dataTransfer.effectAllowed = 'move';
   };
 
   const onDragOver = (e: React.DragEvent) => {
-    e.preventDefault();              
-    e.dataTransfer.dropEffect = "move";
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
     if (!isOver) setIsOver(true);
   };
 
@@ -41,15 +39,15 @@ export const DragableBranch = React.memo(function DragableBranch({
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsOver(false);
-    const dragId = e.dataTransfer.getData("application/x-branch");
+    const dragId = e.dataTransfer.getData('application/x-branch');
     if (!dragId) return;
     onMove(dragId, nodeId);
   };
 
   return (
     <div
-      className={`${className ?? ""} ${isOver && overClassName ? overClassName : ""}`}
-      draggable={dragEnabled}         
+      className={`${className ?? ''} ${isOver && overClassName ? overClassName : ''}`}
+      draggable={dragEnabled}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}

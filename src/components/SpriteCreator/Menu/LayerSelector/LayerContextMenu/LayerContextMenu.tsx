@@ -3,7 +3,6 @@
 import { useLayerContext } from '@/context/LayerContext';
 import { Dispatch, SetStateAction, useMemo } from 'react';
 import styles from './LayerContextMenu.module.css';
-import { useCanvasContext } from '@/context/CanvasContext';
 import { useContextMenuContext } from '@/context/ContextMenuContext/ContextMenuContext';
 import { Layer } from '@/models/Layer';
 import { createLayer } from '@/util/LayerUtil';

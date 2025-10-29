@@ -1,5 +1,5 @@
 'use client';
-import { hsb100ToRgb, hsvToRgb, rgbaToInt, rgbToHex } from '@/helpers/color';
+import { hsb100ToRgb, rgbToHex } from '@/helpers/color';
 import { Hsb100, RGBAobj } from '@/models/Tools/Color';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ColorPickerPointer from './ColorPickerPointer';
@@ -53,7 +53,7 @@ export default function ColorPickerCanvas({ hsv, setHsv }: ColorPickerCanvasProp
     if (hsv.s !== newS || hsv.b !== newB) {
       setHsv({ h: hsv.h, s: newS, b: newB });
     }
-  }, [pointerX, pointerY]);
+  }, [pointerX, pointerY, hsv.b, hsv.h, hsv.s, setHsv]);
 
   return (
     <div

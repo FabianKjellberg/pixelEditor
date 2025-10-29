@@ -26,7 +26,7 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
   const onHide = useCallback(() => {
     setShowModal(false);
     setContent(undefined);
-  }, [showModal, content, setContent, setShowModal]);
+  }, [setContent, setShowModal]);
 
   const value = useMemo(() => ({ onShow, onHide }), [onShow, onHide]);
 

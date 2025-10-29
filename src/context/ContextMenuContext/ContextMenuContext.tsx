@@ -34,13 +34,13 @@ export const ContextMenuProvider = ({ children }: { children: React.ReactNode })
       setPosition({ left: atX, top: atY });
       setShowMenu(true);
     },
-    [showMenu, menu, setMenu, setShowMenu],
+    [setMenu, setShowMenu],
   );
   const onHide = useCallback(() => {
     setMenu(null);
     setPosition(defaultPosition);
     setShowMenu(false);
-  }, [setMenu, setShowMenu, showMenu, menu]);
+  }, [setMenu, setShowMenu]);
 
   useEffect(() => {
     if (showMenu) {

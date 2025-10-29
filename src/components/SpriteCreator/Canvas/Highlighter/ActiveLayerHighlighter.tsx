@@ -11,13 +11,13 @@ const ActiveLayerHighlighter = () => {
   const { pixelSize, width, height } = useCanvasContext();
 
   const highLightStyle = useMemo(() => {
-    const realX = activeLayer.rect.x * pixelSize;
-    const realY = activeLayer.rect.y * pixelSize;
+    let realX = activeLayer.rect.x * pixelSize;
+    let realY = activeLayer.rect.y * pixelSize;
     let realW = activeLayer.rect.width * pixelSize;
     let realH = activeLayer.rect.height * pixelSize;
 
-    realX < 0 ? 0 : realX;
-    realY < 0 ? 0 : realY;
+    //realX = realX < 0 ? 0 : realX;
+    //realY = realY < 0 ? 0 : realY;
 
     realW = realW > width * pixelSize - realX ? width * pixelSize - realX : realW;
     realH = realH > height * pixelSize - realY ? height * pixelSize - realY : realH;

@@ -47,7 +47,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       //push change
       setRedrawVersion((v) => v + 1);
     },
-    [redrawVersion, dirtyQueueRef],
+    [dirtyQueueRef],
   );
 
   const consumeDirty = useCallback((): Rectangle[] => {
@@ -91,7 +91,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
 
       pushDirty(dirtyRectangle);
     },
-    [pushDirty, allLayers],
+    [pushDirty],
   );
 
   const deleteLayer = useCallback(
@@ -118,7 +118,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
 
       pushDirty(dirtyRect);
     },
-    [allLayers, setAllLayers, activeLayerIndex, setActiveLayerIndex],
+    [pushDirty, setAllLayers, activeLayerIndex, setActiveLayerIndex],
   );
 
   const activeLayer = useMemo(() => allLayers[activeLayerIndex], [allLayers, activeLayerIndex]);
@@ -139,7 +139,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
         prev.map((layer, index) => (index === layerIndex ? { ...layer, name } : layer)),
       );
     },
-    [allLayers, setAllLayers],
+    [setAllLayers],
   );
 
   const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max));
@@ -180,7 +180,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       setAllLayers(newLayers());
       setActiveLayerIndex(newIndex);
     },
-    [allLayers, setAllLayers, setActiveLayerIndex, activeLayerIndex],
+    [pushDirty, allLayers, setAllLayers, setActiveLayerIndex, activeLayerIndex],
   );
 
   const value = useMemo(

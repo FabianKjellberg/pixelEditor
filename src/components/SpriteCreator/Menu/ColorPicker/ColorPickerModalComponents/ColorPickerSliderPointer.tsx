@@ -1,18 +1,11 @@
 type ColorPickerSliderPointerProps = {
   y: number;
   setY: React.Dispatch<React.SetStateAction<number>>;
-  H: number;
   W: number;
   pointerColor: string;
 };
 
-const ColorPickerSliderPointer = ({
-  y,
-  setY,
-  H,
-  W,
-  pointerColor,
-}: ColorPickerSliderPointerProps) => {
+const ColorPickerSliderPointer = ({ y, setY, W, pointerColor }: ColorPickerSliderPointerProps) => {
   const getPos = (e: React.PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     const ny = Math.max(0, Math.min(e.clientY - r.top, r.height));

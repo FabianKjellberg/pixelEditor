@@ -12,7 +12,7 @@ const PenToolComponent = () => {
 
   const defaultTool: PenTool = useMemo(
     () => new PenTool({ setLayer: setActiveLayer, getLayer: getActiveLayer, getPrimaryColor }),
-    [getActiveLayer, setActiveLayer],
+    [getActiveLayer, setActiveLayer, getPrimaryColor],
   );
 
   useEffect(() => {

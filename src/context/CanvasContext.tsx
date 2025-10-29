@@ -28,13 +28,10 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
     setPixelSize(pixelHeight < pixelWidth ? pixelHeight : pixelWidth);
   }, []);
 
-  const setDimensions = useCallback(
-    (width: number, height: number) => {
-      setHeight(height);
-      setWidth(width);
-    },
-    [width, height],
-  );
+  const setDimensions = useCallback((width: number, height: number) => {
+    setHeight(height);
+    setWidth(width);
+  }, []);
 
   const value = useMemo(
     () => ({

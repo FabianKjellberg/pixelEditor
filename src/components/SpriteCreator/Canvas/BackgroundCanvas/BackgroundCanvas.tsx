@@ -1,9 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { config } from '@/config/env';
 import { useCanvasContext } from '@/context/CanvasContext';
-import { he } from 'zod/locales';
 
 const BackgroundCanvas = () => {
   const { pixelSize, width, height } = useCanvasContext();
@@ -39,7 +37,7 @@ const BackgroundCanvas = () => {
     if (!ctx) return;
 
     drawGrid(ctx);
-  }, [pixelSize, width, height]);
+  }, [pixelSize, width, height, drawGrid]);
 
   return (
     <>

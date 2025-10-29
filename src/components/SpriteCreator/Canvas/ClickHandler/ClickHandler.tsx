@@ -1,9 +1,7 @@
 'use client';
 
-import styles from './ClickHandler.module.css';
 import { useToolContext } from '@/context/ToolContext';
 import { useLayerContext } from '@/context/LayerContext';
-import { config } from '@/config/env';
 import { getPixelPositions } from '@/util/LayerUtil';
 import { useCanvasContext } from '@/context/CanvasContext';
 

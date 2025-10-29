@@ -1,8 +1,6 @@
 import { hsb100ToRgb, rgbToHex } from '@/helpers/color';
 import { Hsb100, RGBAobj } from '@/models/Tools/Color';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import ColorPickerPointer from './ColorPickerPointer';
-import { hsvObject } from '../ColorPickerModal';
 import ColorPickerSliderPointer from './ColorPickerSliderPointer';
 
 const CANVAS_H = 200;
@@ -41,19 +39,14 @@ const ColorPickerSlider = ({ hsv, setHsv }: ColorPickerSliderProps) => {
     }
   }, [hsv]);
 
-  const selectedColor = useMemo((): string => {
-    const rgba: RGBAobj = hsb100ToRgb(pointerY / 2, hsv.s, hsv.b);
-    return rgbToHex(rgba);
-  }, [pointerY]);
-
   const pointerColor = useMemo((): string => {
     const rgba: RGBAobj = hsb100ToRgb(pointerY / 2, 100, 100);
     return rgbToHex(rgba);
-  }, [pointerY, hsv.b, hsv.s]);
+  }, [pointerY]);
 
   useEffect(() => {
     setHsv({ h: pointerY / 2, s: hsv.s, b: hsv.b });
-  }, [pointerY, hsv.s, hsv.b]);
+  }, [pointerY, hsv.s, hsv.b, setHsv]);
 
   return (
     <div
@@ -74,7 +67,6 @@ const ColorPickerSlider = ({ hsv, setHsv }: ColorPickerSliderProps) => {
         y={pointerY}
         setY={setPointerY}
         W={CANVAS_W}
-        H={CANVAS_H}
         pointerColor={pointerColor}
       />
     </div>

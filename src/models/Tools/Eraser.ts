@@ -1,13 +1,11 @@
 import { ITool, IToolDeps } from './Tools';
-import { Direction, Layer, Rectangle } from '../Layer';
+import { Direction, Rectangle } from '../Layer';
 import {
   createLayer,
-  outOfBoundFinder,
   rectanglesIntersecting,
   stampLayer,
   tryReduceLayerSize,
 } from '@/util/LayerUtil';
-import { getPixelIndex, rgbaToInt } from '@/helpers/color';
 
 export class Eraser implements ITool {
   //variable to know if the eraser is "held down" on the canvas
@@ -33,7 +31,7 @@ export class Eraser implements ITool {
       this.erase(x, y);
     }
   }
-  onUp(x: number, y: number): void {
+  onUp(_x: number, _y: number): void {
     this.erasing = false;
     this.lastX = null;
     this.lastY = null;

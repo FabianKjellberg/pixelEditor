@@ -1,6 +1,5 @@
 'use client';
 
-import { config } from '@/config/env';
 import { useCanvasContext } from '@/context/CanvasContext';
 import { useLayerContext } from '@/context/LayerContext';
 import { Rectangle } from '@/models/Layer';
@@ -18,16 +17,26 @@ const LayerCanvas = () => {
 
   const ensureScratch = (w: number, h: number) => {
     if (!scratchRef.current) {
-      scratchRef.current =
-        typeof OffscreenCanvas !== 'undefined'
-          ? new OffscreenCanvas(1, 1)
-          : Object.assign(document.createElement('canvas'), { width: 1, height: 1 });
-      sctxRef.current = (scratchRef.current as any).getContext('2d')!;
+      // Create either an OffscreenCanvas or normal canvas
+      if (typeof OffscreenCanvas !== 'undefined') {
+        const offscreen = new OffscreenCanvas(1, 1);
+        scratchRef.current = offscreen;
+        sctxRef.current = offscreen.getContext('2d');
+      } else {
+        const htmlCanvas = document.createElement('canvas');
+        htmlCanvas.width = 1;
+        htmlCanvas.height = 1;
+        scratchRef.current = htmlCanvas;
+        sctxRef.current = htmlCanvas.getContext('2d');
+      }
     }
-    if ((scratchRef.current as any).width !== w || (scratchRef.current as any).height !== h) {
-      (scratchRef.current as any).width = w;
-      (scratchRef.current as any).height = h;
+
+    // Resize if needed
+    if (scratchRef.current.width !== w || scratchRef.current.height !== h) {
+      scratchRef.current.width = w;
+      scratchRef.current.height = h;
     }
+
     return sctxRef.current!;
   };
 
@@ -56,7 +65,7 @@ const LayerCanvas = () => {
     const W = L.width;
 
     for (let yy = 0; yy < h; yy++) {
-      let row = (startY + yy) * W + startX;
+      const row = (startY + yy) * W + startX;
       for (let xx = 0; xx < w; xx++) {
         const c = layer.pixels[row + xx] >>> 0;
         const a = c & 0xff;
@@ -92,7 +101,7 @@ const LayerCanvas = () => {
 
     const dirty = consumeDirty();
     for (const r of dirty) redrawArea(ctx, r);
-  }, [redrawVersion, allLayers, consumeDirty]);
+  }, [redrawVersion, allLayers, consumeDirty, redrawArea]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -102,7 +111,7 @@ const LayerCanvas = () => {
     const r = { x: 0, y: 0, width: width, height: height };
 
     redrawArea(ctx, r);
-  }, [width, height, pixelSize]);
+  }, [width, height, pixelSize, redrawArea]);
 
   return (
     <canvas
