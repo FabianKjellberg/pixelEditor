@@ -52,6 +52,15 @@
   font-display: swap;
 }
 
+/* free commerical use font */
+@font-face {
+  font-family: 'medodioca';
+  src: url('/fonts/medodica.regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 html,
 body,
 p {
@@ -61,8 +70,9 @@ p {
   button,
   html,
   body {
-    font-family: 'DePixel', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-family: 'medodioca', /*'DePixel',*/ system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   }
+  font-size: larger;
 }
 
 body {
