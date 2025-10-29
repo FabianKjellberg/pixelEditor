@@ -1,8 +1,7 @@
 'use client';
 
 import { useLayerContext } from '@/context/LayerContext';
-import { config } from '@/config/env';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import styles from './ActiveLayerHighlighter.module.css';
 import { useCanvasContext } from '@/context/CanvasContext';
 
