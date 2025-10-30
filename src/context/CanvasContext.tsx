@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-const defaultWidth: number = 124;
+const defaultWidth: number = 120;
 const defaultHeight: number = 64;
 
 type CanvasContextValue = {

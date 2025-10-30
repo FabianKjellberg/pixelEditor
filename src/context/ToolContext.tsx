@@ -35,8 +35,8 @@ const ToolContext = createContext<ToolContextValue | undefined>(undefined);
 
 export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeTool, setActiveTool] = useState<ITool>(new NoopTool());
-  const [primaryColor, setPrimaryColor] = useState<number>(0xffffffff);
-  const [secondaryColor, setSecondaryColor] = useState<number>(0x000000ff);
+  const [primaryColor, setPrimaryColor] = useState<number>(0x000000ff);
+  const [secondaryColor, setSecondaryColor] = useState<number>(0xffffffff);
 
   const primaryColorRef = useRef(primaryColor);
   const secondaryColorRef = useRef(secondaryColor);

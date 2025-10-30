@@ -1,7 +1,13 @@
 import { Layer, Rectangle } from '../Layer';
 import { ITool, IToolDeps } from './Tools';
 import { config } from '@/config/env';
-import { createLayer, increaseLayerBoundary, outOfBoundFinder, stampLayer } from '@/util/LayerUtil';
+import {
+  createLayer,
+  increaseLayerBoundary,
+  lineStampLayer,
+  outOfBoundFinder,
+  stampLayer,
+} from '@/util/LayerUtil';
 
 export class PenTool implements ITool {
   //variable to know if the pen is "held down" on the canvas
@@ -49,65 +55,74 @@ export class PenTool implements ITool {
 
   //Other Methods
   private draw = (x: number, y: number, layer: Layer): void => {
-    //get selected color from dependencies
-    const selectedColor: number = this.toolDeps.getPrimaryColor?.() || config.defaultColor;
+    const color: number = this.toolDeps.getPrimaryColor?.() ?? config.defaultColor;
+    const size = this.size;
+    const r = Math.floor(size / 2);
 
-    //cordinates for last last drawn place pixel, change before we modify the x and y values
-    this.lastX = x;
-    this.lastY = y;
-
-    //Update the coridnates based on the size of the pen stroke
-    x = x - Math.floor(this.size / 2);
-    y = y - Math.floor(this.size / 2);
-
-    //if the layer doesnt have any pixels in it. create it
-    if (layer.rect.width == 0 && layer.rect.height == 0) {
-      layer = createLayer(
-        {
-          width: this.size,
-          height: this.size,
-          x: x,
-          y: y,
-        },
-        layer.name,
-      );
-
-      //from canvas cordinates to layer specific
+    // If the layer is empty, create a 1×1 at the first point (layer-local will start at 0,0)
+    if (layer.rect.width === 0 && layer.rect.height === 0) {
+      layer = createLayer({ width: 1, height: 1, x, y }, layer.name);
       x = 0;
-      y = 0;
+      y = 0; // now in layer-local coords
     }
 
-    //boundary of the rectangle of the stamped pen stroke relative to its own layer
-    const stampRectangle = { x: x, y: y, width: this.size, height: this.size };
+    // Previous point (center). If null (first draw), use current so we just stamp once.
+    let prevX = this.lastX ?? x;
+    let prevY = this.lastY ?? y;
 
-    //Item showing if and how much a cordinated is outside a given rect (relative terms)
-    const boundsItem = outOfBoundFinder(stampRectangle, layer.rect.width, layer.rect.height);
-    //console.log(boundsItem);
-    //If the cordinate is out of bounds
-    if (boundsItem.outOfBounds) {
-      //Increase the layer boundary with the given directions and get a new updated layer
-      layer = increaseLayerBoundary(boundsItem.dir, layer);
+    // Current point (center)
+    let curX = x;
+    let curY = y;
 
-      //update the cordinates with the new layer size and position
-      stampRectangle.x = x + boundsItem.dir.left;
-      stampRectangle.y = y + boundsItem.dir.top;
+    // Stamp rect (top-left) derived from current center
+    let stampRect: Rectangle = { x: curX - r, y: curY - r, width: size, height: size };
+
+    // Check bounds against current layer and grow if needed
+    const bounds = outOfBoundFinder(stampRect, layer.rect.width, layer.rect.height);
+
+    if (bounds.outOfBounds) {
+      // Grow layer and get how much it shifted (left/top add space *inside* the layer)
+      layer = increaseLayerBoundary(bounds.dir, layer);
+
+      // Shift both prev & current centers by the added margins on left/top
+      const shiftX = bounds.dir.left ?? 0;
+      const shiftY = bounds.dir.top ?? 0;
+
+      prevX += shiftX;
+      prevY += shiftY;
+      curX += shiftX;
+      curY += shiftY;
+
+      // Recompute current stamp rect after shift
+      stampRect = { x: curX - r, y: curY - r, width: size, height: size };
     }
 
-    //create a layer that will replace part of another shape
-    const strokeShape: Layer = createLayer(stampRectangle, layer.name, selectedColor);
+    // Build stroke shape at current position
+    const strokeShape: Layer = createLayer(stampRect, layer.name, color);
 
-    //replace part of the old layer with the new stroke
-    layer = stampLayer(strokeShape, layer);
+    // If there was movement, draw a line from previous center to current center
+    if (prevX !== curX || prevY !== curY) {
+      const prevRect: Rectangle = { x: prevX - r, y: prevY - r, width: size, height: size };
+      layer = lineStampLayer(strokeShape, prevRect, layer);
+    } else {
+      layer = stampLayer(strokeShape, layer);
+    }
 
+    // Compute redraw rectangle (in canvas coords) that covers the stroke path
+    const minX = Math.min(prevX, curX) - r;
+    const minY = Math.min(prevY, curY) - r;
     const redrawRectangle: Rectangle = {
-      x: layer.rect.x + stampRectangle.x,
-      y: layer.rect.y + stampRectangle.y,
-      width: stampRectangle.width,
-      height: stampRectangle.height,
+      x: layer.rect.x + minX,
+      y: layer.rect.y + minY,
+      width: Math.abs(curX - prevX) + size,
+      height: Math.abs(curY - prevY) + size,
     };
-    //console.log(redrawRectangle);
 
-    //Update the true layer in layercontext !TODO make it redraw affected area.
+    // Update last point (center)
+    this.lastX = curX;
+    this.lastY = curY;
+
+    // Commit
     this.toolDeps.setLayer?.({ ...layer }, redrawRectangle);
   };
 }

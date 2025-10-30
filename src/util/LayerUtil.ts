@@ -1,5 +1,6 @@
 import { getPixelIndex, rgbaToInt } from '@/helpers/color';
 import { Cordinate, Direction, Layer, OutOfBoundItem, Rectangle } from '@/models/Layer';
+import { late } from 'zod/v3';
 
 /**
  *
@@ -236,6 +237,39 @@ export function stampLayer(stamp: Layer, originaLayer: Layer): Layer {
   }
 
   return originaLayer;
+}
+
+export function lineStampLayer(stamp: Layer, to: Rectangle, originalLayer: Layer): Layer {
+  let x0 = stamp.rect.x,
+    y0 = stamp.rect.y;
+  const x1 = to.x,
+    y1 = to.y;
+
+  const dx = Math.abs(x1 - x0);
+  const dy = Math.abs(y1 - y0);
+  const sx = x0 < x1 ? 1 : -1;
+  const sy = y0 < y1 ? 1 : -1;
+
+  let err = dx - dy;
+  let out = originalLayer;
+
+  while (true) {
+    const s = { ...stamp, rect: { ...stamp.rect, x: x0, y: y0 } };
+    out = stampLayer(s, out);
+
+    if (x0 === x1 && y0 === y1) break;
+
+    const e2 = 2 * err;
+    if (e2 > -dy) {
+      err -= dy;
+      x0 += sx;
+    }
+    if (e2 < dx) {
+      err += dx;
+      y0 += sy;
+    }
+  }
+  return out;
 }
 
 export function rectanglesIntersecting(r1: Rectangle, r2: Rectangle): boolean {
