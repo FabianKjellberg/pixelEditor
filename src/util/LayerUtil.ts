@@ -126,7 +126,7 @@ export function outOfBoundFinder(r: Rectangle, w: number, h: number): OutOfBound
   };
 }
 
-export function tryReduceLayerSize(dir: Direction, layer: Layer): Layer {
+export function tryReduceLayerSize(dir: Direction, layer: Layer): { layer: Layer; dir: Direction } {
   //variable that confirms that user has reached bottom
   let boundFound = false;
   let leftCount = 0;
@@ -191,20 +191,19 @@ export function tryReduceLayerSize(dir: Direction, layer: Layer): Layer {
     }
   }
 
-  //reduce the layer boundaries by creating a new array
+  //reduce the layer boundaries by creating a directions object
+  const reduceAmnt: Direction = {
+    bottom: bottomCount,
+    left: leftCount,
+    right: rightCount,
+    top: topCount,
+  };
 
   //early return if no changes are present
-  if (rightCount === 0 && topCount === 0 && leftCount === 0 && bottomCount === 0) return layer;
+  if (rightCount === 0 && topCount === 0 && leftCount === 0 && bottomCount === 0)
+    return { layer, dir: reduceAmnt };
 
-  return decreaseLayerBoundary(
-    {
-      bottom: bottomCount,
-      left: leftCount,
-      right: rightCount,
-      top: topCount,
-    },
-    layer,
-  );
+  return { layer: decreaseLayerBoundary(reduceAmnt, layer), dir: reduceAmnt };
 }
 
 export function stampLayer(stamp: Layer, originaLayer: Layer): Layer {

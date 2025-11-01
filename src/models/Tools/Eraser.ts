@@ -1,7 +1,8 @@
 import { ITool, IToolDeps } from './Tools';
-import { Direction, Rectangle } from '../Layer';
+import { Direction, Layer, Rectangle } from '../Layer';
 import {
   createLayer,
+  lineStampLayer,
   rectanglesIntersecting,
   stampLayer,
   tryReduceLayerSize,
@@ -23,12 +24,16 @@ export class Eraser implements ITool {
 
   /** -- INTERFACE METHODS -- **/
   onDown(x: number, y: number): void {
+    const layer: Layer | undefined = this.toolDeps.getLayer?.();
+    if (layer == undefined) return;
+    this.erase(x, y, layer);
     this.erasing = true;
-    this.erase(x, y);
   }
   onMove(x: number, y: number): void {
     if (this.erasing && !(this.lastX == x && this.lastY == y)) {
-      this.erase(x, y);
+      const layer: Layer | undefined = this.toolDeps.getLayer?.();
+      if (layer == undefined) return;
+      this.erase(x, y, layer);
     }
   }
   onUp(_x: number, _y: number): void {
@@ -38,45 +43,65 @@ export class Eraser implements ITool {
   }
 
   /** -- OTHER METHODS -- **/
-  private erase = (x: number, y: number): void => {
-    let layer = this.toolDeps.getLayer?.();
-    if (layer == undefined) return;
+  private erase = (x: number, y: number, layer: Layer): void => {
+    const size = this.size;
+    const r = Math.floor(size / 2);
 
-    this.lastX = x;
-    this.lastY = y;
+    const prevX = this.lastX ?? x;
+    const prevY = this.lastY ?? y;
 
-    //Update the coridnates based on the size of the pen stroke
-    x = x - Math.floor(this.size / 2);
-    y = y - Math.floor(this.size / 2);
+    const curX = x;
+    const curY = y;
 
     //boundary of the rectangle of the stamped pen stroke relative to its own layer
-    const stampRectangle: Rectangle = { x: x, y: y, width: this.size, height: this.size };
+    const stampRectangle: Rectangle = {
+      x: curX - r,
+      y: curY - r,
+      width: this.size,
+      height: this.size,
+    };
+    const layerRectangle: Rectangle = {
+      x: 0,
+      y: 0,
+      width: layer.rect.width,
+      height: layer.rect.height,
+    };
+    const prevStampRectangle: Rectangle = {
+      x: prevX - r,
+      y: prevY - r,
+      width: this.size,
+      height: this.size,
+    };
 
-    //return early if stamp outside of layer
-    if (
-      !rectanglesIntersecting(stampRectangle, {
-        x: 0,
-        y: 0,
-        width: layer.rect.width,
-        height: layer.rect.height,
-      })
-    ) {
-      console.log('returning because stamp isnt intersecting with the selected layer');
-      console.log(stampRectangle, layer.rect);
+    const stampIntersection: boolean = rectanglesIntersecting(layerRectangle, stampRectangle);
+    const prevStampIntersection: boolean = rectanglesIntersecting(
+      layerRectangle,
+      prevStampRectangle,
+    );
+
+    if (!stampIntersection && !prevStampIntersection) {
+      this.lastX = prevX;
+      this.lastY = prevY;
       return;
     }
 
-    console.log('stampRect: ', stampRectangle, ' layerRect: ', layer.rect);
+    const minX = Math.min(prevX, curX) - r;
+    const minY = Math.min(prevY, curY) - r;
+    const redrawRectangle: Rectangle = {
+      x: layer.rect.x + minX,
+      y: layer.rect.y + minY,
+      width: Math.abs(curX - prevX) + size,
+      height: Math.abs(curY - prevY) + size,
+    };
 
-    layer = stampLayer(createLayer(stampRectangle, ''), layer);
+    const strokeShape: Layer = createLayer(stampRectangle, '');
 
-    console.log('START');
-    for (let y = 0; y < layer.rect.height; y++) {
-      console.log(
-        layer.pixels.slice(y * layer.rect.width, y * layer.rect.width + layer.rect.width),
-      );
+    if (curX == prevX && curY == prevY) {
+      layer = stampLayer(strokeShape, layer);
+    } else {
+      const prevRect: Rectangle = { x: prevX - r, y: prevY - r, width: size, height: size };
+      layer = lineStampLayer(strokeShape, prevRect, layer);
     }
-    console.log('END');
 
     const leftEdgeRectangle: Rectangle = { x: 0, y: 0, width: 1, height: layer.rect.height };
     const topEdgeRectangle: Rectangle = { x: 0, y: 0, width: layer.rect.width, height: 1 };
@@ -101,14 +126,11 @@ export class Eraser implements ITool {
       bottom: rectanglesIntersecting(stampRectangle, bottomEdgeRectangle) ? 1 : 0,
     };
 
-    const redrawRectangle: Rectangle = {
-      x: layer.rect.x + stampRectangle.x,
-      y: layer.rect.y + stampRectangle.y,
-      width: stampRectangle.width,
-      height: stampRectangle.height,
-    };
+    const reduceLayer = tryReduceLayerSize(intersectEdges, layer);
 
-    layer = tryReduceLayerSize(intersectEdges, layer);
-    this.toolDeps.setLayer?.(layer, redrawRectangle);
+    this.lastX = curX - reduceLayer.dir.left;
+    this.lastY = curY - reduceLayer.dir.top;
+
+    this.toolDeps.setLayer?.(reduceLayer.layer, redrawRectangle);
   };
 }

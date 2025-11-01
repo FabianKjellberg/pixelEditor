@@ -17,7 +17,7 @@ export class PenTool implements ITool {
   private lastX: number | null = null;
   private lastY: number | null = null;
 
-  private size: number = 1;
+  private size: number = 50;
 
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {}

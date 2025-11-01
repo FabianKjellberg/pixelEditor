@@ -16,10 +16,6 @@ const RedrawEverything = () => {
     setPixelSize(Math.floor(pixelSize * 0.8));
   };
 
-  useEffect(() => {
-    console.log(pixelSize);
-  }, [pixelSize]);
-
   return (
     <>
       <button
