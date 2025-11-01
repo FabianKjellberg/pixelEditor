@@ -1,16 +1,16 @@
 .modalWrapper {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100vh;
-  background-color: #88888860;
+  position: fixed; /* cover viewport */
+  inset: 0;
+  display: block; /* no flex squish */
+  pointer-events: none; /* clicks pass through wrapper */
 }
 
 .modalContainer {
+  position: absolute; /* we move with left/top */
+  pointer-events: all;
   border: 3px solid var(--border);
   background-color: var(--background);
+  height: fit-content;
 }
 
 .headerContainer {
@@ -19,12 +19,20 @@
   border-bottom: 3px solid var(--border);
   color: var(--background);
   background-color: var(--foreground);
+  user-select: none; /* prevent text selection while dragging */
+}
+
+.headerTextContainer {
+  width: 100%;
+  cursor: grab;
 }
 
 .headerText {
   padding: 6px;
   width: 100%;
   text-align: center;
+  font-size: large;
+  pointer-events: none;
 }
 
 .closeButton {

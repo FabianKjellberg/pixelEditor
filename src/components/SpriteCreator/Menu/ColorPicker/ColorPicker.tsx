@@ -29,6 +29,7 @@ const ColorPicker = () => {
           style={secondaryColorStyle}
           onClick={() =>
             onShow(
+              'secondaryColor',
               <ColorPickerModal setColor={setSecondaryColor} color={secondaryColor} />,
               'Change secondary color',
             )
@@ -39,6 +40,7 @@ const ColorPicker = () => {
           style={primaryColorStyle}
           onClick={() =>
             onShow(
+              'primaryColor',
               <ColorPickerModal setColor={setPrimaryColor} color={primaryColor} />,
               'Change primary color',
             )

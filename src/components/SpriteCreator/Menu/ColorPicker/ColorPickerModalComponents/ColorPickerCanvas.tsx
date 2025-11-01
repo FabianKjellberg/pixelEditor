@@ -1,7 +1,7 @@
 'use client';
 import { hsb100ToRgb, rgbToHex } from '@/helpers/color';
 import { Hsb100, RGBAobj } from '@/models/Tools/Color';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
 import ColorPickerPointer from './ColorPickerPointer';
 const CANVAS_W = 200;
 const CANVAS_H = 200;
@@ -9,7 +9,7 @@ const PIX = 2;
 
 type ColorPickerCanvasProps = {
   hsv: Hsb100;
-  setHsv: (hsv: Hsb100) => void;
+  setHsv: React.Dispatch<React.SetStateAction<Hsb100>>;
 };
 
 export default function ColorPickerCanvas({ hsv, setHsv }: ColorPickerCanvasProps) {
@@ -47,13 +47,10 @@ export default function ColorPickerCanvas({ hsv, setHsv }: ColorPickerCanvasProp
   }, [pointerX, pointerY, hsv.h]);
 
   useEffect(() => {
-    const newS = Math.max(0, Math.min(100, pointerX / 2));
-    const newB = Math.max(0, Math.min(100, 100 - pointerY / 2));
-
-    if (hsv.s !== newS || hsv.b !== newB) {
-      setHsv({ h: hsv.h, s: newS, b: newB });
-    }
-  }, [pointerX, pointerY, hsv.b, hsv.h, hsv.s, setHsv]);
+    const s = Math.max(0, Math.min(100, pointerX / 2));
+    const b = Math.max(0, Math.min(100, 100 - pointerY / 2));
+    setHsv((prev) => (prev.s === s && prev.b === b ? prev : { ...prev, s, b }));
+  }, [pointerX, pointerY, setHsv]);
 
   return (
     <div

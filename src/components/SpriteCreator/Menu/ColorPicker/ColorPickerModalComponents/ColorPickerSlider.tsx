@@ -9,7 +9,7 @@ const PIX = 2;
 
 type ColorPickerSliderProps = {
   hsv: Hsb100;
-  setHsv: (hsv: Hsb100) => void;
+  setHsv: React.Dispatch<React.SetStateAction<Hsb100>>;
 };
 
 const ColorPickerSlider = ({ hsv, setHsv }: ColorPickerSliderProps) => {
@@ -45,8 +45,9 @@ const ColorPickerSlider = ({ hsv, setHsv }: ColorPickerSliderProps) => {
   }, [pointerY]);
 
   useEffect(() => {
-    setHsv({ h: pointerY / 2, s: hsv.s, b: hsv.b });
-  }, [pointerY, hsv.s, hsv.b, setHsv]);
+    const h = Math.max(0, Math.min(100, pointerY / 2));
+    setHsv((prev) => (prev.h === h ? prev : { ...prev, h }));
+  }, [pointerY, setHsv]);
 
   return (
     <div

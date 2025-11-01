@@ -6,6 +6,7 @@
 .menuContainer {
   overflow: hidden;
   overflow-y: scroll;
+  min-width: 200px;
 }
 
 .toolContainer {

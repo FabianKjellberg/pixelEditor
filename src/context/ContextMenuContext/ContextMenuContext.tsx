@@ -6,6 +6,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -48,6 +49,22 @@ export const ContextMenuProvider = ({ children }: { children: React.ReactNode })
       requestAnimationFrame(() => menuRef.current?.focus({ preventScroll: true }));
     }
   }, [showMenu]);
+
+  useLayoutEffect(() => {
+    if (!showMenu || !menuRef.current) return;
+
+    const el = menuRef.current;
+    const rect = el.getBoundingClientRect();
+    const pad = 8;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const left = rect.x + rect.width + pad > vw ? rect.x - rect.width : rect.x;
+    const top = rect.y + rect.height + pad > vh ? rect.y - rect.height : rect.y;
+
+    setPosition({ left: left, top: top });
+  }, [showMenu, position.left, position.top]);
 
   // Close on click-outside and on Escape
   useEffect(() => {
