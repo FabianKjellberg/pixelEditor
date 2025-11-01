@@ -1,5 +1,5 @@
 import { Layer, Rectangle } from '../Layer';
-import { ITool, IToolDeps } from './Tools';
+import { getProperty, ITool, IToolDeps, PropertyType, SizeProperty } from './Tools';
 import { config } from '@/config/env';
 import {
   createLayer,
@@ -16,8 +16,6 @@ export class PenTool implements ITool {
   //variables to make sure that move doesnt try to draw every move if it has already drew on the pixel
   private lastX: number | null = null;
   private lastY: number | null = null;
-
-  private size: number = 50;
 
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {}
@@ -56,7 +54,12 @@ export class PenTool implements ITool {
   //Other Methods
   private draw = (x: number, y: number, layer: Layer): void => {
     const color: number = this.toolDeps.getPrimaryColor?.() ?? config.defaultColor;
-    const size = this.size;
+    const sizeProp = getProperty<SizeProperty>(
+      this.toolDeps.getProperties?.() ?? [],
+      PropertyType.Size,
+    );
+
+    const size = sizeProp?.size ?? 0;
     const r = Math.floor(size / 2);
 
     // If the layer is empty, create a 1×1 at the first point (layer-local will start at 0,0)

@@ -22,6 +22,7 @@ class NoopTool implements ITool {
 type ToolContextValue = {
   activeTool: ITool;
   setActiveTool: (tool: ITool) => void;
+
   primaryColor: number;
   getPrimaryColor: () => number;
   setPrimaryColor: (color: number) => void;
