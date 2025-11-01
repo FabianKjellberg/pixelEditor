@@ -118,13 +118,22 @@ export class Eraser implements ITool {
       height: 1,
     };
 
+    const localAffectedArea: Rectangle = {
+      x: redrawRectangle.x - layer.rect.x,
+      y: redrawRectangle.y - layer.rect.y,
+      width: redrawRectangle.width,
+      height: redrawRectangle.height,
+    };
+
     //see if eraser toucher boundary
     const intersectEdges: Direction = {
-      left: rectanglesIntersecting(stampRectangle, leftEdgeRectangle) ? 1 : 0,
-      top: rectanglesIntersecting(stampRectangle, topEdgeRectangle) ? 1 : 0,
-      right: rectanglesIntersecting(stampRectangle, rightEdgeRectangle) ? 1 : 0,
-      bottom: rectanglesIntersecting(stampRectangle, bottomEdgeRectangle) ? 1 : 0,
+      left: rectanglesIntersecting(localAffectedArea, leftEdgeRectangle) ? 1 : 0,
+      top: rectanglesIntersecting(localAffectedArea, topEdgeRectangle) ? 1 : 0,
+      right: rectanglesIntersecting(localAffectedArea, rightEdgeRectangle) ? 1 : 0,
+      bottom: rectanglesIntersecting(localAffectedArea, bottomEdgeRectangle) ? 1 : 0,
     };
+
+    console.log(intersectEdges);
 
     const reduceLayer = tryReduceLayerSize(intersectEdges, layer);
 

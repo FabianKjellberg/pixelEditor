@@ -11,7 +11,7 @@ import { late } from 'zod/v3';
  * @returns
  */
 export function createLayer(rect: Rectangle, name: string, colorInt?: number): Layer {
-  const pixels = new Uint32Array(rect.width * rect.height);
+  const pixels = new Uint32Array(Math.max(rect.width * rect.height, 0));
   pixels.fill(colorInt ?? rgbaToInt(0, 0, 0, 0));
   return {
     name,
