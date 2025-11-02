@@ -1,5 +1,5 @@
 import { Layer, Rectangle } from '../Layer';
-import { Property } from './Properties';
+import { IProperty } from './Properties';
 
 export type IToolDeps = {
   getLayer?: () => Layer | undefined;
@@ -8,8 +8,8 @@ export type IToolDeps = {
   setPrimaryColor?: (color: number) => void;
   getSecondaryColor?: () => number | undefined;
   setSecondaryColor?: (color: number) => void;
-  getProperties?: (toolKey: string) => Property[];
-  setProperties?: (properties: Property[] | ((prev: Property[]) => Property[])) => void;
+  getProperties?: (toolKey: string) => IProperty[];
+  setProperties?: (properties: IProperty[] | ((prev: IProperty[]) => IProperty[])) => void;
 };
 
 export interface ITool {
