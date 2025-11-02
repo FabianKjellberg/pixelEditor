@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react';
 import type { ITool } from '@/models/Tools/Tools';
+import type { IProperty } from '@/models/Tools/Properties';
 
 // Example fallback tool so the app has something usable by default
 class NoopTool implements ITool {
@@ -22,6 +23,10 @@ class NoopTool implements ITool {
 type ToolContextValue = {
   activeTool: ITool;
   setActiveTool: (tool: ITool) => void;
+
+  getProperties: (toolKey: string) => IProperty[];
+  setProperties: (toolKey: string, properties: IProperty[]) => void;
+  properties: IProperty[];
 
   primaryColor: number;
   getPrimaryColor: () => number;
@@ -38,6 +43,34 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeTool, setActiveTool] = useState<ITool>(new NoopTool());
   const [primaryColor, setPrimaryColor] = useState<number>(0x000000ff);
   const [secondaryColor, setSecondaryColor] = useState<number>(0xffffffff);
+  const [propertiesMap, setPropertiesMap] = useState<Map<string, IProperty[]>>(new Map());
+
+  const propertiesRef = useRef(propertiesMap);
+  useEffect(() => {
+    propertiesRef.current = propertiesMap;
+  }, [propertiesMap]);
+
+  const getProperties = useCallback(
+    (toolKey: string) => propertiesRef.current.get(toolKey) ?? [],
+    [propertiesMap],
+  );
+
+  const setProperties = useCallback((toolKey: string, properties: IProperty[]) => {
+    setPropertiesMap((prev) => {
+      const next = new Map(prev);
+      next.set(toolKey, properties);
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    console.log(propertiesMap);
+  }, [propertiesMap]);
+
+  const properties = useMemo<IProperty[]>(
+    () => getProperties(activeTool.name),
+    [getProperties, activeTool.name, propertiesMap],
+  );
 
   const primaryColorRef = useRef(primaryColor);
   const secondaryColorRef = useRef(secondaryColor);
@@ -62,6 +95,9 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
     () => ({
       activeTool,
       setActiveTool,
+      properties,
+      setProperties,
+      getProperties,
       setPrimaryColor,
       getPrimaryColor,
       primaryColor,
@@ -73,6 +109,9 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
     [
       activeTool,
       setActiveTool,
+      properties,
+      setProperties,
+      getProperties,
       setPrimaryColor,
       getPrimaryColor,
       primaryColor,

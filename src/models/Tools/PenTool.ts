@@ -1,5 +1,6 @@
 import { Layer, Rectangle } from '../Layer';
-import { getProperty, ITool, IToolDeps, PropertyType, SizeProperty } from './Tools';
+import { getProperty, PropertyType, SizeProperty } from './Properties';
+import { ITool, IToolDeps } from './Tools';
 import { config } from '@/config/env';
 import {
   createLayer,
@@ -55,11 +56,11 @@ export class PenTool implements ITool {
   private draw = (x: number, y: number, layer: Layer): void => {
     const color: number = this.toolDeps.getPrimaryColor?.() ?? config.defaultColor;
     const sizeProp = getProperty<SizeProperty>(
-      this.toolDeps.getProperties?.() ?? [],
+      this.toolDeps.getProperties?.('pencil') ?? [],
       PropertyType.Size,
     );
 
-    const size = sizeProp?.size ?? 0;
+    const size = sizeProp?.value ?? 0;
     const r = Math.floor(size / 2);
 
     // If the layer is empty, create a 1×1 at the first point (layer-local will start at 0,0)

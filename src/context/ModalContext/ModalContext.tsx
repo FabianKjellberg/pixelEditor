@@ -13,7 +13,7 @@ import {
 import styles from './ModalContext.module.css';
 
 export type ModalData = {
-  id: string; // unique identifier
+  id: string;
   headerText: string;
   content: React.ReactNode;
   position: CSSProperties;
@@ -42,19 +42,17 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
         id: id,
         headerText: header,
         content,
-        position: { left: 0, top: 0 },
+        position: { left: 0, top: 0, visibility: 'hidden' },
         ref: modalRef,
       };
       return [...prev, newModal];
     });
   }, []);
 
-  // --- Close a specific modal ---
   const onHide = useCallback((id: string) => {
     setModals((prev) => prev.filter((m) => m.id !== id));
   }, []);
 
-  // --- Close all modals ---
   const onHideAll = useCallback(() => {
     setModals([]);
   }, []);
@@ -90,12 +88,11 @@ function DraggableModal({ modal, onClose }: { modal: ModalData; onClose: () => v
     if ((Number(position.left) || 0) !== 0 || (Number(position.top) || 0) !== 0) return;
     const el = modal.ref.current;
     if (!el) return;
-    // wait a frame so content is laid out
     const id = requestAnimationFrame(() => {
       const r = el.getBoundingClientRect();
       const left = Math.max(16, (window.innerWidth - r.width) / 2);
       const top = Math.max(16, (window.innerHeight - r.height) / 2);
-      setPosition({ left, top });
+      setPosition({ left, top, zIndex: 10000 });
     });
     return () => cancelAnimationFrame(id);
   }, [modal.ref, position.left, position.top]);

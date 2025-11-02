@@ -1,11 +1,8 @@
-import ColorPicker from './ColorPicker/ColorPicker';
-import RedrawEverything from './redrawEverythingDEV/RedrawEverything';
-
 import menuStyles from './Menu.module.css';
 import EraserComponent from './EraserComponent/EraserComponent';
 import PenToolComponent from './PenToolComponent/PenToolComponent';
 import MoveComponent from './MoveComponent/MoveComponent';
-import LayerSelector from './LayerSelector/LayerSelector';
+import Properties from './Properties/Properties';
 
 const LeftMenu = () => {
   return (
@@ -22,6 +19,10 @@ const LeftMenu = () => {
               <MoveComponent />
             </div>
           </div>
+        </div>
+        <div className={menuStyles.toolContainer}>
+          <p className={menuStyles.toolsHeader}>Properties</p>
+          <Properties />
         </div>
       </div>
     </div>

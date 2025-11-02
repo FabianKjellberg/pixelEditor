@@ -1,10 +1,13 @@
 'use client';
 
 import { useCanvasContext } from '@/context/CanvasContext';
+import { useToolContext } from '@/context/ToolContext';
+import { PropertyType, upsertProperty } from '@/models/Tools/Properties';
 import { useEffect } from 'react';
 
 const RedrawEverything = () => {
   const { setPixelSize, pixelSize } = useCanvasContext();
+  const { setProperties, activeTool, properties } = useToolContext();
 
   const zoomIn = () => {
     if (pixelSize > 100) return;

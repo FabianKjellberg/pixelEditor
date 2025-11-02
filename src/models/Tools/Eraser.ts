@@ -1,4 +1,5 @@
 import { ITool, IToolDeps } from './Tools';
+import { getProperty, PropertyType, SizeProperty } from './Properties';
 import { Direction, Layer, Rectangle } from '../Layer';
 import {
   createLayer,
@@ -16,8 +17,6 @@ export class Eraser implements ITool {
   //variables to make sure that move doesnt try to draw every move if it has already drew on the pixel
   private lastX: number | null = null;
   private lastY: number | null = null;
-
-  private size: number = 2;
 
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {}
@@ -44,7 +43,11 @@ export class Eraser implements ITool {
 
   /** -- OTHER METHODS -- **/
   private erase = (x: number, y: number, layer: Layer): void => {
-    const size = this.size;
+    const properties = this.toolDeps.getProperties?.(this.name) ?? [];
+    const sizeProp = getProperty<SizeProperty>(properties, PropertyType.Size);
+
+    const size = sizeProp?.value ?? 0;
+
     const r = Math.floor(size / 2);
 
     const prevX = this.lastX ?? x;
@@ -57,8 +60,8 @@ export class Eraser implements ITool {
     const stampRectangle: Rectangle = {
       x: curX - r,
       y: curY - r,
-      width: this.size,
-      height: this.size,
+      width: size,
+      height: size,
     };
     const layerRectangle: Rectangle = {
       x: 0,
@@ -69,8 +72,8 @@ export class Eraser implements ITool {
     const prevStampRectangle: Rectangle = {
       x: prevX - r,
       y: prevY - r,
-      width: this.size,
-      height: this.size,
+      width: size,
+      height: size,
     };
 
     const stampIntersection: boolean = rectanglesIntersecting(layerRectangle, stampRectangle);
@@ -132,8 +135,6 @@ export class Eraser implements ITool {
       right: rectanglesIntersecting(localAffectedArea, rightEdgeRectangle) ? 1 : 0,
       bottom: rectanglesIntersecting(localAffectedArea, bottomEdgeRectangle) ? 1 : 0,
     };
-
-    console.log(intersectEdges);
 
     const reduceLayer = tryReduceLayerSize(intersectEdges, layer);
 
