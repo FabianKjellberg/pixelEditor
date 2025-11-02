@@ -22,6 +22,7 @@ const PropertyControls = () => {
             <Slider
               key={index + p.propertyType}
               sliderProperties={p.spec}
+              value={p.value}
               onChange={(v: number) => {
                 const next = Object.create(Object.getPrototypeOf(p)) as typeof p;
                 Object.assign(next, p);
