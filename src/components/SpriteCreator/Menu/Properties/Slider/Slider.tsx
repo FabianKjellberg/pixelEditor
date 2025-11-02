@@ -1,5 +1,5 @@
 import type { ISlider } from '@/models/Tools/PropertySpecs';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import PropertyLabel from '../PropertyLabel/PropertyLabel';
 import styles from './Slider.module.css';
 
