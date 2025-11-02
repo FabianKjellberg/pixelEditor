@@ -31,7 +31,7 @@ const PenToolComponent = () => {
 
   useEffect(() => {
     setActiveTool(defaultTool);
-  }, [defaultTool, setActiveTool]);
+  }, []);
 
   return (
     <>
