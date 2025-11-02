@@ -2,9 +2,6 @@ import ColorPicker from './ColorPicker/ColorPicker';
 import RedrawEverything from './redrawEverythingDEV/RedrawEverything';
 
 import menuStyles from './Menu.module.css';
-import EraserComponent from './EraserComponent/EraserComponent';
-import PenToolComponent from './PenToolComponent/PenToolComponent';
-import MoveComponent from './MoveComponent/MoveComponent';
 import LayerSelector from './LayerSelector/LayerSelector';
 
 const RightMenu = () => {

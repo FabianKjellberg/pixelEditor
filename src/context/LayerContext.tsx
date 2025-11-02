@@ -118,20 +118,17 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
 
       pushDirty(dirtyRect);
     },
-    [pushDirty, setAllLayers, activeLayerIndex, setActiveLayerIndex],
+    [pushDirty, setAllLayers, activeLayerIndex, setActiveLayerIndex, allLayers],
   );
 
   const activeLayer = useMemo(() => allLayers[activeLayerIndex], [allLayers, activeLayerIndex]);
 
-  const addLayer = useCallback(
-    (layer: Layer, index?: number) => {
-      setAllLayers((prev) => {
-        const i = index == null ? prev.length : Math.max(0, Math.min(index, prev.length));
-        return [...prev.slice(0, i), layer, ...prev.slice(i)];
-      });
-    },
-    [allLayers],
-  );
+  const addLayer = useCallback((layer: Layer, index?: number) => {
+    setAllLayers((prev) => {
+      const i = index == null ? prev.length : Math.max(0, Math.min(index, prev.length));
+      return [...prev.slice(0, i), layer, ...prev.slice(i)];
+    });
+  }, []);
 
   const renameLayer = useCallback(
     (name: string, layerIndex: number) => {

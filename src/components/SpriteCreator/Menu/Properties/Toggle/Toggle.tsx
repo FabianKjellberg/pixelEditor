@@ -5,7 +5,7 @@ type ToggleProps = {
   onChange: (checked: boolean) => void;
 };
 
-const Toggle = ({ toggleProperties, onChange }: ToggleProps) => {
+const Toggle = ({ toggleProperties }: ToggleProps) => {
   return (
     <>
       <p>{toggleProperties.label}</p>

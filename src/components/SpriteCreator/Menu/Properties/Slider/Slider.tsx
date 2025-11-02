@@ -7,7 +7,7 @@ export type SliderProps = {
   onChange: (value: number) => void;
 };
 
-const Slider = ({ sliderProperties, value, onChange }: SliderProps) => {
+const Slider = ({ value, onChange }: SliderProps) => {
   const sliderValue = useMemo(() => value, [value]);
 
   useEffect(() => {

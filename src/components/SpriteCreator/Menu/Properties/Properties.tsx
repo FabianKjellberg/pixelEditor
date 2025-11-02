@@ -53,7 +53,7 @@ const PropertyControls = () => {
           return <div key={index}> </div>;
       }
     });
-  }, [properties, setProperties]);
+  }, [properties, setProperties, activeTool.name]);
 
   return <div>{propertyRenders && propertyRenders}</div>;
 };

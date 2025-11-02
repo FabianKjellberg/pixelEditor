@@ -26,7 +26,7 @@ export class SizeProperty implements IProperty {
 
 export interface IProperty<T = unknown, S extends UIControlSpec = UIControlSpec> {
   readonly propertyType: PropertyType;
-  readonly spec: S; // 👈 self-describing UI
+  readonly spec: S;
   get value(): T;
   set value(v: T);
 }
@@ -46,7 +46,7 @@ export class SmoothEdgeProperty implements IProperty {
   }
 }
 
-export type AnyProperty = IProperty<any, UIControlSpec>;
+export type AnyProperty = IProperty<unknown, UIControlSpec>;
 
 export function getProperty<P extends AnyProperty>(
   props: AnyProperty[],

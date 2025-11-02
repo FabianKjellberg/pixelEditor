@@ -1,7 +1,7 @@
 'use client';
 import { hsb100ToRgb, rgbToHex } from '@/helpers/color';
 import { Hsb100, RGBAobj } from '@/models/Tools/Color';
-import { SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ColorPickerPointer from './ColorPickerPointer';
 const CANVAS_W = 200;
 const CANVAS_H = 200;
