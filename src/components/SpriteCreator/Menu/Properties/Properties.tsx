@@ -6,6 +6,7 @@ import Slider from './Slider/Slider';
 import Toggle from './Toggle/Toggle';
 import { useToolContext } from '@/context/ToolContext';
 import { useMemo } from 'react';
+import styles from './Properties.module.css';
 
 const PropertyControls = () => {
   const { properties, setProperties, activeTool } = useToolContext();
@@ -38,6 +39,7 @@ const PropertyControls = () => {
           return (
             <Toggle
               key={index}
+              value={p.value}
               toggleProperties={p.spec}
               onChange={(checked: boolean) => {
                 const next = Object.create(Object.getPrototypeOf(p)) as typeof p;
@@ -55,7 +57,7 @@ const PropertyControls = () => {
     });
   }, [properties, setProperties, activeTool.name]);
 
-  return <div>{propertyRenders && propertyRenders}</div>;
+  return <div className={styles.properties}>{propertyRenders && propertyRenders}</div>;
 };
 
 export default PropertyControls;

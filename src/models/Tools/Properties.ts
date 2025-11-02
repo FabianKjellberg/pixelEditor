@@ -9,7 +9,7 @@ export class SizeProperty implements IProperty {
   propertyType: PropertyType = PropertyType.Size;
   spec: ISlider = {
     type: 'slider',
-    label: 'size',
+    label: 'Size',
     min: 1,
     max: 255,
     linear: false,
@@ -35,7 +35,7 @@ export class SmoothEdgeProperty implements IProperty {
   propertyType: PropertyType = PropertyType.SmoothEdgeProperty;
   spec: IToggle = {
     type: 'toggle',
-    label: 'Smooth edge',
+    label: 'Smooth edges',
   };
   constructor(private _value: boolean = false) {}
   get value() {

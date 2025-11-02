@@ -1,0 +1,39 @@
+.sliderContainer {
+  display: flex;
+  width: 100%;
+}
+.sliderBarContainer {
+  width: 100%;
+  position: relative;
+  align-items: center;
+  margin: 10px;
+}
+.sliderBar {
+  border: 1px solid var(--border);
+}
+.sliderPoint {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--border);
+  background-color: var(--highlight);
+  transition: left 120ms ease;
+  cursor: pointer;
+}
+
+.minMaxNr {
+  transform: translateY(3px);
+}
+
+.buttonPlusMinus {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.buttonPlusMinus button {
+  width: 25px;
+}

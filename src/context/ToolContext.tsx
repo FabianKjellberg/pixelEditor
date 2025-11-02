@@ -68,11 +68,6 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
     [propertiesMap, activeTool.name],
   );
 
-  useEffect(() => {
-    console.log('all property: ', propertiesMap);
-    console.log('property for active tool', properties);
-  }, [properties, propertiesMap]);
-
   const primaryColorRef = useRef(primaryColor);
   const secondaryColorRef = useRef(secondaryColor);
   useEffect(() => {

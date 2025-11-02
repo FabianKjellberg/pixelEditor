@@ -1,0 +1,24 @@
+.toggleContainer {
+  width: 34px;
+  border: 2px solid var(--border);
+  gap: 0;
+  cursor: pointer;
+}
+
+.toggleButton {
+  width: 15px;
+  height: 15px;
+  background-color: var(--foreground);
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+
+.buttonRow {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
+
+.toggleButtonChecked {
+  background-color: var(--highlight);
+  transform: translateX(15);
+}
