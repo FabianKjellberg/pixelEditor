@@ -18,7 +18,6 @@
   transform: translate(-50%, -50%);
   border: 2px solid var(--border);
   background-color: var(--highlight);
-  transition: left 120ms ease;
   cursor: pointer;
 }
 

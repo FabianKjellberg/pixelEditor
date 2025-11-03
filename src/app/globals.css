@@ -13,6 +13,8 @@
   --border: #888888;
   --highlight: #54fe3a;
   --invert-icon-color: none;
+
+  --top-menu-height: 30px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -80,11 +82,28 @@ button {
   font-size: large;
   background-color: var(--background);
   padding: 2px;
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
 button:hover {
   background-color: var(--border);
   cursor: pointer;
+}
+
+button:disabled {
+  background-color: var(--border);
+  cursor: auto;
+}
+
+input {
+  font-size: large;
+  border: 2px solid var(--border);
+}
+
+input:focus {
+  outline: 2px solid var(--highlight);
+  outline-offset: 2px; /* optional */
 }
 
 body {

@@ -4,7 +4,7 @@
   min-width: 0;
   min-height: 0;
   padding: 4px;
-  height: 100vh;
+  height: calc(100vh - var(--top-menu-height));
   display: grid;
   place-items: center; /* center the whole frame */
 }

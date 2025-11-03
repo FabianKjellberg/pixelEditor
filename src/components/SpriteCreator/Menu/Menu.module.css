@@ -1,5 +1,5 @@
 .menu {
-  height: 100vh;
+  height: 100%;
   display: flex;
 }
 
@@ -33,6 +33,14 @@
 
 .toolIconRow {
   gap: 8px;
+  display: flex;
+  flex-direction: row;
+}
+
+.topMenu {
+  width: 100%;
+  border: 2px solid var(--border);
+  height: var(--top-menu-height);
   display: flex;
   flex-direction: row;
 }

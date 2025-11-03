@@ -1,0 +1,14 @@
+.topMenuItem {
+  background-color: var(--background);
+  padding: 4px;
+  cursor: pointer;
+  width: auto;
+}
+.topMenuItem:hover {
+  background-color: var(--border);
+}
+
+.topMenuItemBorder {
+  width: 100%;
+  border: 1px solid var(--border);
+}

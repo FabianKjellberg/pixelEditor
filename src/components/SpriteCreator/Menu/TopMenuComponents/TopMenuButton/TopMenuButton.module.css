@@ -1,0 +1,15 @@
+.TopMenuButton {
+  height: calc(var(--top-menu-height) - 4px);
+  border-right: 2px solid var(--border);
+  font-size: larger;
+  text-align: center;
+  width: fit-content;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 2px;
+  cursor: pointer;
+}
+
+.TopMenuButton:hover {
+  background-color: var(--border);
+}
