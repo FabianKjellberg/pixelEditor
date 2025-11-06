@@ -93,13 +93,15 @@ export function decreaseLayerBoundary(dir: Direction, l: Layer) {
 export function getPixelPositions<T extends Element>(
   e: React.PointerEvent<T>,
   pixelSize: number,
+  panX: number,
+  panY: number,
 ): Cordinate {
   const el = e.currentTarget;
   const rect = el.getBoundingClientRect();
 
   //Get cordinates of the canvas
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+  const x = e.clientX - rect.left - panX;
+  const y = e.clientY - rect.top - panY;
 
   //Round out number based on pixelsize zoom etx (before zooming is added its just going to be pixel size)
   const xPos = Math.floor(x / pixelSize);

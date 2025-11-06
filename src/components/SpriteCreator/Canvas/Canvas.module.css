@@ -3,16 +3,16 @@
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
-  padding: 4px;
-  height: calc(100vh - var(--top-menu-height));
+  height: calc(100vh - var(--top-menu-height) - 24px);
   display: grid;
-  place-items: center; /* center the whole frame */
+  outline: 4px inset rgb(150, 90, 90);
+  overflow: hidden;
+  margin-top: 12px;
+  margin-bottom: 12px;
 }
 
 /* the visible frame (border) that we center */
 .frame {
-  outline: 4px inset rgb(150, 90, 90);
-
   width: min(100%, var(--canvas-w));
   height: min(100%, var(--canvas-h));
 
@@ -33,8 +33,6 @@
 /* the stacked drawing surface (actual canvas size) */
 .stack {
   position: relative;
-  width: var(--canvas-w);
-  height: var(--canvas-h);
 }
 
 /* every layer covers the stack */
