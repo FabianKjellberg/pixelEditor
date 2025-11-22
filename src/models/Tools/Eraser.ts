@@ -3,6 +3,7 @@ import { getProperty, PropertyType, SizeProperty } from './Properties';
 import { Direction, Layer, Rectangle } from '../Layer';
 import {
   createLayer,
+  getPixelPositions,
   lineStampLayer,
   rectanglesIntersecting,
   stampLayer,
@@ -22,27 +23,27 @@ export class Eraser implements ITool {
   constructor(private toolDeps: IToolDeps) {}
 
   /** -- INTERFACE METHODS -- **/
-  onDown(x: number, y: number): void {
+  onDown(x: number, y: number, pixelSize: number): void {
     const layer: Layer | undefined = this.toolDeps.getLayer?.();
     if (layer == undefined) return;
-    this.erase(x, y, layer);
+    this.erase(x, y, layer, pixelSize);
     this.erasing = true;
   }
-  onMove(x: number, y: number): void {
+  onMove(x: number, y: number, pixelSize: number): void {
     if (this.erasing && !(this.lastX == x && this.lastY == y)) {
       const layer: Layer | undefined = this.toolDeps.getLayer?.();
       if (layer == undefined) return;
-      this.erase(x, y, layer);
+      this.erase(x, y, layer, pixelSize);
     }
   }
-  onUp(_x: number, _y: number): void {
+  onUp(): void {
     this.erasing = false;
     this.lastX = null;
     this.lastY = null;
   }
 
   /** -- OTHER METHODS -- **/
-  private erase = (x: number, y: number, layer: Layer): void => {
+  private erase = (x: number, y: number, layer: Layer, ps: number): void => {
     const properties = this.toolDeps.getProperties?.(this.name) ?? [];
     const sizeProp = getProperty<SizeProperty>(properties, PropertyType.Size);
 
@@ -50,11 +51,15 @@ export class Eraser implements ITool {
 
     const r = Math.floor(size / 2);
 
-    const prevX = this.lastX ?? x;
-    const prevY = this.lastY ?? y;
+    let pixelPos = getPixelPositions(x, y, ps);
 
-    const curX = x;
-    const curY = y;
+    pixelPos = { x: pixelPos.x - layer.rect.x, y: pixelPos.y - layer.rect.y };
+
+    const prevX = this.lastX ?? pixelPos.x;
+    const prevY = this.lastY ?? pixelPos.y;
+
+    const curX = pixelPos.x;
+    const curY = pixelPos.y;
 
     //boundary of the rectangle of the stamped pen stroke relative to its own layer
     const stampRectangle: Rectangle = {

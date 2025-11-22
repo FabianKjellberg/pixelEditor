@@ -1,4 +1,4 @@
-import { Layer, Rectangle } from '../Layer';
+import { Cordinate, Layer, Rectangle } from '../Layer';
 import { IProperty } from './Properties';
 
 export type IToolDeps = {
@@ -10,11 +10,13 @@ export type IToolDeps = {
   setSecondaryColor?: (color: number) => void;
   getProperties?: (toolKey: string) => IProperty[];
   setProperties?: (properties: IProperty[] | ((prev: IProperty[]) => IProperty[])) => void;
+  getPan?: () => Cordinate | undefined;
+  setPan?: (cord: Cordinate) => void;
 };
 
 export interface ITool {
   name: string;
-  onDown(x: number, y: number): void;
-  onMove(x: number, y: number): void;
-  onUp(x: number, y: number): void;
+  onDown(x: number, y: number, pixelSize: number): void;
+  onMove(x: number, y: number, pixelSize: number): void;
+  onUp(x: number, y: number, pixelSize: number): void;
 }

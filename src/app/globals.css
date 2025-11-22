@@ -106,9 +106,22 @@ input:focus {
   outline-offset: 2px; /* optional */
 }
 
+canvas:focus:not(:focus-visible) {
+  outline: none;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
+  overflow: hidden;
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+
+html {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  touch-action: none;
 }
 
 input {

@@ -1,21 +1,29 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { Cordinate } from '@/models/Layer';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 const defaultWidth: number = 64;
 const defaultHeight: number = 64;
 const defaultPixelSize: number = 25;
-const defaultPanX: number = 10;
-const defaultPanY: number = 10;
+const defaultPan: Cordinate = { x: 0, y: 0 };
 
 type CanvasContextValue = {
   setDimensions: (width: number, height: number) => void;
   height: number;
   width: number;
 
-  setPan: (x: number, y: number) => void;
-  panX: number;
-  panY: number;
+  pan: Cordinate;
+  getPan: () => Cordinate;
+  setPan: (cor: Cordinate) => void;
 
   setPixelSize: (size: number) => void;
   pixelSize: number;
@@ -27,11 +35,20 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
   const [pixelSize, setPixelSize] = useState<number>(defaultPixelSize);
   const [width, setWidth] = useState<number>(defaultWidth);
   const [height, setHeight] = useState<number>(defaultHeight);
-  const [panX, setPanX] = useState<number>(defaultPanX);
-  const [panY, setPanY] = useState<number>(defaultPanY);
+  const [pan, setpan] = useState<Cordinate>(defaultPan);
 
-  const setPan = useCallback((x: number, y: number) => {
-    setPanX(x), setPanY(y);
+  const panRef = useRef(pan);
+
+  useEffect(() => {
+    panRef.current = pan;
+  }, [pan]);
+
+  const getPan = useCallback((): Cordinate => {
+    return panRef.current;
+  }, []);
+
+  const setPan = useCallback((cor: Cordinate) => {
+    setpan(cor);
   }, []);
 
   const setDimensions = useCallback((width: number, height: number) => {
@@ -46,11 +63,11 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
       width,
       height,
       setDimensions,
-      panX,
-      panY,
+      pan,
+      getPan,
       setPan,
     }),
-    [pixelSize, setPixelSize, height, width, setDimensions, panX, panY, setPan],
+    [pixelSize, setPixelSize, height, width, setDimensions, pan, getPan, setPan],
   );
 
   return <CanvasContext.Provider value={value}>{children}</CanvasContext.Provider>;

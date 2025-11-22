@@ -4,6 +4,7 @@ import { ITool, IToolDeps } from './Tools';
 import { config } from '@/config/env';
 import {
   createLayer,
+  getPixelPositions,
   increaseLayerBoundary,
   lineStampLayer,
   outOfBoundFinder,
@@ -21,17 +22,17 @@ export class PenTool implements ITool {
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {}
   //Interface methods
-  onDown(x: number, y: number): void {
+  onDown(x: number, y: number, pixelSize: number): void {
     const layer = this.toolDeps.getLayer?.() || undefined;
     if (layer == undefined) return;
 
     //Draw
-    this.draw(x, y, layer);
+    this.draw(x, y, layer, pixelSize);
 
     //put the "pen down"
     this.drawing = true;
   }
-  onMove(x: number, y: number): void {
+  onMove(x: number, y: number, pixelSize: number): void {
     //return early if pen is not held down
     if (!this.drawing) return;
 
@@ -43,9 +44,9 @@ export class PenTool implements ITool {
     if (layer == undefined) return;
 
     //draw
-    this.draw(x, y, layer);
+    this.draw(x, y, layer, pixelSize);
   }
-  onUp(_x: number, _y: number): void {
+  onUp(): void {
     //reset value on up
     this.drawing = false;
     this.lastX = null;
@@ -53,7 +54,7 @@ export class PenTool implements ITool {
   }
 
   //Other Methods
-  private draw = (x: number, y: number, layer: Layer): void => {
+  private draw = (x: number, y: number, layer: Layer, ps: number): void => {
     const color: number = this.toolDeps.getPrimaryColor?.() ?? config.defaultColor;
     const sizeProp = getProperty<SizeProperty>(
       this.toolDeps.getProperties?.('pencil') ?? [],
@@ -63,20 +64,25 @@ export class PenTool implements ITool {
     const size = sizeProp?.value ?? 0;
     const r = Math.floor(size / 2);
 
+    //get position in pixelSize
+    let pixelPos = getPixelPositions(x, y, ps);
+
     // If the layer is empty, create a 1×1 at the first point (layer-local will start at 0,0)
     if (layer.rect.width === 0 && layer.rect.height === 0) {
-      layer = createLayer({ width: 1, height: 1, x, y }, layer.name);
-      x = 0;
-      y = 0; // now in layer-local coords
+      layer = createLayer({ width: 1, height: 1, x: pixelPos.x, y: pixelPos.y }, layer.name);
+      pixelPos = { x: 0, y: 0 };
+    } else {
+      //Get relative to layer
+      pixelPos = { x: pixelPos.x - layer.rect.x, y: pixelPos.y - layer.rect.y };
     }
 
     // Previous point (center). If null (first draw), use current so we just stamp once.
-    let prevX = this.lastX ?? x;
-    let prevY = this.lastY ?? y;
+    let prevX = this.lastX ?? pixelPos.x;
+    let prevY = this.lastY ?? pixelPos.y;
 
     // Current point (center)
-    let curX = x;
-    let curY = y;
+    let curX = pixelPos.x;
+    let curY = pixelPos.y;
 
     // Stamp rect (top-left) derived from current center
     let stampRect: Rectangle = { x: curX - r, y: curY - r, width: size, height: size };

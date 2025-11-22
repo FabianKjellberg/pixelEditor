@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCanvasContext } from '@/context/CanvasContext';
 
 type BackgroundCanvasProps = {
@@ -14,7 +14,7 @@ const BackgroundCanvas = ({ canvasWidth, canvasHeight }: BackgroundCanvasProps) 
   const viewportCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const backingCtxRef = useRef<CanvasRenderingContext2D | null>(null);
 
-  const { pixelSize, width, height, panX, panY } = useCanvasContext();
+  const { pixelSize, width, height, pan } = useCanvasContext();
 
   const render = () => {
     const vctx = viewportCtxRef.current;
@@ -32,7 +32,7 @@ const BackgroundCanvas = ({ canvasWidth, canvasHeight }: BackgroundCanvasProps) 
     vctx.clearRect(0, 0, cssW, cssH);
 
     const zoom = Math.max(1, pixelSize | 0);
-    vctx.translate(panX, panY);
+    vctx.translate(pan.x, pan.y);
     vctx.scale(zoom, zoom);
 
     vctx.drawImage(bCanvas, 0, 0);
@@ -48,11 +48,16 @@ const BackgroundCanvas = ({ canvasWidth, canvasHeight }: BackgroundCanvasProps) 
     const ctx = backing.getContext('2d')!;
     backingCtxRef.current = ctx;
 
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const strokeColor = (x + (y % 2)) % 2 === 0 ? '#FFFFFF' : '#DDDDDD';
-        ctx.fillStyle = strokeColor;
-        ctx.fillRect(x, y, 1, 1);
+    if (pixelSize < 7) {
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, width, height);
+    } else {
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const strokeColor = (x + (y % 2)) % 2 === 0 ? '#FFFFFF' : '#DDDDDD';
+          ctx.fillStyle = strokeColor;
+          ctx.fillRect(x, y, 1, 1);
+        }
       }
     }
   }, [width, height]);
@@ -80,7 +85,7 @@ const BackgroundCanvas = ({ canvasWidth, canvasHeight }: BackgroundCanvasProps) 
 
   useEffect(() => {
     render();
-  }, [width, height, canvasHeight, canvasWidth, pixelSize, panX, panY]);
+  }, [width, height, canvasHeight, canvasWidth, pixelSize, pan]);
 
   if (!canvasHeight || !canvasWidth) return;
 

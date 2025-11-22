@@ -15,8 +15,8 @@ const Canvas = () => {
   return (
     <div className={styles.spriteCanvas} ref={frameRef}>
       <div className={styles.stack}>
-        <BackgroundCanvas canvasWidth={width} canvasHeight={height} />
-        <LayerCanvas canvasWidth={width} canvasHeight={height} />
+        {width && height && <BackgroundCanvas canvasWidth={width} canvasHeight={height} />}
+        {width && height && <LayerCanvas canvasWidth={width} canvasHeight={height} />}
         <ActiveLayerHighlighter />
         <ClickHandler />
       </div>

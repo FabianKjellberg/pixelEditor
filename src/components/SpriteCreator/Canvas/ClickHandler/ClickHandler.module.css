@@ -1,1 +1,10 @@
+.clickHandler:focus {
+  outline: none !important;
+  box-shadow: none !important; /* if you added any */
+}
 
+.clickHandler {
+  overflow: hidden; /* no scrollbars */
+  overscroll-behavior: contain; /* block scroll chaining */
+  touch-action: none; /* disables native panning/zooming on touchpads */
+}

@@ -3,6 +3,7 @@ import EraserComponent from './EraserComponent/EraserComponent';
 import PenToolComponent from './PenToolComponent/PenToolComponent';
 import MoveComponent from './MoveComponent/MoveComponent';
 import Properties from './Properties/Properties';
+import PanToolComponent from './PanToolComponent/PanToolComponent';
 
 const LeftMenu = () => {
   return (
@@ -17,6 +18,7 @@ const LeftMenu = () => {
             </div>
             <div className={menuStyles.toolIconRow}>
               <MoveComponent />
+              <PanToolComponent />
             </div>
           </div>
         </div>

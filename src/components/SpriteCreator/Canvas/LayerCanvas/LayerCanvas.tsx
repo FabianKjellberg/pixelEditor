@@ -26,7 +26,7 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     null,
   );
 
-  const { pixelSize, width, height, panX, panY } = useCanvasContext();
+  const { pixelSize, width, height, pan, setPixelSize, setPan } = useCanvasContext();
   const { allLayers, redrawVersion, consumeDirty } = useLayerContext();
 
   const renderViewPort = () => {
@@ -45,15 +45,13 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     vctx.clearRect(0, 0, cssW, cssH);
 
     const zoom = Math.max(1, pixelSize | 0);
-    vctx.translate(panX, panY);
+    vctx.translate(pan.x, pan.y);
     vctx.scale(zoom, zoom);
 
     vctx.drawImage(bCanvas, 0, 0);
   };
 
   const redrawBackCanvas = (rect: Rectangle) => {
-    console.log(allLayers);
-
     const backingCtx = backingCtxRef.current;
     const backing = backingRef.current;
     if (!backingCtx || !backing) return;
@@ -124,8 +122,6 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
   };
 
   useEffect(() => {
-    console.log('consuming dirty');
-
     const dirtyRects = consumeDirty();
 
     if (dirtyRects.length < 1) return;
@@ -167,29 +163,39 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
   }, [width, height]);
 
   useEffect(() => {
-    if (viewPortRef.current) {
-      viewportCtxRef.current = viewPortRef.current.getContext('2d');
-    }
-
-    renderViewPort();
-  }, [viewPortRef.current]);
-
-  useEffect(() => {
-    renderViewPort();
-  }, [width, height, canvasHeight, canvasWidth, pixelSize, panX, panY]);
-
-  useEffect(() => {
     const canvas = viewPortRef.current;
-    if (!canvas) return;
+    if (!canvas || !canvasWidth || !canvasHeight) return;
 
     const dpr = window.devicePixelRatio || 1;
 
+    // 1) resize (this clears the canvas)
     canvas.width = Math.max(1, Math.floor(canvasWidth * dpr));
     canvas.height = Math.max(1, Math.floor(canvasHeight * dpr));
-
     canvas.style.width = `${canvasWidth}px`;
     canvas.style.height = `${canvasHeight}px`;
-  }, [canvasWidth, canvasHeight]);
+
+    // 2) reacquire context (and its default state)
+    viewportCtxRef.current = canvas.getContext('2d');
+
+    // 3) repaint now
+    renderViewPort();
+  }, [width, height, canvasHeight, canvasWidth, pixelSize, pan]);
+
+  //Center canvas whenever the width and height changes
+  useEffect(() => {
+    console.log(canvasHeight, canvasWidth, height, width, pixelSize);
+
+    const newPixelSize = Math.max(
+      1,
+      Math.min(Math.floor(canvasHeight / height), Math.floor(canvasWidth / width)),
+    );
+
+    setPixelSize(newPixelSize);
+    setPan({
+      x: canvasWidth / 2 - (width * newPixelSize) / 2,
+      y: canvasHeight / 2 - (height * newPixelSize) / 2,
+    });
+  }, [width, height]);
 
   if (!canvasHeight || !canvasWidth) return;
 

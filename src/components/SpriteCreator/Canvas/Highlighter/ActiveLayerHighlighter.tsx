@@ -7,16 +7,16 @@ import { useCanvasContext } from '@/context/CanvasContext';
 
 const ActiveLayerHighlighter = () => {
   const { activeLayer } = useLayerContext();
-  const { pixelSize, width, height, panX, panY } = useCanvasContext();
+  const { pixelSize, width, height, pan } = useCanvasContext();
 
   const highLightStyle = useMemo(() => {
-    const realX = panX + activeLayer.rect.x * pixelSize;
-    const realY = panY + activeLayer.rect.y * pixelSize;
+    const realX = pan.x + activeLayer.rect.x * pixelSize;
+    const realY = pan.y + activeLayer.rect.y * pixelSize;
     let realW = activeLayer.rect.width * pixelSize;
     let realH = activeLayer.rect.height * pixelSize;
 
-    realW = realW > panX + width * pixelSize - realX ? panX + width * pixelSize - realX : realW;
-    realH = realH > panY + height * pixelSize - realY ? panY + height * pixelSize - realY : realH;
+    realW = realW > pan.x + width * pixelSize - realX ? pan.x + width * pixelSize - realX : realW;
+    realH = realH > pan.y + height * pixelSize - realY ? pan.y + height * pixelSize - realY : realH;
 
     return {
       width: realW,
@@ -24,7 +24,7 @@ const ActiveLayerHighlighter = () => {
       left: realX,
       top: realY,
     };
-  }, [activeLayer, pixelSize, width, height, panX, panY]);
+  }, [activeLayer, pixelSize, width, height, pan]);
 
   return (
     <>
