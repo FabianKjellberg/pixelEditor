@@ -68,7 +68,7 @@ const ClickHandler = () => {
   const onScroll: React.WheelEventHandler<HTMLDivElement> = (e) => {
     e.stopPropagation();
     const absDelta = Math.abs(e.deltaY);
-    const multiplier: number = e.deltaY > 0 ? 0.98 : e.deltaY < 0 ? 1.02 : 0;
+    const multiplier: number = e.deltaY > 0 ? 0.9 : e.deltaY < 0 ? 1.1 : 0; //!TODO maybe change???
 
     // Early returns at min/max values (also prevents 0 multiple)
     if (multiplier === 0) return;

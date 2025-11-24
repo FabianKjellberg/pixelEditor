@@ -1,34 +1,92 @@
+'use client';
+
+import { getPixelIndex } from '@/helpers/color';
+import React, { useRef, useEffect } from 'react';
+
 const Debug = () => {
-  const x1 = 1;
-  const x2 = -2;
-  const y1 = -4;
-  const y2 = -8;
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const longLength = Math.max(Math.abs(y2 - y1), Math.abs(x1 - x2));
+  const selectedArray = new Uint8Array([1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1]);
+  const pixelSize = 23;
+  const pattern = [2];
 
-  const xGrow = Math.abs(x1 - x2);
-  const yGrow = Math.abs(y1 - y2);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-  for (let i = 0; i <= longLength; i++) {
-    console.log(
-      Math.min(x1, x2) + Math.round((i / longLength) * xGrow),
-      Math.min(y1, y2) + Math.round((i / longLength) * yGrow),
-    );
-  }
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-  return <></>;
+    const width = canvas.width;
+    const height = canvas.height;
+
+    ctx.beginPath();
+    ctx.lineWidth = 2;
+    for (let i: number = 0; i < 4; i++) {
+      for (let j: number = 0; j < 4; j++) {
+        if (selectedArray[getPixelIndex(i, 4, j)] === 1) {
+          ctx.fillStyle = 'white';
+          ctx.fillRect(j * pixelSize, i * pixelSize, pixelSize, pixelSize);
+
+          //noTopNeighbor
+          if (i <= 0 || selectedArray[getPixelIndex(i - 1, 4, j)] !== 1) {
+            ctx.setLineDash(pattern);
+
+            const startBuffer = (j * pixelSize) % 4;
+            ctx.moveTo(j * pixelSize + startBuffer, i * pixelSize + 1);
+            ctx.lineTo(j * pixelSize + pixelSize, i * pixelSize + 1);
+          }
+          //noRightNeighbor
+          if (j >= 4 - 1 || selectedArray[getPixelIndex(i, 4, j + 1)] !== 1) {
+            ctx.setLineDash(pattern);
+
+            ctx.moveTo(j * pixelSize + pixelSize - 1, i * pixelSize);
+            ctx.lineTo(j * pixelSize + pixelSize - 1, i * pixelSize + pixelSize);
+          }
+          //noBottomNeighbor
+          if (i >= 4 - 1 || selectedArray[getPixelIndex(i + 1, 4, j)] !== 1) {
+            ctx.setLineDash(pattern);
+            const startBuffer = (j * pixelSize) % 4;
+
+            ctx.moveTo(j * pixelSize - startBuffer - 2, i * pixelSize + pixelSize - 1);
+            ctx.lineTo(j * pixelSize + pixelSize, i * pixelSize + pixelSize - 1);
+          }
+          //noLeftNeighbor
+          if (j <= 0 || selectedArray[getPixelIndex(i, 4, j - 1)] !== 1) {
+            ctx.setLineDash(pattern);
+
+            ctx.moveTo(j * pixelSize + 1, i * pixelSize);
+            ctx.lineTo(j * pixelSize + 1, i * pixelSize + pixelSize);
+          }
+        }
+      }
+      ctx.stroke();
+    }
+  }, []);
+
+  return (
+    <div
+      style={{
+        padding: 16,
+        background: 'gray',
+        minHeight: '100vh',
+        color: 'white',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+      }}
+    >
+      <h1 style={{ margin: 0, fontSize: 18 }}>Debug Canvas</h1>
+      <canvas
+        ref={canvasRef}
+        width={512}
+        height={512}
+        style={{
+          background: '#gray',
+        }}
+      />
+    </div>
+  );
 };
+
 export default Debug;
-
-// xy(3,3) -> xy(8,10), size 3, xy(2,2) w8, h10
-// xy(4,6) -> xy(9, 9), size 2, xy(4,6) w7, h5
-
-// s1 x,w 1 -> 4 => 1, 4
-// s2 x,w 1 -> 4 => 0, 5
-// s3 x,w 1 -> 4 => 0, 6
-// s4 x,w 1 -> 4 => -1, 7
-
-//1 1 1 1 2 2 2 2
-//1 2 3 4 5 6 7 8
-
-//i/longLength * maxLength

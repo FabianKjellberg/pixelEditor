@@ -183,8 +183,6 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
 
   //Center canvas whenever the width and height changes
   useEffect(() => {
-    console.log(canvasHeight, canvasWidth, height, width, pixelSize);
-
     const newPixelSize = Math.max(
       1,
       Math.min(Math.floor(canvasHeight / height), Math.floor(canvasWidth / width)),

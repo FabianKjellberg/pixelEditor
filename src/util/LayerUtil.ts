@@ -1,5 +1,13 @@
 import { getPixelIndex, rgbaToInt } from '@/helpers/color';
-import { Cordinate, Direction, Layer, OutOfBoundItem, Rectangle } from '@/models/Layer';
+import {
+  Cordinate,
+  Direction,
+  Layer,
+  OutOfBoundItem,
+  Rectangle,
+  SelectionLayer,
+} from '@/models/Layer';
+import { he } from 'zod/locales';
 
 /**
  *
@@ -18,6 +26,54 @@ export function createLayer(rect: Rectangle, name: string, colorInt?: number): L
     pixels,
   };
 }
+
+/**
+ * This functions create a new selection layer,
+ * @param width
+ * @param height
+ * @param active
+ * @returns
+ */
+export function createSelectionLayer(
+  width: number,
+  height: number,
+  active: boolean,
+): SelectionLayer {
+  const pixels = new Uint8Array(Math.max(width * height, 0));
+  pixels.fill(0);
+  return {
+    pixels,
+    activeSelection: active,
+    width,
+    height,
+  };
+}
+
+export function convertSelectionLayer(
+  oldLayer: SelectionLayer,
+  width: number,
+  height: number,
+): SelectionLayer {
+  const pixels = new Uint8Array(Math.max(width * height, 0));
+  pixels.fill(0);
+
+  for (let i: number = 0; i < height; i++) {
+    if (i > oldLayer.height) {
+      i = height;
+      continue;
+    }
+    for (let j: number = 0; j < width; j++) {
+      if (j > oldLayer.width) {
+        j = width;
+        continue;
+      }
+      pixels[getPixelIndex(i, width, j)] = oldLayer.pixels[getPixelIndex(i, oldLayer.width, i)];
+    }
+  }
+
+  return oldLayer;
+}
+
 /**
  * This method increases the size of a layer, while it also
  * adjusts the pixel array so to keeps its original shape and position

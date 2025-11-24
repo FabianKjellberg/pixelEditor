@@ -6,6 +6,13 @@ export type Layer = {
   pixels: Uint32Array;
 };
 
+export type SelectionLayer = {
+  pixels: Uint8Array;
+  width: number;
+  height: number;
+  activeSelection: boolean;
+};
+
 export type Cordinate = {
   x: number;
   y: number;

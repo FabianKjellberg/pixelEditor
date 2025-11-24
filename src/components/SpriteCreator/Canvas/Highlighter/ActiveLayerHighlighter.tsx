@@ -5,24 +5,30 @@ import { useMemo } from 'react';
 import styles from './ActiveLayerHighlighter.module.css';
 import { useCanvasContext } from '@/context/CanvasContext';
 
+//!TODO rename this class to selectionhighligter
+
 const ActiveLayerHighlighter = () => {
   const { activeLayer } = useLayerContext();
   const { pixelSize, width, height, pan } = useCanvasContext();
 
   const highLightStyle = useMemo(() => {
-    const realX = pan.x + activeLayer.rect.x * pixelSize;
-    const realY = pan.y + activeLayer.rect.y * pixelSize;
-    let realW = activeLayer.rect.width * pixelSize;
-    let realH = activeLayer.rect.height * pixelSize;
+    const x1cordinate = Math.min(Math.max(0, activeLayer.rect.x), width);
+    const x2cordinate = Math.min(width, activeLayer.rect.x + activeLayer.rect.width);
+    const y1cordinate = Math.min(Math.max(0, activeLayer.rect.y), height);
+    const y2cordinate = Math.min(height, activeLayer.rect.y + activeLayer.rect.height);
 
-    realW = realW > pan.x + width * pixelSize - realX ? pan.x + width * pixelSize - realX : realW;
-    realH = realH > pan.y + height * pixelSize - realY ? pan.y + height * pixelSize - realY : realH;
+    // cordinates
+    const x1 = pan.x + x1cordinate * pixelSize;
+    const x2 = pan.x + x2cordinate * pixelSize;
+    const y1 = pan.y + y1cordinate * pixelSize;
+    const y2 = pan.y + y2cordinate * pixelSize;
 
+    // Rectangle from cordinates
     return {
-      width: realW,
-      height: realH,
-      left: realX,
-      top: realY,
+      width: x2 - x1,
+      height: y2 - y1,
+      left: x1,
+      top: y1,
     };
   }, [activeLayer, pixelSize, width, height, pan]);
 

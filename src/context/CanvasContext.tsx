@@ -1,6 +1,7 @@
 'use client';
 
-import { Cordinate } from '@/models/Layer';
+import { Cordinate, SelectionLayer } from '@/models/Layer';
+import { convertSelectionLayer, createSelectionLayer } from '@/util/LayerUtil';
 import {
   createContext,
   useCallback,
@@ -16,6 +17,8 @@ const defaultHeight: number = 64;
 const defaultPixelSize: number = 25;
 const defaultPan: Cordinate = { x: 0, y: 0 };
 
+const defaultSelectionLayer: SelectionLayer = createSelectionLayer(1, 1, false);
+
 type CanvasContextValue = {
   setDimensions: (width: number, height: number) => void;
   height: number;
@@ -27,6 +30,10 @@ type CanvasContextValue = {
 
   setPixelSize: (size: number) => void;
   pixelSize: number;
+
+  selectionLayer: SelectionLayer;
+  getSelectionLayer: () => SelectionLayer | undefined;
+  setSelectionLayer: (selectionLayer: SelectionLayer) => void;
 };
 
 const CanvasContext = createContext<CanvasContextValue | undefined>(undefined);
@@ -36,25 +43,41 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
   const [width, setWidth] = useState<number>(defaultWidth);
   const [height, setHeight] = useState<number>(defaultHeight);
   const [pan, setpan] = useState<Cordinate>(defaultPan);
+  const [selectionLayer, setSelectionLayer] = useState<SelectionLayer>(defaultSelectionLayer);
 
   const panRef = useRef(pan);
+  const selectionLayerRef = useRef(selectionLayer);
 
   useEffect(() => {
     panRef.current = pan;
   }, [pan]);
+  useEffect(() => {
+    selectionLayerRef.current = selectionLayer;
+  }, [selectionLayer]);
 
   const getPan = useCallback((): Cordinate => {
     return panRef.current;
+  }, []);
+  const getSelectionLayer = useCallback(() => {
+    return selectionLayer;
   }, []);
 
   const setPan = useCallback((cor: Cordinate) => {
     setpan(cor);
   }, []);
-
+  const setSelectionLayerCallback = useCallback((selectionLayer: SelectionLayer) => {
+    setSelectionLayer(selectionLayer);
+  }, []);
   const setDimensions = useCallback((width: number, height: number) => {
     setHeight(height);
     setWidth(width);
   }, []);
+
+  useEffect(() => {
+    const newSelectionLayer: SelectionLayer = convertSelectionLayer(selectionLayer, width, height);
+
+    setSelectionLayerCallback(newSelectionLayer);
+  }, [width, height]);
 
   const value = useMemo(
     () => ({
@@ -66,8 +89,23 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
       pan,
       getPan,
       setPan,
+      selectionLayer,
+      setSelectionLayer: setSelectionLayerCallback,
+      getSelectionLayer,
     }),
-    [pixelSize, setPixelSize, height, width, setDimensions, pan, getPan, setPan],
+    [
+      pixelSize,
+      setPixelSize,
+      height,
+      width,
+      setDimensions,
+      pan,
+      getPan,
+      setPan,
+      selectionLayer,
+      setSelectionLayerCallback,
+      getSelectionLayer,
+    ],
   );
 
   return <CanvasContext.Provider value={value}>{children}</CanvasContext.Provider>;
