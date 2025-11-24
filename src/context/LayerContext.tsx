@@ -9,8 +9,8 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { Layer, Rectangle, SelectionLayer } from '@/models/Layer';
-import { createLayer, createSelectionLayer } from '@/util/LayerUtil';
+import type { Layer, Rectangle } from '@/models/Layer';
+import { createLayer } from '@/util/LayerUtil';
 
 const defaultRect: Rectangle = { x: 0, y: 0, width: 0, height: 0 };
 const defaultLayer: Layer[] = [createLayer(defaultRect, 'Layer 1')];

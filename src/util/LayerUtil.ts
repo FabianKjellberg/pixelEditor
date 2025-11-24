@@ -7,8 +7,6 @@ import {
   Rectangle,
   SelectionLayer,
 } from '@/models/Layer';
-import { he } from 'zod/locales';
-
 /**
  *
  * @param width

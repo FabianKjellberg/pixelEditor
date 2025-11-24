@@ -111,12 +111,16 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
       lCtx.putImageData(img, dstX, dstY);
 
       (accumCtx as CanvasRenderingContext2D).globalCompositeOperation = 'source-over';
-      (accumCtx as CanvasRenderingContext2D).drawImage(layerRef.current as any, 0, 0);
+      (accumCtx as CanvasRenderingContext2D).drawImage(layerRef.current as CanvasImageSource, 0, 0);
     }
 
     // Write the composed block back to the backing at world coords
     backingCtx.clearRect(rx, ry, rw, rh);
-    (backingCtx as CanvasRenderingContext2D).drawImage(accumRef.current as any, rx, ry);
+    (backingCtx as CanvasRenderingContext2D).drawImage(
+      accumRef.current as CanvasImageSource,
+      rx,
+      ry,
+    );
 
     renderViewPort();
   };

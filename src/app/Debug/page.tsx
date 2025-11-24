@@ -33,7 +33,7 @@ const Debug = () => {
             ctx.setLineDash(pattern);
 
             const startBuffer = (j * pixelSize) % 4;
-            ctx.moveTo(j * pixelSize + startBuffer, i * pixelSize + 1);
+            ctx.moveTo(j * pixelSize - startBuffer, i * pixelSize + 1);
             ctx.lineTo(j * pixelSize + pixelSize, i * pixelSize + 1);
           }
           //noRightNeighbor

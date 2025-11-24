@@ -36,6 +36,15 @@
   }
 }
 
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 /* Choose your default cut here — example uses WIDE (Breit) as 400 */
 @font-face {
   font-family: 'DePixel';

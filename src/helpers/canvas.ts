@@ -14,7 +14,7 @@ export function ensureCanvas2D(
   }
 
   // resize if needed
-  const c = canvasRef.current as any;
+  const c = canvasRef.current;
   if (c.width !== w || c.height !== h) {
     c.width = w;
     c.height = h;
