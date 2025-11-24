@@ -69,6 +69,12 @@
   margin-bottom: 20px;
 }
 
+/* optional: make children size nicely so 2 fit per row on medium+ */
+.videoContainerContainer > * {
+  flex: 1 1 304px;
+  max-width: 304px;
+}
+
 .createPixelButtonContainer {
   display: flex;
   align-items: center;
@@ -80,4 +86,30 @@
   font-size: 25;
   width: 200px;
   margin-top: 10px;
+}
+
+/* === MEDIA QUERIES === */
+
+/* Medium screens – widen the frame so 2 videos fit inside */
+@media (max-width: 1200px) {
+  .mainPage {
+    width: 90vw;
+    padding: 30px;
+  }
+
+  .mainPage::before {
+    width: 90vw;
+  }
+}
+
+/* Small screens – remove the vertical borders completely */
+@media (max-width: 768px) {
+  .mainPage {
+    width: 100vw;
+    padding: 20px;
+  }
+
+  .mainPage::before {
+    display: none;
+  }
 }
