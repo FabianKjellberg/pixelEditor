@@ -1,0 +1,9 @@
+.videoContainer {
+  border: 2px solid var(--border);
+  width: fit-content;
+  display: flex;
+}
+
+.videoContainerFull {
+  width: 304px;
+}

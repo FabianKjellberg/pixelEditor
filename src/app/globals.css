@@ -1,3 +1,4 @@
+/*
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -16,25 +17,26 @@
 
   --top-menu-height: 30px;
 }
+*/
+/*@media (prefers-color-scheme: dark) {*/
+:root {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --btn-bg: #696969;
+  --btn-fg: #f9fafb;
+  --btn-bg-hover: color-mix(in srgb, var(--btn-bg), white 8%);
+  --btn-fg-hover: #b0b0b0;
+  --hover-tint: rgba(255, 255, 255, 0.08);
+  --input-bg: #111827;
+  --input-border: #374151;
+  --input-fg: #f9fafb;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --btn-bg: #696969;
-    --btn-fg: #f9fafb;
-    --btn-bg-hover: color-mix(in srgb, var(--btn-bg), white 8%);
-    --btn-fg-hover: #b0b0b0;
-    --hover-tint: rgba(255, 255, 255, 0.08);
-    --input-bg: #111827;
-    --input-border: #374151;
-    --input-fg: #f9fafb;
-
-    --border: #888888;
-    --highlight: #54fe3a;
-    --invert-icon-color: brightness(0) invert(1);
-  }
+  --border: #888888;
+  --highlight: #54fe3a;
+  --invert-icon-color: brightness(0) invert(1);
+  --top-menu-height: 30px;
 }
+/*}*/
 
 * {
   scrollbar-width: none;
@@ -43,6 +45,33 @@
 *::-webkit-scrollbar {
   width: 0;
   height: 0;
+}
+html {
+  color-scheme: dark;
+}
+
+.scrollable {
+  overflow: scroll;
+  overflow-y: auto;
+}
+
+/* Firefox: re-enable scrollbar */
+.scrollable {
+  scrollbar-width: auto; /* or 'thin' */
+}
+
+/* WebKit (Chrome, Edge, Safari): re-enable scrollbar */
+.scrollable::-webkit-scrollbar {
+  width: 8px; /* > 0 means it shows again */
+  height: 8px;
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+  background: #555; /* optional styling */
+}
+
+.scrollable::-webkit-scrollbar-track {
+  background: transparent; /* optional */
 }
 
 /* Choose your default cut here — example uses WIDE (Breit) as 400 */
@@ -77,12 +106,6 @@ body,
 p {
   max-width: 100vw;
   overflow-x: hidden;
-  input,
-  button,
-  html,
-  body {
-    font-family: 'medodioca', /*'DePixel',*/ system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  }
   font-size: large;
 }
 
@@ -155,4 +178,11 @@ a {
   html {
     color-scheme: dark;
   }
+}
+
+input,
+button,
+html,
+body {
+  font-family: 'medodioca', /*'DePixel',*/ system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }

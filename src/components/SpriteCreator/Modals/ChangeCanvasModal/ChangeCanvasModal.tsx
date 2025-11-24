@@ -34,7 +34,6 @@ const ChangeCanvasModal = () => {
       setCanvasHeight('');
       return;
     }
-    console.log(raw.length);
     if (raw.length > 4) return;
 
     const normalized = raw.replace(',', '.');
@@ -79,6 +78,7 @@ const ChangeCanvasModal = () => {
               max={2048}
               step={1}
               onChange={(e) => onChangeWidth(e.target.value, { min: 1, max: 2048 })}
+              className={styles.inputInputInput}
             />
             <p>px</p>
           </div>
@@ -91,6 +91,7 @@ const ChangeCanvasModal = () => {
               max={2048}
               step={1}
               onChange={(e) => onChangeHeight(e.target.value, { min: 1, max: 2048 })}
+              className={styles.inputInputInput}
             />
             <p>px</p>
           </div>

@@ -17,6 +17,10 @@
   gap: 4px;
 }
 
+.inputInputInput {
+  border: 2px solid var(--border);
+}
+
 .buttonContainer {
   display: flex;
   flex-direction: row;

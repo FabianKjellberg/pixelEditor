@@ -1,125 +1,124 @@
 :root {
-    --tree-indent: 15px;
-    --row-h: 24px;
-    --connector: var(--foreground);
-    --drop-accent: #2563eb;
-    --slot-height: 6px;
-    --slot-highlight: color-mix(in srgb, var(--drop-accent) 10%, transparent);
-    --hover-tint: color-mix(in srgb, var(--drop-accent) 12%, transparent);
+  --tree-indent: 15px;
+  --row-h: 24px;
+  --connector: var(--foreground);
+  --drop-accent: #54fe3a;
+  --slot-height: 6px;
+  --slot-highlight: color-mix(in srgb, var(--drop-accent) 10%, transparent);
+  --hover-tint: color-mix(in srgb, var(--drop-accent) 12%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --drop-accent: #54fe3a;
+    --slot-highlight: color-mix(in srgb, var(--drop-accent) 18%, transparent);
+    --hover-tint: color-mix(in srgb, var(--drop-accent) 16%, transparent);
   }
-  
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --drop-accent: #60a5fa;
-      --slot-highlight: color-mix(in srgb, var(--drop-accent) 18%, transparent);
-      --hover-tint: color-mix(in srgb, var(--drop-accent) 16%, transparent);
-    }
-  }
-  
-  .branch {
-    display: flex;
-    align-items: center;
-    position: relative;
-    min-height: var(--row-h);
-  }
-  
-  .branch::before {
-    content: "";
-    position: absolute;
-    left: calc(-1 * var(--tree-indent));
-    top: calc(var(--row-h) / 2);
-    width: var(--tree-indent);
-    border-top: 1px dotted var(--connector);
-    transform: translateY(-50%);
-  }
-  
-  .subBranches {
-    margin-left: var(--tree-indent);
-  }
-  
-  .wholeBranch {
-    position: relative;
-  }
-  
-  .wholeBranch::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: calc(var(--row-h) / 2);
-    bottom: 0;
-    border-left: 1px dotted var(--connector);
-  }
-  
-  .wholeBranch[data-root="true"]::before {
-    display: none;
-  }
-  
-  .wholeBranch[data-root="true"] > .branch::before {
-    display: none;
-  }
-  
-  .branchAddBranch {
-    border: none;
-    text-decoration: underline;
-    background: none;
-    color: var(--btn-fg);
-    transition: color .10s ease;
-  }
-  
-  .branchAddBranch:hover {
-    color: var(--btn-fg-hover);
-  }
-  
-  .branchAddBranch p {
-    font-size: smaller;
-  }
-  
-  .dropOver {
-    background: var(--hover-tint);
-    border-radius: 3px;
-    outline: 2px dashed color-mix(in srgb, var(--drop-accent) 80%, transparent);
-    outline-offset: -2px;
-    transition: background-color .12s ease, outline-color .12s ease;
-  }
-  
-  .branch.dropOver::before {
-    border-top-color: var(--drop-accent);
-    border-top-width: 2px;
-  }
-  
-  .branch.dropOver::after {
-    content: "";
-    position: absolute;
-    left: calc(-1 * var(--tree-indent));
-    top: 0;
-    bottom: 0;
-    border-left: 2px dotted var(--drop-accent);
-    pointer-events: none;
-  }
-  
-  .dropSlot {
-    position: relative;
-    height: var(--slot-height);
-    margin-left: calc(var(--tree-indent) - 1px);
-    border-radius: 3px;
-  }
-  
-  .dropSlotOver {
-    background: var(--slot-highlight);
-  }
-  
-  .dropSlot::before {
-    content: "";
-    position: absolute;
-    inset-inline: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    border-top: 2px solid transparent;
-    pointer-events: none;
-    transition: border-color .12s ease, opacity .12s ease;
-  }
-  
-  .dropSlotOver::before {
-    border-top-color: var(--drop-accent);
-  }
-  
+}
+
+.branch {
+  display: flex;
+  align-items: center;
+  position: relative;
+  min-height: var(--row-h);
+}
+
+.branch::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--tree-indent));
+  top: calc(var(--row-h) / 2);
+  width: var(--tree-indent);
+  border-top: 1px dotted var(--connector);
+  transform: translateY(-50%);
+}
+
+.subBranches {
+  margin-left: var(--tree-indent);
+}
+
+.wholeBranch {
+  position: relative;
+}
+
+.wholeBranch::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: calc(var(--row-h) / 2);
+  bottom: 0;
+  border-left: 1px dotted var(--connector);
+}
+
+.wholeBranch[data-root='true']::before {
+  display: none;
+}
+
+.wholeBranch[data-root='true'] > .branch::before {
+  display: none;
+}
+
+.branchAddBranch {
+  border: none;
+  text-decoration: underline;
+  background: none;
+  color: var(--btn-fg);
+  transition: color 0.1s ease;
+}
+
+.branchAddBranch:hover {
+  color: var(--btn-fg-hover);
+}
+
+.branchAddBranch p {
+  font-size: smaller;
+}
+
+.dropOver {
+  background: var(--hover-tint);
+  border-radius: 3px;
+  outline: 2px dashed color-mix(in srgb, var(--drop-accent) 80%, transparent);
+  outline-offset: -2px;
+  transition: background-color 0.12s ease, outline-color 0.12s ease;
+}
+
+.branch.dropOver::before {
+  border-top-color: var(--drop-accent);
+  border-top-width: 2px;
+}
+
+.branch.dropOver::after {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--tree-indent));
+  top: 0;
+  bottom: 0;
+  border-left: 2px dotted var(--drop-accent);
+  pointer-events: none;
+}
+
+.dropSlot {
+  position: relative;
+  height: var(--slot-height);
+  margin-left: calc(var(--tree-indent) - 1px);
+  border-radius: 3px;
+}
+
+.dropSlotOver {
+  background: var(--slot-highlight);
+}
+
+.dropSlot::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 2px solid transparent;
+  pointer-events: none;
+  transition: border-color 0.12s ease, opacity 0.12s ease;
+}
+
+.dropSlotOver::before {
+  border-top-color: var(--drop-accent);
+}

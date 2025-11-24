@@ -98,7 +98,7 @@ export default function Tree() {
     collapsed: false,
     subBranches: [],
     id: '1',
-    title: 'Instance Title',
+    title: 'Root Title',
   });
 
   const updateTree = useCallback((path: number[], branch: branch): void => {
@@ -108,7 +108,7 @@ export default function Tree() {
   const moveBranch = useCallback((dragId: string, targetId: string) => {
     setTree((prev) => {
       if (dragId === targetId) return prev; // no-op
-      if (prev.id === dragId) return prev; // don't move root (optional)
+      if (prev.id === dragId) return prev; // don't move root
       if (isAncestor(prev, dragId, targetId)) return prev; // no cycles
 
       const res = removeById(prev, dragId);
