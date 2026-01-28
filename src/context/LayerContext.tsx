@@ -23,6 +23,7 @@ type LayerContextValue = {
   activeLayer: Layer;
   getActiveLayer: () => Layer | undefined;
   setActiveLayer: (layer: Layer, dirtyRectangle: Rectangle) => void;
+  setActiveLayer2: (updater: (prevLayer: Layer) => { layer: Layer; dirtyRect: Rectangle }) => void;
   deleteLayer: (index: number) => void;
   moveLayer: (from: number, to: number) => void;
 
@@ -90,6 +91,33 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       pushDirty(dirtyRectangle);
+    },
+    [pushDirty],
+  );
+
+  const setActiveLayer2 = useCallback(
+    (updater: (prevLayer: Layer) => { layer: Layer; dirtyRect: Rectangle }) => {
+      let dirtyToPush: Rectangle | null = null;
+
+      setAllLayers((prev) => {
+        const idx = activeLayerIndexRef.current;
+        if (idx < 0 || idx >= prev.length) return prev;
+
+        const prevLayer = prev[idx];
+        const { layer: nextLayer, dirtyRect } = updater(prevLayer);
+
+        // store dirty to push after state update is scheduled
+        dirtyToPush = dirtyRect;
+
+        // no change -> return prev (optional micro-opt)
+        if (nextLayer === prevLayer) return prev;
+
+        pushDirty(dirtyToPush);
+
+        const next = prev.slice();
+        next[idx] = nextLayer;
+        return next;
+      });
     },
     [pushDirty],
   );
@@ -189,6 +217,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       activeLayer,
       getActiveLayer,
       setActiveLayer,
+      setActiveLayer2,
       deleteLayer,
       moveLayer,
 
@@ -206,6 +235,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       activeLayer,
       getActiveLayer,
       setActiveLayer,
+      setActiveLayer2,
       deleteLayer,
       moveLayer,
       addLayer,

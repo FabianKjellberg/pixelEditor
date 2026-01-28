@@ -7,6 +7,8 @@ import {
   Rectangle,
   SelectionLayer,
 } from '@/models/Layer';
+import { create } from 'domain';
+import { blendColor } from './ColorUtil';
 /**
  *
  * @param width
@@ -25,28 +27,6 @@ export function createLayer(rect: Rectangle, name: string, colorInt?: number): L
   };
 }
 
-/**
- * This functions create a new selection layer,
- * @param width
- * @param height
- * @param active
- * @returns
- */
-export function createSelectionLayer(
-  width: number,
-  height: number,
-  active: boolean,
-): SelectionLayer {
-  const pixels = new Uint8Array(Math.max(width * height, 0));
-  pixels.fill(0);
-  return {
-    pixels,
-    activeSelection: active,
-    width,
-    height,
-  };
-}
-
 export function convertSelectionLayer(
   oldLayer: SelectionLayer,
   width: number,
@@ -56,16 +36,17 @@ export function convertSelectionLayer(
   pixels.fill(0);
 
   for (let i: number = 0; i < height; i++) {
-    if (i > oldLayer.height) {
+    if (i > oldLayer.rect.height) {
       i = height;
       continue;
     }
     for (let j: number = 0; j < width; j++) {
-      if (j > oldLayer.width) {
+      if (j > oldLayer.rect.width) {
         j = width;
         continue;
       }
-      pixels[getPixelIndex(i, width, j)] = oldLayer.pixels[getPixelIndex(i, oldLayer.width, i)];
+      pixels[getPixelIndex(i, width, j)] =
+        oldLayer.pixels[getPixelIndex(i, oldLayer.rect.width, i)];
     }
   }
 
@@ -249,39 +230,79 @@ export function tryReduceLayerSize(dir: Direction, layer: Layer): { layer: Layer
   return { layer: decreaseLayerBoundary(reduceAmnt, layer), dir: reduceAmnt };
 }
 
-export function stampLayer(stamp: Layer, originaLayer: Layer): Layer {
-  for (let y = 0; y < stamp.rect.height; y++) {
-    //check in boundary
-    const yOffset = stamp.rect.y + y;
-    //go to next layer if not inside the height boundary yet
-    if (yOffset < 0) continue;
-    //end whole loop if the max height has been reached
-    if (yOffset >= originaLayer.rect.height) {
-      y = stamp.rect.height;
-      continue;
-    }
+export function stampLayer(
+  stamp: Layer,
+  originalLayer: Layer,
+  replace: boolean,
+  strokeLayer: Layer,
+  strokeNr: number,
+): Layer {
+  // Combined bounding rect in *canvas* coordinates
+  const combinedRect = combineRectangles(originalLayer.rect, stamp.rect);
 
-    for (let x = 0; x < stamp.rect.width; x++) {
-      const xOffset = stamp.rect.x + x;
+  const newWidth = combinedRect.width;
+  const newHeight = combinedRect.height;
 
-      //go to next x loop if not in boundary yet
-      if (xOffset < 0) continue;
-      //go to next y loop if reached end of the x boundary
-      if (xOffset >= originaLayer.rect.width) {
-        x = stamp.rect.width;
-        continue;
-      }
+  //!TODO possible bottleneck, might not have to do this if layer is being updated
+  // Allocate new pixel buffer
+  const newPixels = new Uint32Array(newWidth * newHeight);
 
-      const originalIndex = getPixelIndex(yOffset, originaLayer.rect.width, xOffset);
-      const stampIndex = getPixelIndex(y, stamp.rect.width, x);
-      originaLayer.pixels[originalIndex] = stamp.pixels[stampIndex];
+  // Helper to map canvas (global) coords -> local index in newPixels
+  const toNewIndex = (globalX: number, globalY: number): number => {
+    const localX = globalX - combinedRect.x;
+    const localY = globalY - combinedRect.y;
+    return getPixelIndex(localY, newWidth, localX);
+  };
+
+  // Copy original layer into the new buffer
+  for (let y = 0; y < originalLayer.rect.height; y++) {
+    for (let x = 0; x < originalLayer.rect.width; x++) {
+      const globalX = originalLayer.rect.x + x;
+      const globalY = originalLayer.rect.y + y;
+
+      const srcIndex = getPixelIndex(y, originalLayer.rect.width, x);
+
+      const dstIndex = toNewIndex(globalX, globalY);
+
+      newPixels[dstIndex] = originalLayer.pixels[srcIndex];
     }
   }
 
-  return originaLayer;
+  // Copy stamp layer into the new buffer
+  for (let y = 0; y < stamp.rect.height; y++) {
+    for (let x = 0; x < stamp.rect.width; x++) {
+      const globalX = stamp.rect.x + x;
+      const globalY = stamp.rect.y + y;
+
+      const srcIndex = getPixelIndex(y, stamp.rect.width, x);
+      const dstIndex = toNewIndex(globalX, globalY);
+
+      const stampPixel = stamp.pixels[srcIndex];
+      const originalPixel = newPixels[dstIndex];
+
+      const blendedPixel = replace ? stampPixel : blendColor(stampPixel, originalPixel);
+
+      newPixels[dstIndex] = blendedPixel;
+    }
+  }
+
+  // Return a new layer, keeping the original layer's metadata
+  const newLayer: Layer = {
+    ...originalLayer,
+    rect: combinedRect,
+    pixels: newPixels,
+  };
+
+  return newLayer;
 }
 
-export function lineStampLayer(stamp: Layer, to: Rectangle, originalLayer: Layer): Layer {
+export function lineStampLayer(
+  stamp: Layer,
+  to: Rectangle,
+  originalLayer: Layer,
+  strokeLayer: Layer,
+  strokeNr: number,
+): Layer {
   let x0 = stamp.rect.x,
     y0 = stamp.rect.y;
   const x1 = to.x,
@@ -297,7 +318,7 @@ export function lineStampLayer(stamp: Layer, to: Rectangle, originalLayer: Layer
 
   while (true) {
     const s = { ...stamp, rect: { ...stamp.rect, x: x0, y: y0 } };
-    out = stampLayer(s, out);
+    out = stampLayer(s, out, true, strokeLayer, strokeNr);
 
     if (x0 === x1 && y0 === y1) break;
 
@@ -314,7 +335,7 @@ export function lineStampLayer(stamp: Layer, to: Rectangle, originalLayer: Layer
   return out;
 }
 
-export function rectanglesIntersecting(r1: Rectangle, r2: Rectangle): boolean {
+export function isRectanglesIntersecting(r1: Rectangle, r2: Rectangle): boolean {
   return (
     r1.x <= r2.x + r2.width - 1 &&
     r2.x <= r1.x + r1.width - 1 &&
@@ -324,6 +345,9 @@ export function rectanglesIntersecting(r1: Rectangle, r2: Rectangle): boolean {
 }
 
 export function combineRectangles(r1: Rectangle, r2: Rectangle): Rectangle {
+  if (r1.height == 0 || r1.width == 0) return r2;
+  if (r2.height == 0 || r2.width == 0) return r1;
+
   const x1 = Math.min(r1.x, r2.x);
   const y1 = Math.min(r1.y, r2.y);
   const x2 = Math.max(r1.x + r1.width, r2.x + r2.width);
@@ -335,4 +359,265 @@ export function combineRectangles(r1: Rectangle, r2: Rectangle): Rectangle {
     width: x2 - x1,
     height: y2 - y1,
   };
+}
+
+export function drawLine(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  size: number,
+  color: number,
+  strokeLayer: Layer,
+  strokeNr: number,
+  firstInStroke: boolean,
+): Layer {
+  const r = Math.floor(size / 2);
+
+  const r1: Rectangle = {
+    x: x1 - r,
+    y: y1 - r,
+    width: size,
+    height: size,
+  };
+
+  const firstStamp = createLayer(r1, 'no name', color);
+
+  const r2: Rectangle = {
+    x: x2 - r,
+    y: y2 - r,
+    width: size,
+    height: size,
+  };
+
+  const outRectangle: Rectangle = combineRectangles(r1, r2);
+  const out: Layer = createLayer(outRectangle, 'noName');
+  //stamp first layer
+
+  //console.log(firstInStroke);
+  if (firstInStroke) replacePixelsWithStroke(out, firstStamp, strokeLayer, strokeNr);
+
+  const dX = Math.abs(x1 - x2);
+  const dY = Math.abs(y1 - y2);
+
+  const longestDistance = Math.max(dX, dY);
+
+  if (longestDistance === 0) {
+    return out;
+  }
+
+  const yDir = y1 >= y2 ? -1 : 1;
+  const xDir = x1 >= x2 ? -1 : 1;
+
+  let lastStepX = x1;
+  let lastStepY = y1;
+
+  for (let i: number = 1; i < longestDistance + 1; i++) {
+    const dSteps: number = i / longestDistance;
+
+    const stepX = x1 + xDir * Math.round(dSteps * dX);
+    const stepY = y1 + yDir * Math.round(dSteps * dY);
+
+    //console.log('stepX: ', stepX, 'stepY: ', stepY);
+
+    const edgeX = stepX - r + (xDir === 1 ? size - 1 : 0);
+    const edgeY = stepY - r + (yDir === 1 ? size - 1 : 0);
+
+    const localX = edgeX - out.rect.x;
+    const localY = edgeY - out.rect.y;
+
+    //Draw verticallys
+    if (stepX != lastStepX) {
+      for (let j: number = 0; j < size; j++) {
+        const strokeLayerIndex = getPixelIndex(edgeY + j * -yDir, strokeLayer.rect.width, edgeX);
+        if (strokeLayer.pixels[strokeLayerIndex] == strokeNr) {
+          continue;
+        }
+
+        strokeLayer.pixels[strokeLayerIndex] = strokeNr;
+        out.pixels[getPixelIndex(localY + j * -yDir, out.rect.width, localX)] = color;
+      }
+    }
+    //Draw Horizontally
+    if (stepY != lastStepY) {
+      for (let j: number = 0; j < size; j++) {
+        const strokeLayerIndex = getPixelIndex(edgeY, strokeLayer.rect.width, edgeX + j * -xDir);
+        if (strokeLayer.pixels[strokeLayerIndex] == strokeNr) {
+          continue;
+        }
+
+        strokeLayer.pixels[strokeLayerIndex] = strokeNr;
+        out.pixels[getPixelIndex(localY, out.rect.width, localX + j * -xDir)] = color;
+      }
+    }
+
+    lastStepX = stepX;
+    lastStepY = stepY;
+    //console.log('out', out);
+  }
+
+  return out;
+}
+
+export function clipLayerToSelection(layer: Layer, selectionLayer: SelectionLayer): Layer {
+  // return if there is no intersection between the rectangles
+  if (!isRectanglesIntersecting(layer.rect, selectionLayer.rect)) {
+    return createLayer({ x: layer.rect.x, y: layer.rect.y, width: 0, height: 0 }, layer.name);
+  }
+
+  const intersectingRect = rectangleIntersection(layer.rect, selectionLayer.rect);
+
+  const out: Layer = createLayer(intersectingRect, layer.name);
+
+  for (let y: number = 0; y < out.rect.height; y++) {
+    for (let x: number = 0; x < out.rect.width; x++) {
+      const selectionOffsetX: number = out.rect.x - selectionLayer.rect.x + x;
+      const selectionOffsetY: number = out.rect.y - selectionLayer.rect.y + y;
+
+      const selectionPixel: number =
+        selectionLayer.pixels[
+          getPixelIndex(selectionOffsetY, selectionLayer.rect.width, selectionOffsetX)
+        ];
+
+      //dont draw where you are not allowed
+      if (selectionPixel === 0) continue;
+
+      const layerOffsetX: number = out.rect.x - layer.rect.x + x;
+      const layerOffsetY: number = out.rect.y - layer.rect.y + y;
+
+      const layerPixel: number =
+        layer.pixels[getPixelIndex(layerOffsetY, layer.rect.width, layerOffsetX)];
+
+      out.pixels[getPixelIndex(y, out.rect.width, x)] = layerPixel;
+    }
+  }
+  return out;
+}
+
+export function clipLayerToRect(layer: Layer, rect: Rectangle): Layer {
+  const intersectingRect = rectangleIntersection(layer.rect, rect);
+
+  const out: Layer = createLayer(intersectingRect, layer.name);
+
+  for (let y: number = 0; y < out.rect.height; y++) {
+    for (let x: number = 0; x < out.rect.width; x++) {
+      const layerOffsetX: number = out.rect.x - layer.rect.x + x;
+      const layerOffsetY: number = out.rect.y - layer.rect.y + y;
+
+      const layerPixel: number =
+        layer.pixels[getPixelIndex(layerOffsetY, layer.rect.width, layerOffsetX)];
+
+      out.pixels[getPixelIndex(y, out.rect.width, x)] = layerPixel;
+    }
+  }
+  return out;
+}
+
+export function rectangleIntersection(r1: Rectangle, r2: Rectangle): Rectangle {
+  const x1: number = Math.max(r1.x, r2.x);
+  const x2: number = Math.min(r1.x + r1.width, r2.x + r2.width);
+  const y1: number = Math.max(r1.y, r2.y);
+  const y2: number = Math.min(r1.y + r1.height, r2.y + r2.height);
+
+  return {
+    x: x1,
+    y: y1,
+    width: x2 - x1,
+    height: y2 - y1,
+  };
+}
+
+export function stampToCanvasLayer(stamp: Layer, originalLayer: Layer): Layer {
+  //create a new layer with both (layers)
+  const combinedRectangle: Rectangle = combineRectangles(originalLayer.rect, stamp.rect);
+  const combinedLayer: Layer = createLayer(combinedRectangle, originalLayer.name);
+
+  //copy from original layer to new
+  replacePixels(combinedLayer, originalLayer);
+
+  //blend stampPixles into original Layer;
+  blendPixels(combinedLayer, stamp);
+
+  return combinedLayer;
+}
+
+export function replacePixels(to: Layer, from: Layer) {
+  for (let y = 0; y < from.rect.height; y++) {
+    for (let x = 0; x < from.rect.width; x++) {
+      const globalX = from.rect.x + x;
+      const globalY = from.rect.y + y;
+
+      const srcIndex = getPixelIndex(y, from.rect.width, x);
+
+      const destY = globalY - to.rect.y;
+      const destX = globalX - to.rect.x;
+      const dstIndex = getPixelIndex(destY, to.rect.width, destX);
+
+      to.pixels[dstIndex] = from.pixels[srcIndex];
+    }
+  }
+}
+
+const EMPTY = rgbaToInt(0, 0, 0, 0);
+
+export function replacePixelsWithStroke(
+  to: Layer,
+  from: Layer,
+  strokeLayer: Layer,
+  strokeNr: number,
+) {
+  for (let y = 0; y < from.rect.height; y++) {
+    for (let x = 0; x < from.rect.width; x++) {
+      const globalX = from.rect.x + x;
+      const globalY = from.rect.y + y;
+
+      // strokeLayer is global: assume rect.x/y = 0. Still bounds-check.
+      if (
+        globalX < 0 ||
+        globalY < 0 ||
+        globalX >= strokeLayer.rect.width ||
+        globalY >= strokeLayer.rect.height
+      ) {
+        continue;
+      }
+
+      const srcIndex = getPixelIndex(y, from.rect.width, x);
+      const srcPixel = from.pixels[srcIndex];
+
+      // Defensive: never stamp "empty" into destination (prevents accidental erasing).
+      if (srcPixel === EMPTY) continue;
+
+      const strokeIdx = getPixelIndex(globalY, strokeLayer.rect.width, globalX);
+      if (strokeLayer.pixels[strokeIdx] === strokeNr) continue;
+
+      const destX = globalX - to.rect.x;
+      const destY = globalY - to.rect.y;
+
+      if (destX < 0 || destY < 0 || destX >= to.rect.width || destY >= to.rect.height) {
+        continue;
+      }
+
+      const dstIndex = getPixelIndex(destY, to.rect.width, destX);
+
+      to.pixels[dstIndex] = srcPixel;
+      strokeLayer.pixels[strokeIdx] = strokeNr;
+    }
+  }
+}
+
+export function blendPixels(to: Layer, from: Layer) {
+  for (let y = 0; y < from.rect.height; y++) {
+    for (let x = 0; x < from.rect.width; x++) {
+      const globalX = from.rect.x + x;
+      const globalY = from.rect.y + y;
+
+      const srcIndex = getPixelIndex(y, from.rect.width, x);
+
+      const destY = globalY - to.rect.y;
+      const destX = globalX - to.rect.x;
+      const dstIndex = getPixelIndex(destY, to.rect.width, destX);
+
+      to.pixels[dstIndex] = blendColor(from.pixels[srcIndex], to.pixels[dstIndex]);
+    }
+  }
 }

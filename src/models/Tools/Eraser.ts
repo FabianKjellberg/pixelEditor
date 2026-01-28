@@ -5,7 +5,7 @@ import {
   createLayer,
   getPixelPositions,
   lineStampLayer,
-  rectanglesIntersecting,
+  isRectanglesIntersecting,
   stampLayer,
   tryReduceLayerSize,
 } from '@/util/LayerUtil';
@@ -81,8 +81,8 @@ export class Eraser implements ITool {
       height: size,
     };
 
-    const stampIntersection: boolean = rectanglesIntersecting(layerRectangle, stampRectangle);
-    const prevStampIntersection: boolean = rectanglesIntersecting(
+    const stampIntersection: boolean = isRectanglesIntersecting(layerRectangle, stampRectangle);
+    const prevStampIntersection: boolean = isRectanglesIntersecting(
       layerRectangle,
       prevStampRectangle,
     );
@@ -104,12 +104,12 @@ export class Eraser implements ITool {
 
     const strokeShape: Layer = createLayer(stampRectangle, '');
 
-    if (curX == prevX && curY == prevY) {
+    /*if (curX == prevX && curY == prevY) {
       layer = stampLayer(strokeShape, layer);
     } else {
       const prevRect: Rectangle = { x: prevX - r, y: prevY - r, width: size, height: size };
       layer = lineStampLayer(strokeShape, prevRect, layer);
-    }
+    }*/
 
     const leftEdgeRectangle: Rectangle = { x: 0, y: 0, width: 1, height: layer.rect.height };
     const topEdgeRectangle: Rectangle = { x: 0, y: 0, width: layer.rect.width, height: 1 };
@@ -135,10 +135,10 @@ export class Eraser implements ITool {
 
     //see if eraser toucher boundary
     const intersectEdges: Direction = {
-      left: rectanglesIntersecting(localAffectedArea, leftEdgeRectangle) ? 1 : 0,
-      top: rectanglesIntersecting(localAffectedArea, topEdgeRectangle) ? 1 : 0,
-      right: rectanglesIntersecting(localAffectedArea, rightEdgeRectangle) ? 1 : 0,
-      bottom: rectanglesIntersecting(localAffectedArea, bottomEdgeRectangle) ? 1 : 0,
+      left: isRectanglesIntersecting(localAffectedArea, leftEdgeRectangle) ? 1 : 0,
+      top: isRectanglesIntersecting(localAffectedArea, topEdgeRectangle) ? 1 : 0,
+      right: isRectanglesIntersecting(localAffectedArea, rightEdgeRectangle) ? 1 : 0,
+      bottom: isRectanglesIntersecting(localAffectedArea, bottomEdgeRectangle) ? 1 : 0,
     };
 
     const reduceLayer = tryReduceLayerSize(intersectEdges, layer);

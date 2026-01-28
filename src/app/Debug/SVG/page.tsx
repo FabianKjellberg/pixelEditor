@@ -80,9 +80,7 @@ const SVG = () => {
         if (!getCell(x, y)) continue;
 
         //top
-        if (!getCell(x, y - 1)) {
-          edges.push({ p1: { x: x, y: y }, p2: { x: x + 1, y: y } });
-        }
+        if (!getCell(x, y - 1)) edges.push({ p1: { x: x, y: y }, p2: { x: x + 1, y: y } });
         //right
         if (!getCell(x + 1, y)) edges.push({ p1: { x: x + 1, y: y }, p2: { x: x + 1, y: y + 1 } });
         //bottom
@@ -107,7 +105,6 @@ const SVG = () => {
       edgeMap.set(p2Key, updatedP2Neighbors);
     });
 
-    let exit = false;
     const pathParts: string[] = [];
 
     while (edgeMap.size > 0) {
@@ -136,12 +133,10 @@ const SVG = () => {
         const nextNeighbors = edgeMap.get(key);
 
         if (!nextNeighbors || nextNeighbors.length === 0) {
-          // open contour / error case
           edgeMap.delete(key);
           break;
         }
 
-        // after consuming edges, degree should be 1 here
         const nextPoint = nextNeighbors[0];
 
         removeEdge(edgeMap, current, nextPoint);

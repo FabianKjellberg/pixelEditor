@@ -1,92 +1,54 @@
 'use client';
 
 import { getPixelIndex } from '@/helpers/color';
+import { Cordinate } from '@/models/Layer';
 import React, { useRef, useEffect } from 'react';
 
 const Debug = () => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const numbers: Cordinate[] = [];
 
-  const selectedArray = new Uint8Array([1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1]);
-  const pixelSize = 23;
-  const pattern = [2];
+  const x1: number = 1;
+  const y1: number = 1;
+  const x2: number = 0;
+  const y2: number = 0;
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  const dX = Math.abs(x1 - x2);
+  const dY = Math.abs(y1 - y2);
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  const longestDistance = Math.max(dX, dY);
 
-    const width = canvas.width;
-    const height = canvas.height;
+  const yDir = y1 >= y2 ? -1 : 1;
+  const xDir = x1 >= x2 ? -1 : 1;
 
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    for (let i: number = 0; i < 4; i++) {
-      for (let j: number = 0; j < 4; j++) {
-        if (selectedArray[getPixelIndex(i, 4, j)] === 1) {
-          ctx.fillStyle = 'white';
-          ctx.fillRect(j * pixelSize, i * pixelSize, pixelSize, pixelSize);
+  console.log('start');
+  for (let i: number = 1; i < longestDistance + 1; i++) {
+    const dSteps: number = i / longestDistance;
 
-          //noTopNeighbor
-          if (i <= 0 || selectedArray[getPixelIndex(i - 1, 4, j)] !== 1) {
-            ctx.setLineDash(pattern);
+    const stepX = x1 + xDir * Math.round(dSteps * dX);
+    const stepY = y1 + yDir * Math.round(dSteps * dY);
 
-            const startBuffer = (j * pixelSize) % 4;
-            ctx.moveTo(j * pixelSize - startBuffer, i * pixelSize + 1);
-            ctx.lineTo(j * pixelSize + pixelSize, i * pixelSize + 1);
-          }
-          //noRightNeighbor
-          if (j >= 4 - 1 || selectedArray[getPixelIndex(i, 4, j + 1)] !== 1) {
-            ctx.setLineDash(pattern);
+    numbers.push({ x: stepX, y: stepY });
+    console.log('x:', stepX, 'y:', stepY);
+  }
+  console.log('stop');
 
-            ctx.moveTo(j * pixelSize + pixelSize - 1, i * pixelSize);
-            ctx.lineTo(j * pixelSize + pixelSize - 1, i * pixelSize + pixelSize);
-          }
-          //noBottomNeighbor
-          if (i >= 4 - 1 || selectedArray[getPixelIndex(i + 1, 4, j)] !== 1) {
-            ctx.setLineDash(pattern);
-            const startBuffer = (j * pixelSize) % 4;
+  const size = 3;
+  const x = 5;
+  const y = 5;
+  const newX = x - Math.floor(size / 2) + (xDir === -1 ? 0 : size - 1);
+  const newY = y - Math.floor(size / 2) + (yDir === -1 ? 0 : size - 1);
 
-            ctx.moveTo(j * pixelSize - startBuffer - 2, i * pixelSize + pixelSize - 1);
-            ctx.lineTo(j * pixelSize + pixelSize, i * pixelSize + pixelSize - 1);
-          }
-          //noLeftNeighbor
-          if (j <= 0 || selectedArray[getPixelIndex(i, 4, j - 1)] !== 1) {
-            ctx.setLineDash(pattern);
+  console.log('xDir: ', xDir, ' yDir: ', yDir);
 
-            ctx.moveTo(j * pixelSize + 1, i * pixelSize);
-            ctx.lineTo(j * pixelSize + 1, i * pixelSize + pixelSize);
-          }
-        }
-      }
-      ctx.stroke();
-    }
-  }, []);
+  for (let i: number = 0; i < size; i++) {
+    console.log('x: ', newX, 'y: ', newY + i * -yDir);
+  }
 
-  return (
-    <div
-      style={{
-        padding: 16,
-        background: 'gray',
-        minHeight: '100vh',
-        color: 'white',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-      }}
-    >
-      <h1 style={{ margin: 0, fontSize: 18 }}>Debug Canvas</h1>
-      <canvas
-        ref={canvasRef}
-        width={512}
-        height={512}
-        style={{
-          background: '#gray',
-        }}
-      />
-    </div>
-  );
+  for (let i: number = 0; i < size; i++) {
+    console.log('x: ', newX + i * -xDir, 'y: ', newY);
+  }
+
+  return <>hej</>;
 };
 
 export default Debug;

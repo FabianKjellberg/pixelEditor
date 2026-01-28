@@ -1,14 +1,17 @@
-import { Layer, Rectangle } from '../Layer';
-import { getProperty, PropertyType, SizeProperty } from './Properties';
+import { intToRGB, rgbaToInt } from '@/helpers/color';
+import { Cordinate, Layer, Rectangle } from '../Layer';
+import { getProperty, IProperty, OpacityProperty, PropertyType, SizeProperty } from './Properties';
 import { ITool, IToolDeps } from './Tools';
 import { config } from '@/config/env';
 import {
+  clipLayerToRect,
+  clipLayerToSelection,
   createLayer,
+  drawLine,
   getPixelPositions,
-  increaseLayerBoundary,
-  lineStampLayer,
-  outOfBoundFinder,
+  isRectanglesIntersecting,
   stampLayer,
+  stampToCanvasLayer,
 } from '@/util/LayerUtil';
 
 export class PenTool implements ITool {
@@ -18,16 +21,17 @@ export class PenTool implements ITool {
   //variables to make sure that move doesnt try to draw every move if it has already drew on the pixel
   private lastX: number | null = null;
   private lastY: number | null = null;
+  private strokeNr: number = 1;
+  private strokeMatrix: Layer = createLayer({ x: 0, y: 0, width: 0, height: 0 }, 'strokeMatrix', 0);
 
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {}
   //Interface methods
   onDown(x: number, y: number, pixelSize: number): void {
-    const layer = this.toolDeps.getLayer?.() || undefined;
-    if (layer == undefined) return;
+    const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
 
     //Draw
-    this.draw(x, y, layer, pixelSize);
+    this.draw(pixelPos.x, pixelPos.y);
 
     //put the "pen down"
     this.drawing = true;
@@ -36,103 +40,169 @@ export class PenTool implements ITool {
     //return early if pen is not held down
     if (!this.drawing) return;
 
-    //return early if the the move is inside the same cordinate as last move
-    if (this.lastX == x && this.lastY == y) return;
+    const pixelPos = getPixelPositions(x, y, pixelSize);
 
     //fetch the layer from context
-    const layer = this.toolDeps.getLayer?.() || undefined;
-    if (layer == undefined) return;
+
+    //return early if the the move is inside the same cordinate as last move
+    if (this.lastX == pixelPos.x && this.lastY == pixelPos.y) return;
 
     //draw
-    this.draw(x, y, layer, pixelSize);
+    this.draw(pixelPos.x, pixelPos.y);
   }
   onUp(): void {
     //reset value on up
     this.drawing = false;
     this.lastX = null;
     this.lastY = null;
+    this.strokeNr++;
   }
 
   //Other Methods
-  private draw = (x: number, y: number, layer: Layer, ps: number): void => {
-    const color: number = this.toolDeps.getPrimaryColor?.() ?? config.defaultColor;
-    const sizeProp = getProperty<SizeProperty>(
-      this.toolDeps.getProperties?.('pencil') ?? [],
-      PropertyType.Size,
+  private draw = (x: number, y: number): void => {
+    const setLayer = this.toolDeps.setLayer2;
+    if (setLayer == undefined) return;
+
+    let color: number = this.toolDeps.getPrimaryColor?.() ?? config.defaultColor;
+
+    //get properties
+    const properties: IProperty[] = this.toolDeps.getProperties?.('pencil') ?? [];
+    const sizeProp = getProperty<SizeProperty>(properties, PropertyType.Size);
+    const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
+
+    //add Opacity to properties
+    const rgba = intToRGB(color);
+    color = rgbaToInt(rgba.r, rgba.g, rgba.b, opacityProperty?.value ?? 255);
+
+    //Return early if tool doesnt have access to getting canvas boundary
+    const getCanvasRect = this.toolDeps.getCanvasRect;
+    if (getCanvasRect === undefined) return;
+    const canvasRect: Rectangle = getCanvasRect();
+
+    //Update the matrix array and reset stroke if the canvas has changed size
+    this.updateStrokeMatrixIfChanged(canvasRect);
+
+    //get Props
+    const selectedLayer = this.toolDeps.getSelectionLayer?.();
+    const size = sizeProp?.value ?? 0;
+
+    const firstInStroke: boolean = this.lastX == null && this.lastY == null;
+
+    // set last last x,y or current x,y if it doesnt exist
+    const lastX: number = this.lastX ?? x;
+    const lastY: number = this.lastY ?? y;
+
+    //update last x,y
+    this.lastX = x;
+    this.lastY = y;
+
+    //build layer from current cordinates to last cordinates
+    const lineLayer: Layer = drawLine(
+      lastX,
+      lastY,
+      x,
+      y,
+      size,
+      color,
+      this.strokeMatrix,
+      this.strokeNr,
+      firstInStroke,
     );
 
-    const size = sizeProp?.value ?? 0;
-    const r = Math.floor(size / 2);
-
-    //get position in pixelSize
-    let pixelPos = getPixelPositions(x, y, ps);
-
-    // If the layer is empty, create a 1×1 at the first point (layer-local will start at 0,0)
-    if (layer.rect.width === 0 && layer.rect.height === 0) {
-      layer = createLayer({ width: 1, height: 1, x: pixelPos.x, y: pixelPos.y }, layer.name);
-      pixelPos = { x: 0, y: 0 };
-    } else {
-      //Get relative to layer
-      pixelPos = { x: pixelPos.x - layer.rect.x, y: pixelPos.y - layer.rect.y };
+    // return early if line is outside of canvas
+    if (!isRectanglesIntersecting(canvasRect, lineLayer.rect)) {
+      return;
     }
 
-    // Previous point (center). If null (first draw), use current so we just stamp once.
-    let prevX = this.lastX ?? pixelPos.x;
-    let prevY = this.lastY ?? pixelPos.y;
+    //filter pixels in not selected pixels
+    const selectionFilteredLayer: Layer = selectedLayer
+      ? clipLayerToSelection(lineLayer, selectedLayer)
+      : lineLayer;
 
-    // Current point (center)
-    let curX = pixelPos.x;
-    let curY = pixelPos.y;
+    //filter out pixels outside of canvas
+    const filterCanvas: Layer = clipLayerToRect(selectionFilteredLayer, canvasRect);
 
-    // Stamp rect (top-left) derived from current center
-    let stampRect: Rectangle = { x: curX - r, y: curY - r, width: size, height: size };
+    const dirtyRectangle: Rectangle = filterCanvas.rect;
 
-    // Check bounds against current layer and grow if needed
-    const bounds = outOfBoundFinder(stampRect, layer.rect.width, layer.rect.height);
-
-    if (bounds.outOfBounds) {
-      // Grow layer and get how much it shifted (left/top add space *inside* the layer)
-      layer = increaseLayerBoundary(bounds.dir, layer);
-
-      // Shift both prev & current centers by the added margins on left/top
-      const shiftX = bounds.dir.left ?? 0;
-      const shiftY = bounds.dir.top ?? 0;
-
-      prevX += shiftX;
-      prevY += shiftY;
-      curX += shiftX;
-      curY += shiftY;
-
-      // Recompute current stamp rect after shift
-      stampRect = { x: curX - r, y: curY - r, width: size, height: size };
-    }
-
-    // Build stroke shape at current position
-    const strokeShape: Layer = createLayer(stampRect, layer.name, color);
-
-    // If there was movement, draw a line from previous center to current center
-    if (prevX !== curX || prevY !== curY) {
-      const prevRect: Rectangle = { x: prevX - r, y: prevY - r, width: size, height: size };
-      layer = lineStampLayer(strokeShape, prevRect, layer);
-    } else {
-      layer = stampLayer(strokeShape, layer);
-    }
-
-    // Compute redraw rectangle (in canvas coords) that covers the stroke path
-    const minX = Math.min(prevX, curX) - r;
-    const minY = Math.min(prevY, curY) - r;
-    const redrawRectangle: Rectangle = {
-      x: layer.rect.x + minX,
-      y: layer.rect.y + minY,
-      width: Math.abs(curX - prevX) + size,
-      height: Math.abs(curY - prevY) + size,
-    };
-
-    // Update last point (center)
-    this.lastX = curX;
-    this.lastY = curY;
-
-    // Commit
-    this.toolDeps.setLayer?.({ ...layer }, redrawRectangle);
+    setLayer((prevLayer: Layer) => {
+      const newLayer = stampToCanvasLayer(filterCanvas, prevLayer);
+      return {
+        layer: newLayer,
+        dirtyRect: dirtyRectangle,
+      };
+    });
   };
+
+  private updateStrokeMatrixIfChanged(canvasRect: Rectangle) {
+    if (
+      canvasRect.height == this.strokeMatrix.rect.height &&
+      canvasRect.width == this.strokeMatrix.rect.width
+    ) {
+      return;
+    }
+
+    this.strokeNr = 1;
+    this.strokeMatrix = createLayer(canvasRect, 'strokedaddy', 0);
+  }
 }
+
+/* water COLOR BRUSH?????
+
+private draw = (x: number, y: number, layer: Layer): void => {
+    let color: number = this.toolDeps.getPrimaryColor?.() ?? config.defaultColor;
+
+    //get properties
+    const properties: IProperty[] = this.toolDeps.getProperties?.('pencil') ?? [];
+    const sizeProp = getProperty<SizeProperty>(properties, PropertyType.Size);
+    const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
+
+    //add Opacity to properties
+    const rgba = intToRGB(color);
+    color = rgbaToInt(rgba.r, rgba.g, rgba.b, opacityProperty?.value ?? 255);
+
+    // Return early if tool doesnt have access to set layer
+    const setLayer = this.toolDeps.setLayer;
+    if (setLayer === undefined) return;
+
+    //Return early if tool doesnt have access to getting canvas boundary
+    const getCanvasRect = this.toolDeps.getCanvasRect;
+    if (getCanvasRect === undefined) return;
+    const canvasRect: Rectangle = getCanvasRect();
+
+    //get Props
+    const selectedLayer = this.toolDeps.getSelectionLayer?.();
+    const size = sizeProp?.value ?? 0;
+
+    // set last last x,y or current x,y if it doesnt exist
+    const lastX: number = this.lastX ?? x;
+    const lastY: number = this.lastY ?? y;
+
+    //update last x,y
+    this.lastX = x;
+    this.lastY = y;
+
+    //build layer from current cordinates to last cordinates
+    const lineLayer: Layer = drawLine(x, y, lastX, lastY, size, color);
+
+    // return early if line is outside of canvas
+    if (!isRectanglesIntersecting(canvasRect, lineLayer.rect)) {
+      return;
+    }
+
+    //filter pixels in not selected pixels
+    const selectionFilteredLayer: Layer = selectedLayer
+      ? clipLayerToSelection(lineLayer, selectedLayer)
+      : lineLayer;
+
+    //filter out pixels outside of canvas
+    const filterCanvas: Layer = clipLayerToRect(selectionFilteredLayer, canvasRect);
+
+    const dirtyRectangle: Rectangle = filterCanvas.rect;
+
+    const newLayer = stampLayer(filterCanvas, layer);
+
+    setLayer(newLayer, dirtyRectangle);
+
+    Color brush
+  };
+ */
