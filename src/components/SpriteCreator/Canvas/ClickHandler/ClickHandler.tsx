@@ -19,6 +19,10 @@ const ClickHandler = () => {
     setPanTool(new PanTool({ getPan: getPan, setPan: setPan }));
   }, [setPan, getPan]);
 
+  useEffect(() => {
+    setPixelDecimalSize(pixelSize);
+  }, [pixelSize]);
+
   const onPointerDown: React.PointerEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
 
@@ -61,9 +65,9 @@ const ClickHandler = () => {
 
   const cursorType: CSSProperties = useMemo(() => {
     if (ctrlDown) return { cursor: 'move' };
-
+    if (activeTool.name == 'rectangleSelector') return { cursor: 'crosshair' };
     return { cursor: 'pointer' };
-  }, [ctrlDown]);
+  }, [ctrlDown, activeTool]);
 
   const onScroll: React.WheelEventHandler<HTMLDivElement> = (e) => {
     e.stopPropagation();

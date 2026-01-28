@@ -1,9 +1,10 @@
 'use client';
 
 import { useCanvasContext } from '@/context/CanvasContext';
+import { createSelectionLayer } from '@/util/SelectionUtil';
 
 const RedrawEverything = () => {
-  const { setPixelSize, pixelSize } = useCanvasContext();
+  const { setPixelSize, pixelSize, setSelectionLayer } = useCanvasContext();
 
   const zoomIn = () => {
     if (pixelSize > 100) return;
@@ -13,6 +14,12 @@ const RedrawEverything = () => {
   const zoomOut = () => {
     if (pixelSize <= 1) return;
     setPixelSize(Math.floor(pixelSize * 0.8));
+  };
+
+  const makeSelection = () => {
+    const selectionLayer = createSelectionLayer(3, 3, 10, 10, true);
+
+    setSelectionLayer(selectionLayer);
   };
 
   return (
@@ -31,6 +38,7 @@ const RedrawEverything = () => {
       >
         zoom out
       </button>
+      <button onClick={makeSelection}>make selection</button>
     </>
   );
 };

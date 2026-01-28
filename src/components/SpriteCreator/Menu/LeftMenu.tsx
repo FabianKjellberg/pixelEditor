@@ -1,9 +1,10 @@
 import menuStyles from './Menu.module.css';
-import EraserComponent from './EraserComponent/EraserComponent';
-import PenToolComponent from './PenToolComponent/PenToolComponent';
-import MoveComponent from './MoveComponent/MoveComponent';
-import Properties from './Properties/Properties';
-import PanToolComponent from './PanToolComponent/PanToolComponent';
+import EraserComponent from './Tools/EraserComponent/EraserComponent';
+import PenToolComponent from './Tools/PenToolComponent/PenToolComponent';
+import MoveComponent from './Tools/MoveComponent/MoveComponent';
+import Properties from './Tools/Properties/Properties';
+import PanToolComponent from './Tools/PanToolComponent/PanToolComponent';
+import RectangleSelectorComponent from './Tools/RectangleSelectorComponent/RectangleSelectorComponent';
 
 const LeftMenu = () => {
   return (
@@ -19,6 +20,9 @@ const LeftMenu = () => {
             <div className={menuStyles.toolIconRow}>
               <MoveComponent />
               <PanToolComponent />
+            </div>
+            <div className={menuStyles.toolIconRow}>
+              <RectangleSelectorComponent />
             </div>
           </div>
         </div>

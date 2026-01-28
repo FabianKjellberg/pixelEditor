@@ -1,16 +1,12 @@
 export type Layer = {
   name: string;
-
   rect: Rectangle;
-
   pixels: Uint32Array;
 };
 
 export type SelectionLayer = {
   pixels: Uint8Array;
-  width: number;
-  height: number;
-  activeSelection: boolean;
+  rect: Rectangle;
 };
 
 export type Cordinate = {

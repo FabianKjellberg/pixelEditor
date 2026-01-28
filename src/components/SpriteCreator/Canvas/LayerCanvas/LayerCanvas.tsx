@@ -127,7 +127,6 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
 
   useEffect(() => {
     const dirtyRects = consumeDirty();
-
     if (dirtyRects.length < 1) return;
 
     const minX = Math.min(...dirtyRects.map((r) => r.x));
@@ -147,11 +146,11 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     if (bigRect.width * bigRect.height <= smallRectArea) {
       redrawBackCanvas(bigRect);
     } else {
-      dirtyRects.map((rect) => {
+      dirtyRects.forEach((rect) => {
         redrawBackCanvas(rect);
       });
     }
-  }, [redrawVersion]);
+  }, [redrawVersion, consumeDirty, redrawBackCanvas]);
 
   useEffect(() => {
     if (!width || !height) return;

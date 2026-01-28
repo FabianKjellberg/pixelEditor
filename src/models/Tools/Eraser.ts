@@ -1,14 +1,16 @@
 import { ITool, IToolDeps } from './Tools';
-import { getProperty, PropertyType, SizeProperty } from './Properties';
-import { Direction, Layer, Rectangle } from '../Layer';
+import { getProperty, IProperty, OpacityProperty, PropertyType, SizeProperty } from './Properties';
+import { Cordinate, Layer, Rectangle } from '../Layer';
 import {
   createLayer,
   getPixelPositions,
-  lineStampLayer,
-  rectanglesIntersecting,
-  stampLayer,
-  tryReduceLayerSize,
+  drawLine,
+  isRectanglesIntersecting,
+  clipLayerToSelection,
+  clipLayerToRect,
+  eraseFromCanvasLayer,
 } from '@/util/LayerUtil';
+import { rgbaToInt } from '@/helpers/color';
 
 export class Eraser implements ITool {
   //variable to know if the eraser is "held down" on the canvas
@@ -18,134 +20,121 @@ export class Eraser implements ITool {
   //variables to make sure that move doesnt try to draw every move if it has already drew on the pixel
   private lastX: number | null = null;
   private lastY: number | null = null;
+  private strokeNr: number = 1;
+  private strokeMatrix: Layer = createLayer({ x: 0, y: 0, width: 0, height: 0 }, 'strokeMatrix', 0);
 
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {}
 
   /** -- INTERFACE METHODS -- **/
   onDown(x: number, y: number, pixelSize: number): void {
-    const layer: Layer | undefined = this.toolDeps.getLayer?.();
-    if (layer == undefined) return;
-    this.erase(x, y, layer, pixelSize);
+    const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
+
+    this.erase(pixelPos.x, pixelPos.y);
+
     this.erasing = true;
   }
   onMove(x: number, y: number, pixelSize: number): void {
-    if (this.erasing && !(this.lastX == x && this.lastY == y)) {
-      const layer: Layer | undefined = this.toolDeps.getLayer?.();
-      if (layer == undefined) return;
-      this.erase(x, y, layer, pixelSize);
-    }
+    //return early if eraser is not held down
+    if (!this.erasing) return;
+
+    const pixelPos = getPixelPositions(x, y, pixelSize);
+
+    // return early if its in the same pixel on the canvas
+    if (this.lastX === pixelPos.x && this.lastY === pixelPos.y) return;
+
+    this.erase(pixelPos.x, pixelPos.y);
   }
   onUp(): void {
     this.erasing = false;
     this.lastX = null;
     this.lastY = null;
+    this.strokeNr++;
   }
 
   /** -- OTHER METHODS -- **/
-  private erase = (x: number, y: number, layer: Layer, ps: number): void => {
-    const properties = this.toolDeps.getProperties?.(this.name) ?? [];
+  private erase = (x: number, y: number): void => {
+    const setLayer = this.toolDeps.setLayer;
+    if (setLayer == undefined) return;
+
+    // Get properties (same pattern as PenTool)
+    const properties: IProperty[] = this.toolDeps.getProperties?.('eraser') ?? [];
     const sizeProp = getProperty<SizeProperty>(properties, PropertyType.Size);
+    const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
 
-    const size = sizeProp?.value ?? 0;
+    // Create eraser "color" - RGB doesn't matter, only alpha (erase strength)
+    // Default to 255 (full erase) like PenTool defaults to full opacity
+    const eraserStrength = rgbaToInt(0, 0, 0, opacityProperty?.value ?? 255);
 
-    const r = Math.floor(size / 2);
+    // Return early if tool doesn't have access to canvas boundary
+    const getCanvasRect = this.toolDeps.getCanvasRect;
+    if (getCanvasRect === undefined) return;
+    const canvasRect: Rectangle = getCanvasRect();
 
-    let pixelPos = getPixelPositions(x, y, ps);
+    // Update the stroke matrix if canvas size changed
+    this.updateStrokeMatrixIfChanged(canvasRect);
 
-    pixelPos = { x: pixelPos.x - layer.rect.x, y: pixelPos.y - layer.rect.y };
+    // Get selection layer
+    const selectedLayer = this.toolDeps.getSelectionLayer?.();
+    const size = sizeProp?.value ?? 1;
 
-    const prevX = this.lastX ?? pixelPos.x;
-    const prevY = this.lastY ?? pixelPos.y;
+    const firstInStroke: boolean = this.lastX == null && this.lastY == null;
 
-    const curX = pixelPos.x;
-    const curY = pixelPos.y;
+    // Set last x,y or current x,y if it doesn't exist
+    const lastX: number = this.lastX ?? x;
+    const lastY: number = this.lastY ?? y;
 
-    //boundary of the rectangle of the stamped pen stroke relative to its own layer
-    const stampRectangle: Rectangle = {
-      x: curX - r,
-      y: curY - r,
-      width: size,
-      height: size,
-    };
-    const layerRectangle: Rectangle = {
-      x: 0,
-      y: 0,
-      width: layer.rect.width,
-      height: layer.rect.height,
-    };
-    const prevStampRectangle: Rectangle = {
-      x: prevX - r,
-      y: prevY - r,
-      width: size,
-      height: size,
-    };
+    // Update last x,y
+    this.lastX = x;
+    this.lastY = y;
 
-    const stampIntersection: boolean = rectanglesIntersecting(layerRectangle, stampRectangle);
-    const prevStampIntersection: boolean = rectanglesIntersecting(
-      layerRectangle,
-      prevStampRectangle,
+    // Build layer from current coordinates to last coordinates
+    const lineLayer: Layer = drawLine(
+      lastX,
+      lastY,
+      x,
+      y,
+      size,
+      eraserStrength,
+      this.strokeMatrix,
+      this.strokeNr,
+      firstInStroke,
     );
 
-    if (!stampIntersection && !prevStampIntersection) {
-      this.lastX = prevX;
-      this.lastY = prevY;
+    // Return early if erasing outside of canvas
+    if (!isRectanglesIntersecting(canvasRect, lineLayer.rect)) {
       return;
     }
 
-    const minX = Math.min(prevX, curX) - r;
-    const minY = Math.min(prevY, curY) - r;
-    const redrawRectangle: Rectangle = {
-      x: layer.rect.x + minX,
-      y: layer.rect.y + minY,
-      width: Math.abs(curX - prevX) + size,
-      height: Math.abs(curY - prevY) + size,
-    };
+    // Filter pixels not in selection
+    const selectionFilteredLayer: Layer = selectedLayer
+      ? clipLayerToSelection(lineLayer, selectedLayer)
+      : lineLayer;
 
-    const strokeShape: Layer = createLayer(stampRectangle, '');
+    // Filter out pixels outside of canvas
+    const filterCanvas: Layer = clipLayerToRect(selectionFilteredLayer, canvasRect);
 
-    if (curX == prevX && curY == prevY) {
-      layer = stampLayer(strokeShape, layer);
-    } else {
-      const prevRect: Rectangle = { x: prevX - r, y: prevY - r, width: size, height: size };
-      layer = lineStampLayer(strokeShape, prevRect, layer);
+    const dirtyRectangle: Rectangle = filterCanvas.rect;
+
+    // Update layer using eraseFromCanvasLayer
+    setLayer((prevLayer: Layer) => {
+      const newLayer = eraseFromCanvasLayer(filterCanvas, prevLayer);
+      return {
+        layer: newLayer,
+        dirtyRect: dirtyRectangle,
+      };
+    });
+  };
+
+  private updateStrokeMatrixIfChanged(canvasRect: Rectangle) {
+    if (
+      canvasRect.height == this.strokeMatrix.rect.height &&
+      canvasRect.width == this.strokeMatrix.rect.width
+    ) {
+      return;
     }
 
-    const leftEdgeRectangle: Rectangle = { x: 0, y: 0, width: 1, height: layer.rect.height };
-    const topEdgeRectangle: Rectangle = { x: 0, y: 0, width: layer.rect.width, height: 1 };
-    const rightEdgeRectangle: Rectangle = {
-      x: layer.rect.width - 1,
-      y: 0,
-      width: 1,
-      height: layer.rect.height,
-    };
-    const bottomEdgeRectangle: Rectangle = {
-      x: 0,
-      y: layer.rect.height - 1,
-      width: layer.rect.width,
-      height: 1,
-    };
-
-    const localAffectedArea: Rectangle = {
-      x: redrawRectangle.x - layer.rect.x,
-      y: redrawRectangle.y - layer.rect.y,
-      width: redrawRectangle.width,
-      height: redrawRectangle.height,
-    };
-
-    //see if eraser toucher boundary
-    const intersectEdges: Direction = {
-      left: rectanglesIntersecting(localAffectedArea, leftEdgeRectangle) ? 1 : 0,
-      top: rectanglesIntersecting(localAffectedArea, topEdgeRectangle) ? 1 : 0,
-      right: rectanglesIntersecting(localAffectedArea, rightEdgeRectangle) ? 1 : 0,
-      bottom: rectanglesIntersecting(localAffectedArea, bottomEdgeRectangle) ? 1 : 0,
-    };
-
-    const reduceLayer = tryReduceLayerSize(intersectEdges, layer);
-
-    this.lastX = curX - reduceLayer.dir.left;
-    this.lastY = curY - reduceLayer.dir.top;
-
-    this.toolDeps.setLayer?.(reduceLayer.layer, redrawRectangle);
-  };
+    this.strokeNr = 1;
+    this.strokeMatrix = createLayer(canvasRect, 'strokedaddy', 0);
+  }
 }

@@ -3,6 +3,15 @@ import { ISlider, IToggle, UIControlSpec } from './PropertySpecs';
 export enum PropertyType {
   Size = 0,
   SmoothEdgeProperty = 1,
+  Replace = 2,
+  Opacity = 3,
+}
+
+export interface IProperty<T = unknown, S extends UIControlSpec = UIControlSpec> {
+  readonly propertyType: PropertyType;
+  readonly spec: S;
+  get value(): T;
+  set value(v: T);
 }
 
 export class SizeProperty implements IProperty {
@@ -24,13 +33,6 @@ export class SizeProperty implements IProperty {
   }
 }
 
-export interface IProperty<T = unknown, S extends UIControlSpec = UIControlSpec> {
-  readonly propertyType: PropertyType;
-  readonly spec: S;
-  get value(): T;
-  set value(v: T);
-}
-
 export class SmoothEdgeProperty implements IProperty {
   propertyType: PropertyType = PropertyType.SmoothEdgeProperty;
   spec: IToggle = {
@@ -43,6 +45,40 @@ export class SmoothEdgeProperty implements IProperty {
   }
   set value(v: boolean) {
     this._value = !!v;
+  }
+}
+
+export class ReplaceProperty implements IProperty {
+  propertyType: PropertyType = PropertyType.Replace;
+  spec: IToggle = {
+    type: 'toggle',
+    label: 'Replace existing',
+  };
+  constructor(private _value: boolean = true) {}
+  get value() {
+    return this._value;
+  }
+  set value(v: boolean) {
+    this._value = !!v;
+  }
+}
+
+export class OpacityProperty implements IProperty {
+  propertyType: PropertyType = PropertyType.Opacity;
+  spec: ISlider = {
+    type: 'slider',
+    label: 'Opacity',
+    min: 1,
+    max: 255,
+    linear: true,
+  };
+  constructor(private _value: number = 255) {}
+  get value() {
+    return this._value;
+  }
+  set value(v: number) {
+    const clamped = Math.max(this.spec.min, Math.min(this.spec.max, Math.round(v)));
+    this._value = clamped;
   }
 }
 

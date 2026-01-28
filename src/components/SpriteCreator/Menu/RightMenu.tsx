@@ -1,8 +1,8 @@
-import ColorPicker from './ColorPicker/ColorPicker';
-import RedrawEverything from './redrawEverythingDEV/RedrawEverything';
+import ColorPicker from './Tools/ColorPicker/ColorPicker';
+import RedrawEverything from './Tools/redrawEverythingDEV/RedrawEverything';
 
 import menuStyles from './Menu.module.css';
-import LayerSelector from './LayerSelector/LayerSelector';
+import LayerSelector from './Tools/LayerSelector/LayerSelector';
 
 const RightMenu = () => {
   return (

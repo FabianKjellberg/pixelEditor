@@ -3,18 +3,25 @@
 import ToolButton from '../ToolButton/ToolButton';
 import { PenTool } from '@/models/Tools/PenTool';
 import { useLayerContext } from '@/context/LayerContext';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useToolContext } from '@/context/ToolContext';
-import { SizeProperty, SmoothEdgeProperty } from '@/models/Tools/Properties';
+import { OpacityProperty, SizeProperty, SmoothEdgeProperty } from '@/models/Tools/Properties';
+import { useCanvasContext } from '@/context/CanvasContext';
+import { Rectangle } from '@/models/Layer';
 
 const PenToolComponent = () => {
   const { getActiveLayer, setActiveLayer } = useLayerContext();
   const { setActiveTool, getPrimaryColor, getProperties, setProperties } = useToolContext();
+  const { getSelectionLayer, getCanvasRect } = useCanvasContext();
 
   useEffect(() => {
     const existing = getProperties('pencil');
     if (!existing.length) {
-      setProperties('pencil', [new SizeProperty(2), new SmoothEdgeProperty(false)]);
+      setProperties('pencil', [
+        new SizeProperty(2),
+        new OpacityProperty(255),
+        new SmoothEdgeProperty(false),
+      ]);
     }
   }, [getProperties, setProperties]);
 
@@ -25,6 +32,8 @@ const PenToolComponent = () => {
         getLayer: getActiveLayer,
         getPrimaryColor,
         getProperties,
+        getSelectionLayer,
+        getCanvasRect,
       }),
     [getActiveLayer, setActiveLayer, getPrimaryColor, getProperties],
   );
@@ -33,10 +42,6 @@ const PenToolComponent = () => {
     setActiveTool(defaultTool);
   }, []);
 
-  return (
-    <>
-      <ToolButton icon="/icons/pencil.png" tool={defaultTool} />
-    </>
-  );
+  return <ToolButton icon="/icons/pencil.png" tool={defaultTool} />;
 };
 export default PenToolComponent;
