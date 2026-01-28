@@ -3,8 +3,7 @@ import { IProperty } from './Properties';
 
 export type IToolDeps = {
   getLayer?: () => Layer | undefined;
-  setLayer?: (layer: Layer, dirtyRectangle: Rectangle) => void;
-  setLayer2?: (updater: (prev: Layer) => { layer: Layer; dirtyRect: Rectangle }) => void;
+  setLayer?: (updater: (prev: Layer) => { layer: Layer; dirtyRect: Rectangle }) => void;
   getSelectionLayer?: () => SelectionLayer | undefined;
   setSelectionLayer?: (selectionLayer: SelectionLayer) => void;
   getPrimaryColor?: () => number | undefined;

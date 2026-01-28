@@ -23,7 +23,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
 export const useSettingsContext = () => {
   const ctx = useContext(SettingsContext);
   if (!ctx) {
-    throw new Error('useMenuContext must be used within <ToolProvider>');
+    throw new Error('useSettingsContext must be used within <SettingsProvider>');
   }
   return ctx;
 };

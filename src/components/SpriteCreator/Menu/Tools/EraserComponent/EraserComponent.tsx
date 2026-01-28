@@ -6,10 +6,12 @@ import { Eraser } from '@/models/Tools/Eraser';
 import { useToolContext } from '@/context/ToolContext';
 import { useEffect } from 'react';
 import { OpacityProperty, SizeProperty } from '@/models/Tools/Properties';
+import { useCanvasContext } from '@/context/CanvasContext';
 
 const EraserComponent = () => {
   const { getActiveLayer, setActiveLayer } = useLayerContext();
   const { getProperties, setProperties } = useToolContext();
+  const { getSelectionLayer, getCanvasRect } = useCanvasContext();
 
   useEffect(() => {
     const existing = getProperties('eraser');
@@ -21,7 +23,15 @@ const EraserComponent = () => {
   return (
     <ToolButton
       icon="/icons/eraser.png"
-      tool={new Eraser({ setLayer: setActiveLayer, getLayer: getActiveLayer, getProperties })}
+      tool={
+        new Eraser({
+          setLayer: setActiveLayer,
+          getLayer: getActiveLayer,
+          getProperties,
+          getCanvasRect,
+          getSelectionLayer,
+        })
+      }
     />
   );
 };

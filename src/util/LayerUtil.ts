@@ -1,4 +1,4 @@
-import { getPixelIndex, rgbaToInt } from '@/helpers/color';
+import { getPixelIndex, intToRGB, rgbaToInt } from '@/helpers/color';
 import {
   Cordinate,
   Direction,
@@ -7,7 +7,6 @@ import {
   Rectangle,
   SelectionLayer,
 } from '@/models/Layer';
-import { create } from 'domain';
 import { blendColor } from './ColorUtil';
 /**
  *
@@ -46,7 +45,7 @@ export function convertSelectionLayer(
         continue;
       }
       pixels[getPixelIndex(i, width, j)] =
-        oldLayer.pixels[getPixelIndex(i, oldLayer.rect.width, i)];
+        oldLayer.pixels[getPixelIndex(i, oldLayer.rect.width, j)];
     }
   }
 
@@ -95,7 +94,7 @@ export function decreaseLayerBoundary(dir: Direction, l: Layer) {
   const height = OriginalLayer.rect.height - (dir.top + dir.bottom);
 
   //early return if the height or width would not exist :)
-  if (width <= 0 || width <= 0) {
+  if (width <= 0 || height <= 0) {
     return createLayer({ width: 0, height: 0, x: 0, y: 0 }, OriginalLayer.name);
   }
 
@@ -418,8 +417,6 @@ export function drawLine(
     const stepX = x1 + xDir * Math.round(dSteps * dX);
     const stepY = y1 + yDir * Math.round(dSteps * dY);
 
-    //console.log('stepX: ', stepX, 'stepY: ', stepY);
-
     const edgeX = stepX - r + (xDir === 1 ? size - 1 : 0);
     const edgeY = stepY - r + (yDir === 1 ? size - 1 : 0);
 
@@ -620,4 +617,177 @@ export function blendPixels(to: Layer, from: Layer) {
       to.pixels[dstIndex] = blendColor(from.pixels[srcIndex], to.pixels[dstIndex]);
     }
   }
+}
+
+/**
+ * Subtracts alpha from destination pixels based on source mask.
+ * The mask's alpha value determines how much to reduce the destination's alpha.
+ * RGB values of the destination are preserved.
+ */
+export function subtractAlphaPixels(to: Layer, mask: Layer) {
+  for (let y = 0; y < mask.rect.height; y++) {
+    for (let x = 0; x < mask.rect.width; x++) {
+      const globalX = mask.rect.x + x;
+      const globalY = mask.rect.y + y;
+
+      const srcIndex = getPixelIndex(y, mask.rect.width, x);
+
+      const destY = globalY - to.rect.y;
+      const destX = globalX - to.rect.x;
+
+      // Skip if outside destination bounds
+      if (destX < 0 || destY < 0 || destX >= to.rect.width || destY >= to.rect.height) {
+        continue;
+      }
+
+      const dstIndex = getPixelIndex(destY, to.rect.width, destX);
+
+      to.pixels[dstIndex] = subtractAlpha(mask.pixels[srcIndex], to.pixels[dstIndex]);
+    }
+  }
+}
+
+/**
+ * Reduces destination pixel's alpha by the mask pixel's alpha.
+ * Preserves the destination's RGB values.
+ */
+function subtractAlpha(maskPixel: number, destPixel: number): number {
+  const mask = intToRGB(maskPixel);
+  const dest = intToRGB(destPixel);
+
+  // Keep destination RGB, reduce alpha by mask's alpha
+  const newAlpha = Math.max(0, dest.a - mask.a);
+
+  return rgbaToInt(dest.r, dest.g, dest.b, newAlpha);
+}
+
+/**
+ * Erases (reduces alpha) from a canvas layer using a mask layer.
+ * Similar to stampToCanvasLayer but subtracts alpha instead of blending.
+ * After erasing, reduces the layer size by removing empty edges.
+ */
+export function eraseFromCanvasLayer(mask: Layer, originalLayer: Layer): Layer {
+  // For erasing, we only need the intersection - layer can never grow
+  const intersectRect = rectangleIntersection(originalLayer.rect, mask.rect);
+
+  // If no intersection, return original unchanged
+  if (intersectRect.width <= 0 || intersectRect.height <= 0) {
+    return originalLayer;
+  }
+
+  // Create new layer with same bounds as original
+  const newLayer: Layer = {
+    ...originalLayer,
+    pixels: originalLayer.pixels.slice(),
+  };
+
+  // Subtract alpha from the mask positions
+  subtractAlphaPixels(newLayer, mask);
+
+  // Reduce layer size by removing empty edges
+  return reduceLayerToContent(newLayer);
+}
+
+/**
+ * Reduces a layer's bounds by removing empty edges (rows/columns with alpha = 0).
+ * Scans from each edge inward until finding a pixel with alpha > 0.
+ */
+export function reduceLayerToContent(layer: Layer): Layer {
+  // Early return for empty layers
+  if (layer.rect.width <= 0 || layer.rect.height <= 0) {
+    return layer;
+  }
+
+  let leftTrim = 0;
+  let topTrim = 0;
+  let rightTrim = 0;
+  let bottomTrim = 0;
+
+  const { width, height } = layer.rect;
+
+  // Scan from left edge
+  let foundContent = false;
+  for (let x = 0; x < width && !foundContent; x++) {
+    for (let y = 0; y < height; y++) {
+      const pixelAlpha = layer.pixels[y * width + x] & 0xff;
+      if (pixelAlpha > 0) {
+        foundContent = true;
+        break;
+      }
+    }
+    if (!foundContent) leftTrim++;
+  }
+
+  // If entire layer is empty, return empty layer
+  if (leftTrim === width) {
+    return createLayer({ x: layer.rect.x, y: layer.rect.y, width: 0, height: 0 }, layer.name);
+  }
+
+  // Scan from right edge
+  foundContent = false;
+  for (let x = width - 1; x >= leftTrim && !foundContent; x--) {
+    for (let y = 0; y < height; y++) {
+      const pixelAlpha = layer.pixels[y * width + x] & 0xff;
+      if (pixelAlpha > 0) {
+        foundContent = true;
+        break;
+      }
+    }
+    if (!foundContent) rightTrim++;
+  }
+
+  // Scan from top edge
+  foundContent = false;
+  for (let y = 0; y < height && !foundContent; y++) {
+    for (let x = leftTrim; x < width - rightTrim; x++) {
+      const pixelAlpha = layer.pixels[y * width + x] & 0xff;
+      if (pixelAlpha > 0) {
+        foundContent = true;
+        break;
+      }
+    }
+    if (!foundContent) topTrim++;
+  }
+
+  // Scan from bottom edge
+  foundContent = false;
+  for (let y = height - 1; y >= topTrim && !foundContent; y--) {
+    for (let x = leftTrim; x < width - rightTrim; x++) {
+      const pixelAlpha = layer.pixels[y * width + x] & 0xff;
+      if (pixelAlpha > 0) {
+        foundContent = true;
+        break;
+      }
+    }
+    if (!foundContent) bottomTrim++;
+  }
+
+  // If no trimming needed, return original
+  if (leftTrim === 0 && rightTrim === 0 && topTrim === 0 && bottomTrim === 0) {
+    return layer;
+  }
+
+  // Create reduced layer
+  const newWidth = width - leftTrim - rightTrim;
+  const newHeight = height - topTrim - bottomTrim;
+  const newX = layer.rect.x + leftTrim;
+  const newY = layer.rect.y + topTrim;
+
+  const reducedLayer = createLayer(
+    { x: newX, y: newY, width: newWidth, height: newHeight },
+    layer.name,
+  );
+
+  // Copy pixels to reduced layer
+  for (let y = 0; y < newHeight; y++) {
+    for (let x = 0; x < newWidth; x++) {
+      const srcX = x + leftTrim;
+      const srcY = y + topTrim;
+      const srcIndex = srcY * width + srcX;
+      const dstIndex = y * newWidth + x;
+      reducedLayer.pixels[dstIndex] = layer.pixels[srcIndex];
+    }
+  }
+
+  return reducedLayer;
 }

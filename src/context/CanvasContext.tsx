@@ -42,7 +42,7 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
   const [pixelSize, setPixelSize] = useState<number>(defaultPixelSize);
   const [width, setWidth] = useState<number>(defaultWidth);
   const [height, setHeight] = useState<number>(defaultHeight);
-  const [pan, setpan] = useState<Cordinate>(defaultPan);
+  const [pan, setPanState] = useState<Cordinate>(defaultPan);
   const [selectionLayer, setSelectionLayer] = useState<SelectionLayer | undefined>(undefined);
 
   const panRef = useRef(pan);
@@ -57,7 +57,6 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
     panRef.current = pan;
   }, [pan]);
   useEffect(() => {
-    console.log(selectionLayer);
     selectionLayerRef.current = selectionLayer;
   }, [selectionLayer]);
   useEffect(() => {
@@ -72,7 +71,7 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const setPan = useCallback((cor: Cordinate) => {
-    setpan(cor);
+    setPanState(cor);
   }, []);
   const setSelectionLayerCallback = useCallback((selectionLayer: SelectionLayer | undefined) => {
     setSelectionLayer(selectionLayer);

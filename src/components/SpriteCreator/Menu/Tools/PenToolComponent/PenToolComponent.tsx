@@ -10,7 +10,7 @@ import { useCanvasContext } from '@/context/CanvasContext';
 import { Rectangle } from '@/models/Layer';
 
 const PenToolComponent = () => {
-  const { getActiveLayer, setActiveLayer, setActiveLayer2 } = useLayerContext();
+  const { getActiveLayer, setActiveLayer } = useLayerContext();
   const { setActiveTool, getPrimaryColor, getProperties, setProperties } = useToolContext();
   const { getSelectionLayer, getCanvasRect } = useCanvasContext();
 
@@ -30,7 +30,6 @@ const PenToolComponent = () => {
       new PenTool({
         setLayer: setActiveLayer,
         getLayer: getActiveLayer,
-        setLayer2: setActiveLayer2,
         getPrimaryColor,
         getProperties,
         getSelectionLayer,

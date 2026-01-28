@@ -20,7 +20,7 @@ const RectangleSelectorComponent = () => {
 
   return (
     <ToolButton
-      icon="/icons/pencil.png"
+      icon="/icons/selection.png"
       tool={new RectangleSelector({ setSelectionLayer, getSelectionLayer, getProperties })}
     />
   );

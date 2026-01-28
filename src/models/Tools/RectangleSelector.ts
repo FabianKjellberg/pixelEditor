@@ -16,8 +16,6 @@ export class RectangleSelector implements ITool {
   constructor(private toolDeps: IToolDeps) {}
   onDown(x: number, y: number, pixelSize: number): void {
     this.oldSelection = this.toolDeps.getSelectionLayer?.();
-
-    console.log('oldSelectionLayer', this.oldSelection);
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
     this.originX = pixelPos.x;
     this.originY = pixelPos.y;
@@ -28,7 +26,7 @@ export class RectangleSelector implements ITool {
   onMove(x: number, y: number, pixelSize: number): void {
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
 
-    if (this.selecting && !(this.originY == pixelPos.x && this.originY == pixelPos.y)) {
+    if (this.selecting && !(this.originX === pixelPos.x && this.originY === pixelPos.y)) {
       this.select(pixelPos);
     }
   }
@@ -42,8 +40,7 @@ export class RectangleSelector implements ITool {
   private select = (pixelPos: Cordinate) => {
     const setSelectionLayer = this.toolDeps?.setSelectionLayer;
 
-    if (setSelectionLayer == undefined) {
-      console.error('no access to setSelectionLayer in RecntahleSelector');
+    if (setSelectionLayer === undefined) {
       return;
     }
 
@@ -58,8 +55,6 @@ export class RectangleSelector implements ITool {
       this.originX ?? pixelPos.x,
       this.originY ?? pixelPos.y,
     );
-
-    console.log(this.oldSelection);
 
     //if replace, only use the new layer
     const combinedSelection: SelectionLayer = replace

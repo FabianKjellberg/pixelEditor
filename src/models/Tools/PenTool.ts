@@ -60,7 +60,7 @@ export class PenTool implements ITool {
 
   //Other Methods
   private draw = (x: number, y: number): void => {
-    const setLayer = this.toolDeps.setLayer2;
+    const setLayer = this.toolDeps.setLayer;
     if (setLayer == undefined) return;
 
     let color: number = this.toolDeps.getPrimaryColor?.() ?? config.defaultColor;
