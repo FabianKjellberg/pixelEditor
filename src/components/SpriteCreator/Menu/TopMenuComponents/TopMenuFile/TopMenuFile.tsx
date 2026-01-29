@@ -1,9 +1,12 @@
 'use client';
 
+import { useCallback } from 'react';
 import TopMenuItem from '../TopMenuItem/TopMenuItem';
 import styles from '../TopMenuItem/TopMenuItem.module.css';
 
 const TopMenuFile = () => {
+  const handleClickSaveProject = useCallback(() => {}, []);
+
   return (
     <>
       <TopMenuItem text={'Save as .pxl'} onClick={() => console.log('clicked save as png')} />
@@ -16,6 +19,7 @@ const TopMenuFile = () => {
         text={'Import .png as Layer'}
         onClick={() => console.log('clicked save as png')}
       />
+      <TopMenuItem text={'Save Project In Cloud'} onClick={handleClickSaveProject} />
     </>
   );
 };
