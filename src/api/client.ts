@@ -6,8 +6,15 @@ type MethodWithBody = 'PUT' | 'POST' | 'DELETE';
 
 type HttpMethod = MethodNoBody | MethodWithBody;
 
-const baseUrl: string = 'http://localhost:3000';
+const baseUrl: string | undefined = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+console.log('baseUrl', baseUrl);
+
+if (!baseUrl) {
+  throw new Error('NEXT_PUBLIC_API_BASE_URL is not set');
+}
+
+// shared promise when refreshing the token
 let refreshTokenPromise: Promise<void> | null = null;
 
 // single source of truth for the access token. Not persisted anywhere for security.
