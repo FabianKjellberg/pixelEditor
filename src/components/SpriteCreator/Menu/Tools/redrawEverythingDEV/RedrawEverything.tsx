@@ -1,7 +1,9 @@
 'use client';
 
+import { api } from '@/api/client';
 import { useCanvasContext } from '@/context/CanvasContext';
 import { createSelectionLayer } from '@/util/SelectionUtil';
+import { useCallback } from 'react';
 
 const RedrawEverything = () => {
   const { setPixelSize, pixelSize, setSelectionLayer } = useCanvasContext();
@@ -22,6 +24,10 @@ const RedrawEverything = () => {
     setSelectionLayer(selectionLayer);
   };
 
+  const login = useCallback(async () => {
+    const response = await api.users.createAccount('admin', 'admin');
+  }, []);
+
   return (
     <>
       <button
@@ -39,6 +45,7 @@ const RedrawEverything = () => {
         zoom out
       </button>
       <button onClick={makeSelection}>make selection</button>
+      <button onClick={login}>login</button>
     </>
   );
 };
