@@ -24,7 +24,7 @@ function getAccessToken() {
   return accessToken;
 }
 
-function setAccessToken(token: string | null ) {
+function setAccessToken(token: string | null) {
   accessToken = token;
 }
 
@@ -34,14 +34,11 @@ export function apiClient<TResponse, TBody>(
   url: string,
   body: TBody,
 ): Promise<TResponse>;
-export function apiClient<TResponse>(
-  method: MethodNoBody,
-  url: string,
-): Promise<TResponse>;
+export function apiClient<TResponse>(method: MethodNoBody, url: string): Promise<TResponse>;
 
 /**
- * Generic function to handle every request, 
- * handles authentication and error handling and refreshing the token if expired. 
+ * Generic function to handle every request,
+ * handles authentication and error handling and refreshing the token if expired.
  * also handles baseUrl and headers automatically.
  * @param method - The HTTP method to use
  * @param url - The URL to fetch
@@ -55,23 +52,23 @@ export async function apiClient<TResponse, TBody = undefined>(
 ): Promise<TResponse> {
   //fetch function that can be reused if the token is refreshed.
   const fetchResponse = async () => {
-    const token = getAccessToken()
+    const token = getAccessToken();
     const headers: HeadersInit = {
       ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    }
+    };
 
     return fetch(baseUrl + url, {
       method,
       credentials: 'omit',
       headers,
       body: body !== undefined ? JSON.stringify(body) : undefined,
-    })
-  }
+    });
+  };
 
   //initial fetch
   let response = await fetchResponse();
-  
+
   //if unauthorized, refresh the token and fetch again.
   if (response.status === 401) {
     await refreshTokenWithLock();
@@ -82,7 +79,7 @@ export async function apiClient<TResponse, TBody = undefined>(
   if (!response.ok) {
     throw new Error(`failed to fetch ${url}: ${response.statusText}`);
   }
-  
+
   //parse the response body as JSON.
   const responseData = await response.json();
   return responseData as TResponse;
@@ -97,13 +94,13 @@ export async function refreshTokenWithLock(): Promise<void> {
   if (!refreshTokenPromise) {
     refreshTokenPromise = (async () => {
       try {
-        await refreshToken()
+        await refreshToken();
       } finally {
-        refreshTokenPromise = null
+        refreshTokenPromise = null;
       }
-    })()
+    })();
   }
-  return refreshTokenPromise
+  return refreshTokenPromise;
 }
 
 /**
@@ -112,7 +109,7 @@ export async function refreshTokenWithLock(): Promise<void> {
  */
 export async function refreshToken(): Promise<void> {
   //refresh token endpoint include cookies to allow persistent sessions.
-  const response = await fetch(baseUrl + '/api/auth/refresh', {
+  const response = await fetch(baseUrl + '/auth/refresh', {
     method: 'POST',
     credentials: 'include',
   });
@@ -125,6 +122,34 @@ export async function refreshToken(): Promise<void> {
   //set the new access token.
   const data = await response.json();
   setAccessToken(data.accessToken);
+}
+
+/**
+ * special function for login
+ * @returns void. Throws error if fails
+ */
+export async function clientLogin<TResponse>(
+  username: string,
+  password: string,
+): Promise<TResponse> {
+  const body = {
+    username: username,
+    password: password,
+  };
+
+  const response = await fetch(baseUrl + '/auth/login', {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify(body),
+  });
+
+  const data = await response.json();
+
+  if (response.ok) {
+    setAccessToken(data.accessToken);
+  }
+
+  return response as TResponse;
 }
 
 // export api functions for easier usage. Each module should export functions that use the apiClient.

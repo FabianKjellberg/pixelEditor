@@ -24,8 +24,16 @@ const RedrawEverything = () => {
     setSelectionLayer(selectionLayer);
   };
 
+  const register = useCallback(async () => {
+    await api.users.createAccount('admin', 'admin');
+  }, []);
+
   const login = useCallback(async () => {
-    const response = await api.users.createAccount('admin', 'admin');
+    await api.users.login('admin', 'admin');
+  }, []);
+
+  const refresh = useCallback(async () => {
+    await api.users.refresh();
   }, []);
 
   return (
@@ -45,7 +53,9 @@ const RedrawEverything = () => {
         zoom out
       </button>
       <button onClick={makeSelection}>make selection</button>
+      <button onClick={register}>register</button>
       <button onClick={login}>login</button>
+      <button onClick={refresh}>refresh</button>
     </>
   );
 };
