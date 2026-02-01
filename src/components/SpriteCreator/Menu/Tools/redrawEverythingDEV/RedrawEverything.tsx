@@ -1,6 +1,6 @@
 'use client';
 
-import { api } from '@/api/client';
+import { api, apiClient } from '@/api/client';
 import { useCanvasContext } from '@/context/CanvasContext';
 import { createSelectionLayer } from '@/util/SelectionUtil';
 import { useCallback } from 'react';
@@ -36,6 +36,12 @@ const RedrawEverything = () => {
     await api.users.refresh();
   }, []);
 
+  const testAuth = useCallback(async () => {
+    const reponse = await apiClient('GET', '/auth/test-auth');
+
+    console.log(reponse);
+  }, []);
+
   return (
     <>
       <button
@@ -56,6 +62,7 @@ const RedrawEverything = () => {
       <button onClick={register}>register</button>
       <button onClick={login}>login</button>
       <button onClick={refresh}>refresh</button>
+      <button onClick={testAuth}>testAuths</button>
     </>
   );
 };
