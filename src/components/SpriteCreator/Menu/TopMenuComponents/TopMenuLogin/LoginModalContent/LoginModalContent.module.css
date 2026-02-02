@@ -1,0 +1,41 @@
+.loginModal {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 12px;
+  max-width: 360px;
+}
+
+.loginModalTitle {
+  text-align: center;
+}
+
+.loginInput {
+  display: flex;
+  gap: 6px;
+  flex-direction: column;
+}
+
+.loginButtons {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.decorativeText {
+  overflow-wrap: anywhere;
+}
+
+.message-error {
+  color: red;
+}
+
+.message-warning {
+  color: yellow;
+}
+
+.message-success {
+  color: green;
+}

@@ -4,19 +4,22 @@ import { LayerProvider } from '@/context/LayerContext';
 import { ModalProvider } from '@/context/ModalContext/ModalContext';
 import { SettingsProvider } from '@/context/SettingsContext';
 import { ToolProvider } from '@/context/ToolContext';
+import { UserContextProvider } from '@/context/UserContextProvider';
 
 const ContextProviderWrapper = ({ children }: { children: React.ReactNode }) => (
-  <SettingsProvider>
-    <CanvasProvider>
-      <LayerProvider>
-        <ToolProvider>
-          <ModalProvider>
-            <ContextMenuProvider>{children}</ContextMenuProvider>
-          </ModalProvider>
-        </ToolProvider>
-      </LayerProvider>
-    </CanvasProvider>
-  </SettingsProvider>
+  <UserContextProvider>
+    <SettingsProvider>
+      <CanvasProvider>
+        <LayerProvider>
+          <ToolProvider>
+            <ModalProvider>
+              <ContextMenuProvider>{children}</ContextMenuProvider>
+            </ModalProvider>
+          </ToolProvider>
+        </LayerProvider>
+      </CanvasProvider>
+    </SettingsProvider>
+  </UserContextProvider>
 );
 
 export default ContextProviderWrapper;

@@ -16,7 +16,7 @@ const RightMenu = () => {
           <p className={menuStyles.toolsHeader}>Color Picker</p>
           <ColorPicker />
         </div>
-        <RedrawEverything />
+        {/*<RedrawEverything />*/}
       </div>
     </div>
   );

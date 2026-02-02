@@ -130,7 +130,8 @@ button:disabled {
 
 input {
   font-size: large;
-  border: 2px solid var(--border);
+  border: 2px solid var(--border) !important;
+  padding: 2px;
 }
 
 input:focus {

@@ -29,12 +29,12 @@ function setAccessToken(token: string | null) {
 }
 
 // function overloading to allow for different signatures.
-export function apiClient<TResponse, TBody>(
+export function apiClient<TBody>(
   method: MethodWithBody,
   url: string,
   body: TBody,
-): Promise<TResponse>;
-export function apiClient<TResponse>(method: MethodNoBody, url: string): Promise<TResponse>;
+): Promise<Response>;
+export function apiClient(method: MethodNoBody, url: string): Promise<Response>;
 
 /**
  * Generic function to handle every request,
@@ -45,11 +45,11 @@ export function apiClient<TResponse>(method: MethodNoBody, url: string): Promise
  * @param body - The body to send with the request
  * @returns The response from the API
  */
-export async function apiClient<TResponse, TBody = undefined>(
+export async function apiClient<TBody = undefined>(
   method: HttpMethod,
   url: string,
   body?: TBody,
-): Promise<TResponse> {
+): Promise<Response> {
   //fetch function that can be reused if the token is refreshed.
   const fetchResponse = async () => {
     const token = getAccessToken();
@@ -77,12 +77,11 @@ export async function apiClient<TResponse, TBody = undefined>(
 
   //last response
   if (!response.ok) {
-    throw new Error(`failed to fetch ${url}: ${response.statusText}`);
+    console.error(`failed to fetch ${url}: ${response.statusText}`);
   }
 
   //parse the response body as JSON.
-  const responseData = await response.json();
-  return responseData as TResponse;
+  return response;
 }
 
 /**
@@ -128,10 +127,7 @@ export async function refreshToken(): Promise<void> {
  * special function for login
  * @returns void. Throws error if fails
  */
-export async function clientLogin<TResponse>(
-  username: string,
-  password: string,
-): Promise<TResponse> {
+export async function clientLogin(username: string, password: string): Promise<Response> {
   const body = {
     username: username,
     password: password,
@@ -149,7 +145,7 @@ export async function clientLogin<TResponse>(
     setAccessToken(data.accessToken);
   }
 
-  return response as TResponse;
+  return response;
 }
 
 // export api functions for easier usage. Each module should export functions that use the apiClient.

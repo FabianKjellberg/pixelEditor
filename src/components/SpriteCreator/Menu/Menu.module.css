@@ -42,5 +42,16 @@
   border: 2px solid var(--border);
   height: var(--top-menu-height);
   display: flex;
+  flex-direction: flex;
+  justify-content: space-between;
+}
+
+.leftSide {
+  display: flex;
+  flex-direction: row;
+}
+
+.rightSide {
+  display: flex;
   flex-direction: row;
 }

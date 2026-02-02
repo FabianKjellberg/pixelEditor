@@ -17,7 +17,7 @@ const FrontPage = () => {
     <>
       <div className={`${style.mainPage}`}>
         <div>
-          <p>last updated: 2025-11-24</p>
+          <p>last updated: 2026-02-02</p>
         </div>
         <div className={style.header}>
           <h1>Fabian’s Development Page</h1>
