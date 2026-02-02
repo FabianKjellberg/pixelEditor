@@ -148,6 +148,32 @@ export async function clientLogin(username: string, password: string): Promise<R
   return response;
 }
 
+/**
+ * Logout function that calls backend to clear cookies and then clears the access token
+ * @returns true if logout was successful
+ */
+export async function clientLogout(): Promise<boolean> {
+  try {
+    // Call backend to clear the refresh token cookie
+    const response = await fetch(baseUrl + '/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      console.error('Logout failed:', response.statusText);
+      return false;
+    }
+
+    // Only clear the access token if backend logout succeeded
+    setAccessToken(null);
+    return true;
+  } catch (error) {
+    console.error('Logout failed:', error);
+    return false;
+  }
+}
+
 // export api functions for easier usage. Each module should export functions that use the apiClient.
 export const api = {
   users,

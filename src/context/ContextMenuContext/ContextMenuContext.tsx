@@ -60,10 +60,27 @@ export const ContextMenuProvider = ({ children }: { children: React.ReactNode })
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    const left = rect.x + rect.width + pad > vw ? rect.x - rect.width : rect.x;
-    const top = rect.y + rect.height + pad > vh ? rect.y - rect.height : rect.y;
+    // Clamp to viewport bounds
+    let left = Number(position.left) || 0;
+    let top = Number(position.top) || 0;
 
-    setPosition({ left: left, top: top });
+    // If menu goes past right edge, align its right edge to viewport right edge
+    if (left + rect.width + pad > vw) {
+      left = vw - rect.width - pad;
+    }
+    // If menu goes past bottom edge, flip it above
+    if (top + rect.height + pad > vh) {
+      top = top - rect.height;
+    }
+
+    // Ensure it doesn't go off the left or top edge
+    left = Math.max(pad, left);
+    top = Math.max(pad, top);
+
+    // Only update if position actually changed to avoid infinite loop
+    if (left !== Number(position.left) || top !== Number(position.top)) {
+      setPosition({ left, top });
+    }
   }, [showMenu, position.left, position.top]);
 
   // Close on click-outside and on Escape

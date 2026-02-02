@@ -1,14 +1,18 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useRef } from 'react';
 
 import styles from './TopMenuLogin.module.css';
 import { useModalContext } from '@/context/ModalContext/ModalContext';
+import { useContextMenuContext } from '@/context/ContextMenuContext/ContextMenuContext';
 import LoginModalContent from './LoginModalContent/LoginModalContent';
+import UserDropdownMenu from './UserDropdownMenu/UserDropdownMenu';
 import { useUserContext } from '@/context/UserContextProvider';
 
 const TopMenuLogin = () => {
   const { onShow } = useModalContext();
+  const { onShow: showContextMenu } = useContextMenuContext();
+  const usernameRef = useRef<HTMLDivElement | null>(null);
 
   const { user, loadingUser, refetchUser } = useUserContext();
 
@@ -18,12 +22,22 @@ const TopMenuLogin = () => {
     onShow('login-modal', loginModal, 'Login or Register a new Account');
   }, [loginModal, onShow]);
 
+  const openUserDropdown = useCallback(() => {
+    const el = usernameRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    // Position at far right - overflow logic will clamp it to viewport edge
+    showContextMenu(<UserDropdownMenu />, window.innerWidth, rect.y + rect.height);
+  }, [showContextMenu]);
+
   return (
     <>
       {loadingUser ? (
         <p>loading</p>
       ) : user ? (
-        <p>{user.username}</p>
+        <div ref={usernameRef} className={styles.LoginMenuButton} onClick={openUserDropdown}>
+          {user.username}
+        </div>
       ) : (
         <div className={styles.LoginMenuButton} onClick={openLoginModal}>
           Login

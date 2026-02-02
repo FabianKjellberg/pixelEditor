@@ -1,13 +1,14 @@
 'use client';
 
 import { api } from '@/api/client';
-import { User } from '@/api/users';
+import { logout as apiLogout, User } from '@/api/users';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 type UserContextValue = {
   user: User | null;
   loadingUser: boolean;
   refetchUser: () => void;
+  logout: () => Promise<void>;
 };
 
 const UserContext = createContext<UserContextValue | undefined>(undefined);
@@ -23,6 +24,13 @@ export const UserContextProvider = ({ children }: { children: React.ReactNode })
     setLoadingUser(false);
   }, [setUser, setLoadingUser]);
 
+  const logout = useCallback(async () => {
+    const success = await apiLogout();
+    if (success) {
+      setUser(null);
+    }
+  }, [setUser]);
+
   useEffect(() => {
     trySetUser();
   }, []);
@@ -32,8 +40,9 @@ export const UserContextProvider = ({ children }: { children: React.ReactNode })
       user: user,
       loadingUser: loadingUser,
       refetchUser: trySetUser,
+      logout,
     }),
-    [user, loadingUser, trySetUser],
+    [user, loadingUser, trySetUser, logout],
   );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

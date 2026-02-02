@@ -1,0 +1,20 @@
+.container {
+  padding: 16px;
+  min-width: 250px;
+}
+
+.field {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.label {
+  font-weight: bold;
+  color: var(--text-secondary, #888);
+}
+
+.value {
+  color: var(--text-primary, #fff);
+}

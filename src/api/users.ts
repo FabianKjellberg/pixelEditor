@@ -1,4 +1,4 @@
-import { apiClient, clientLogin, refreshToken } from './client';
+import { apiClient, clientLogin, clientLogout, refreshToken } from './client';
 
 type LoginResult = {
   ok: boolean;
@@ -65,4 +65,8 @@ export async function getLoggedInUser(): Promise<User | null> {
     console.error(error);
     return null;
   }
+}
+
+export async function logout(): Promise<boolean> {
+  return clientLogout();
 }
