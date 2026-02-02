@@ -5,8 +5,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import styles from './TopMenuLogin.module.css';
 import { useModalContext } from '@/context/ModalContext/ModalContext';
 import LoginModalContent from './LoginModalContent/LoginModalContent';
-import { api } from '@/api/client';
-import { User } from '@/api/users';
 import { useUserContext } from '@/context/UserContextProvider';
 
 const TopMenuLogin = () => {

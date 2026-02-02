@@ -32,10 +32,6 @@ const RedrawEverything = () => {
     await api.users.login('admin', 'admin');
   }, []);
 
-  const refresh = useCallback(async () => {
-    await api.users.refresh();
-  }, []);
-
   const testAuth = useCallback(async () => {
     const reponse = await apiClient('GET', '/auth/test-auth');
 
@@ -61,7 +57,6 @@ const RedrawEverything = () => {
       <button onClick={makeSelection}>make selection</button>
       <button onClick={register}>register</button>
       <button onClick={login}>login</button>
-      <button onClick={refresh}>refresh</button>
       <button onClick={testAuth}>testAuths</button>
     </>
   );
