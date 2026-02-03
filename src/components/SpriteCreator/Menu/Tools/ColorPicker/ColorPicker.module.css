@@ -20,6 +20,15 @@
   bottom: 10px;
   right: 10px;
   cursor: pointer;
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast),
+              transform var(--transition-fast);
+}
+
+.secondaryColor:hover {
+  border-color: var(--highlight);
+  box-shadow: 0 0 8px var(--highlight-glow);
+  transform: scale(1.05);
 }
 
 .primaryColor {
@@ -30,6 +39,15 @@
   top: 10px;
   left: 10px;
   cursor: pointer;
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast),
+              transform var(--transition-fast);
+}
+
+.primaryColor:hover {
+  border-color: var(--highlight);
+  box-shadow: 0 0 8px var(--highlight-glow);
+  transform: scale(1.05);
 }
 
 .flipButton {
@@ -39,8 +57,10 @@
   left: 0;
   position: absolute;
   background: none;
+  border: 2px solid var(--border);
 }
 
 .flipButton:hover {
-  background: var(--btn-bg-hover);
+  background: var(--highlight-dim);
+  border-color: var(--highlight);
 }

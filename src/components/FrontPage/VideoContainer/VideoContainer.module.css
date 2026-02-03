@@ -2,6 +2,16 @@
   border: 2px solid var(--border);
   width: fit-content;
   display: flex;
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast),
+              transform var(--transition-fast);
+}
+
+.videoContainer:hover {
+  border-color: var(--highlight);
+  box-shadow: 0 0 8px var(--highlight-glow),
+              0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
 }
 
 .videoContainerFull {

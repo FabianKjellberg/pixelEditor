@@ -27,6 +27,10 @@ export async function createAccount(username: string, password: string): Promise
       return { ok: false, reason: 'username already exists' };
     }
 
+    if (!response.ok) {
+      return { ok: false, reason: 'registration failed' };
+    }
+
     return { ok: true };
   } catch (error) {
     console.error(error);

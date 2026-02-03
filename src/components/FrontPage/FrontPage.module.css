@@ -7,22 +7,68 @@
   margin: 0 auto;
 }
 
+.tabBar {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.tab {
+  padding: 10px 20px;
+  font-size: large;
+  border: 2px solid var(--border);
+  margin-bottom: -2px;
+  margin-right: -2px;
+  background-color: var(--background);
+  color: var(--foreground);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color var(--transition-fast),
+              color var(--transition-fast),
+              border-color var(--transition-fast);
+}
+
+.tab:last-child {
+  margin-right: 0;
+}
+
+.tab:hover {
+  background-color: var(--highlight-dim);
+  color: var(--highlight);
+  border-color: var(--highlight);
+  z-index: 1;
+}
+
+.tabActive {
+  background-color: var(--highlight-dim);
+  color: var(--highlight);
+  border-color: var(--highlight);
+  border-bottom-color: var(--highlight-dim);
+  z-index: 2;
+}
+
+.tabActive:hover {
+  background-color: var(--highlight-dim);
+  color: var(--highlight);
+}
+
+.tabContent {
+  flex: 1;
+  padding: 0 4px;
+}
+
 .mainPage::before {
   content: '';
   position: fixed;
   top: 0;
   bottom: 0;
-
-  /* same width + centering as your main content */
   width: 60vw;
   left: 50%;
   transform: translateX(-50%);
-
-  /* only vertical borders = two pillars */
   border-left: 2px solid var(--border);
   border-right: 2px solid var(--border);
-
-  pointer-events: none; /* so it doesn't block clicks/scroll */
+  pointer-events: none;
   z-index: 9999;
 }
 
@@ -34,10 +80,19 @@
   overflow: hidden;
   overflow-y: scroll;
   flex-shrink: 0;
+  transition: border-color var(--transition-fast);
+}
+
+.treeContainer:hover {
+  border-color: color-mix(in srgb, var(--border), var(--highlight) 30%);
 }
 
 .frontpageList {
   margin-left: 30px;
+}
+
+.changelogList li {
+  margin-bottom: 10px;
 }
 
 .breakRowLine {
@@ -45,15 +100,29 @@
   margin-top: 20px;
   margin-bottom: 20px;
   margin: 20px;
-  box-shadow: 0 0 2px rgba(84, 254, 58, 0.5), 0 0 8px rgba(84, 254, 58, 0.3),
-    0 0 16px rgba(84, 254, 58, 0.15);
+  box-shadow: 0 0 2px var(--highlight-glow), 
+              0 0 8px var(--highlight-dim),
+              0 0 16px rgba(84, 254, 58, 0.1);
+  transition: box-shadow var(--transition-normal);
 }
+
+.breakRowLine:hover {
+  box-shadow: 0 0 4px var(--highlight-glow), 
+              0 0 12px var(--highlight-dim),
+              0 0 24px rgba(84, 254, 58, 0.15);
+}
+
 .header {
   margin-top: 25px;
 }
 
 .underLine {
   text-decoration: underline;
+  transition: color var(--transition-fast);
+}
+
+.underLine:hover {
+  color: var(--highlight);
 }
 
 .footer {
@@ -69,7 +138,6 @@
   margin-bottom: 20px;
 }
 
-/* optional: make children size nicely so 2 fit per row on medium+ */
 .videoContainerContainer > * {
   flex: 1 1 304px;
   max-width: 304px;
@@ -83,14 +151,30 @@
 
 .createPixelButton {
   padding: 15px;
-  font-size: 25;
+  font-size: 25px;
   width: 200px;
   margin-top: 10px;
+  border: 3px solid var(--border);
+  transition: background-color var(--transition-fast),
+              border-color var(--transition-fast),
+              box-shadow var(--transition-fast),
+              transform var(--transition-fast);
+}
+
+.createPixelButton:hover {
+  background-color: var(--highlight-dim);
+  border-color: var(--highlight);
+  box-shadow: 0 0 12px var(--highlight-glow),
+              0 0 24px var(--highlight-dim);
+  transform: scale(1.02);
+}
+
+.createPixelButton:active {
+  transform: scale(0.98);
 }
 
 /* === MEDIA QUERIES === */
 
-/* Medium screens – widen the frame so 2 videos fit inside */
 @media (max-width: 1200px) {
   .mainPage {
     width: 90vw;
@@ -102,7 +186,6 @@
   }
 }
 
-/* Small screens – remove the vertical borders completely */
 @media (max-width: 768px) {
   .mainPage {
     width: 100vw;
@@ -111,5 +194,14 @@
 
   .mainPage::before {
     display: none;
+  }
+
+  .tabBar {
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    flex: 1 1 auto;
+    min-width: 100px;
   }
 }

@@ -1,19 +1,35 @@
 .toolButton {
-  background-color: var(--bth-bg);
+  background-color: var(--background);
   font-family: 'DePixel';
-  font-weight: 400px;
+  font-weight: 400;
   padding: 5px;
   border: 3px solid var(--border) !important;
+  transition: background-color var(--transition-fast),
+              border-color var(--transition-fast),
+              box-shadow var(--transition-fast),
+              transform var(--transition-fast);
 }
 
 .toolButton:hover {
-  background-color: var(--bth-bg-hover);
+  background-color: var(--highlight-dim);
+  border-color: var(--highlight) !important;
+  box-shadow: 0 0 8px var(--highlight-glow);
+}
+
+.toolButton:active {
+  transform: scale(0.95);
 }
 
 .toolButton[aria-pressed='true'] {
-  border: 3px solid var(--border) !important;
-  outline: 3px solid var(--highlight);
-  background-color: var(--btn-bg);
+  border: 3px solid var(--highlight) !important;
+  box-shadow: 0 0 0 2px var(--highlight-dim),
+              0 0 12px var(--highlight-glow);
+  background-color: var(--highlight-dim);
+}
+
+.toolButton[aria-pressed='true']:hover {
+  box-shadow: 0 0 0 2px var(--highlight-dim),
+              0 0 16px var(--highlight-glow);
 }
 
 .icon {
@@ -23,4 +39,9 @@
   object-fit: contain;
   image-rendering: pixelated;
   filter: var(--invert-icon-color);
+  transition: transform var(--transition-fast);
+}
+
+.toolButton:hover .icon {
+  transform: scale(1.05);
 }

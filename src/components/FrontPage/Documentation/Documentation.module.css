@@ -1,0 +1,271 @@
+.tableWrapper {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.schemaTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.schemaTable th,
+.schemaTable td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.schemaTable th {
+  background-color: var(--btn-bg);
+  color: var(--btn-fg);
+}
+
+.schemaTable tr:hover {
+  background-color: var(--hover-tint);
+}
+
+.tableName {
+  font-weight: bold;
+  margin-top: 20px;
+  margin-bottom: 8px;
+  color: var(--highlight);
+}
+
+.endpoint {
+  margin: 12px 0;
+  border: 2px solid var(--border);
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast);
+}
+
+.endpoint:hover {
+  border-color: var(--highlight);
+}
+
+.endpointHeaderBtn {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  cursor: pointer;
+  background-color: var(--background);
+  transition: background-color var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.endpointHeaderBtn:hover {
+  background-color: var(--highlight-dim);
+}
+
+.method {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.85em;
+  flex-shrink: 0;
+}
+
+.methodGet {
+  background-color: #2e7d32;
+  color: white;
+}
+
+.methodPost {
+  background-color: #1565c0;
+  color: white;
+}
+
+.methodPut {
+  background-color: #f57c00;
+  color: white;
+}
+
+.methodDelete {
+  background-color: #c62828;
+  color: white;
+}
+
+.path {
+  font-family: monospace;
+  font-size: 0.95em;
+  flex-grow: 1;
+  color: var(--foreground);
+}
+
+.expandIcon {
+  margin-left: auto;
+  font-size: 0.7em;
+  color: var(--foreground);
+  opacity: 0.6;
+  transition: transform 200ms ease;
+}
+
+.expandIconOpen {
+  transform: rotate(90deg);
+}
+
+.authBadgeCredentials {
+  font-size: 0.75em;
+  padding: 2px 8px;
+  background-color: #7c4dff;
+  color: white;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.authBadgeBearer {
+  font-size: 0.75em;
+  padding: 2px 8px;
+  background-color: #ff9800;
+  color: white;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.authBadgeCookie {
+  font-size: 0.75em;
+  padding: 2px 8px;
+  background-color: #00bcd4;
+  color: white;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.authBadgePublic {
+  font-size: 0.75em;
+  padding: 2px 8px;
+  background-color: var(--btn-bg);
+  color: var(--foreground);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* Collapsible animation container */
+.detailsWrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease;
+}
+
+.detailsWrapperOpen {
+  grid-template-rows: 1fr;
+}
+
+.detailsInner {
+  overflow: hidden;
+}
+
+.endpointDetails {
+  padding: 16px;
+  border-top: 2px solid var(--border);
+  background-color: var(--background);
+  box-sizing: border-box;
+}
+
+.endpointDetails h5 {
+  margin-top: 16px;
+  margin-bottom: 8px;
+  color: var(--foreground);
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.endpointDetails h5:first-of-type {
+  margin-top: 8px;
+}
+
+.endpointDetails p {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.codeBlock {
+  background-color: #111;
+  border: 1px solid var(--border);
+  padding: 12px;
+  font-family: monospace;
+  font-size: 0.85em;
+  overflow-x: auto;
+  margin: 8px 0;
+  white-space: pre;
+  color: var(--foreground);
+}
+
+.codeBlock code {
+  background: none;
+  padding: 0;
+}
+
+.responseNote {
+  font-size: 0.85em;
+  color: var(--foreground);
+  opacity: 0.7;
+  margin: 8px 0;
+}
+
+.responseNote code {
+  background-color: #222;
+  color: var(--foreground);
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+}
+
+.authFlowImage {
+  width: 100%;
+  max-width: 800px;
+  margin: 20px auto;
+  display: block;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+}
+
+.imagePlaceholder {
+  width: 100%;
+  max-width: 800px;
+  height: 300px;
+  margin: 20px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--border);
+  border-radius: 4px;
+  color: var(--foreground);
+  background-color: var(--hover-tint);
+}
+
+.flowSteps {
+  margin: 16px 0;
+}
+
+.flowStep {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px;
+  border-left: 3px solid var(--highlight);
+  background-color: var(--hover-tint);
+}
+
+.stepNumber {
+  font-weight: bold;
+  color: var(--highlight);
+  min-width: 24px;
+}
+
+.externalLink {
+  color: var(--highlight);
+  text-decoration: underline;
+}
+
+.externalLink:hover {
+  opacity: 0.8;
+}
+
+.flowDivider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 32px 0;
+}
