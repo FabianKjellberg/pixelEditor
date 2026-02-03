@@ -13,6 +13,7 @@
   background-color: var(--background);
   width: 100%;
   text-align: center;
+  color: var(--highlight);
 }
 
 .layerContextButtons {
@@ -25,11 +26,24 @@
   text-align: start;
   border: none;
   width: 100%;
-  padding: 5px;
-  border-top: 2px solid var(--border);
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
   background-color: var(--background);
+  transition: background-color var(--transition-fast),
+              color var(--transition-fast);
 }
 
 .layerContextButtons button:enabled:hover {
-  background-color: var(--btn-bg-hover);
+  background-color: var(--highlight-dim);
+  color: var(--highlight);
+}
+
+.layerContextButtons button:enabled:active {
+  background-color: var(--highlight);
+  color: var(--background);
+}
+
+.layerContextButtons button:disabled {
+  opacity: 0.5;
+  color: var(--border);
 }

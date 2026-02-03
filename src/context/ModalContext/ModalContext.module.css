@@ -1,16 +1,18 @@
 .modalWrapper {
-  position: fixed; /* cover viewport */
+  position: fixed;
   inset: 0;
-  display: block; /* no flex squish */
-  pointer-events: none; /* clicks pass through wrapper */
+  display: block;
+  pointer-events: none;
 }
 
 .modalContainer {
-  position: absolute; /* we move with left/top */
+  position: absolute;
   pointer-events: all;
   border: 3px solid var(--border);
   background-color: var(--background);
   height: fit-content;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5),
+              0 0 0 1px var(--border);
 }
 
 .headerContainer {
@@ -19,33 +21,51 @@
   border-bottom: 3px solid var(--border);
   color: var(--background);
   background-color: var(--foreground);
-  user-select: none; /* prevent text selection while dragging */
+  user-select: none;
+  height: 32px;
 }
 
 .headerTextContainer {
-  width: 100%;
+  flex: 1;
   cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headerTextContainer:active {
+  cursor: grabbing;
 }
 
 .headerText {
   padding: 6px;
-  width: 100%;
   text-align: center;
   font-size: large;
   pointer-events: none;
 }
 
 .closeButton {
-  border: none;
+  all: unset;
+  box-sizing: border-box;
   width: 35px;
-  max-width: 35px;
-  height: 30px;
-  text-align: center;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--background);
   background-color: var(--foreground);
   border-left: 3px solid var(--border);
-}
-.closeButton:hover {
+  border-bottom: 3px solid var(--border);
   cursor: pointer;
-  background-color: var(--btn-fg-hover);
+  transition: background-color 120ms ease;
+}
+
+.closeButton:hover {
+  background-color: #c62828;
+  color: white;
+  border-color: var(--border);
+}
+
+.closeButton:active {
+  background-color: #b71c1c;
 }

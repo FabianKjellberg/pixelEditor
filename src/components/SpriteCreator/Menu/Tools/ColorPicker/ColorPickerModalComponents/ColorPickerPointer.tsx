@@ -36,7 +36,7 @@ export default function ColorPickerPointer({ x, y, setX, setY, selectedColor, H,
         draggingRef.current = false;
         e.currentTarget.releasePointerCapture(e.pointerId);
       }}
-      style={{ position: 'absolute', width: W, height: H, touchAction: 'none', inset: 0 }}
+      style={{ position: 'absolute', width: W, height: H, touchAction: 'none', inset: 0, cursor: 'pointer' }}
     >
       <div
         style={{

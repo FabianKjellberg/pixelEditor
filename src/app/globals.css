@@ -13,9 +13,13 @@
 
   --border: #888888;
   --highlight: #54fe3a;
+  --highlight-dim: rgba(84, 254, 58, 0.2);
+  --highlight-glow: rgba(84, 254, 58, 0.4);
   --invert-icon-color: none;
 
   --top-menu-height: 30px;
+  --transition-fast: 120ms ease;
+  --transition-normal: 200ms ease;
 }
 */
 /*@media (prefers-color-scheme: dark) {*/
@@ -33,8 +37,14 @@
 
   --border: #888888;
   --highlight: #54fe3a;
+  --highlight-dim: rgba(84, 254, 58, 0.15);
+  --highlight-glow: rgba(84, 254, 58, 0.4);
   --invert-icon-color: brightness(0) invert(1);
   --top-menu-height: 30px;
+  
+  /* Transitions for modern retro feel */
+  --transition-fast: 120ms ease;
+  --transition-normal: 200ms ease;
 }
 /*}*/
 
@@ -53,25 +63,31 @@ html {
 .scrollable {
   overflow: scroll;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 /* Firefox: re-enable scrollbar */
 .scrollable {
-  scrollbar-width: auto; /* or 'thin' */
+  scrollbar-width: auto;
 }
 
 /* WebKit (Chrome, Edge, Safari): re-enable scrollbar */
 .scrollable::-webkit-scrollbar {
-  width: 8px; /* > 0 means it shows again */
+  width: 8px;
   height: 8px;
 }
 
 .scrollable::-webkit-scrollbar-thumb {
-  background: #555; /* optional styling */
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.scrollable::-webkit-scrollbar-thumb:hover {
+  background: var(--highlight);
 }
 
 .scrollable::-webkit-scrollbar-track {
-  background: transparent; /* optional */
+  background: var(--background);
 }
 
 /* Choose your default cut here — example uses WIDE (Breit) as 400 */
@@ -86,7 +102,7 @@ html {
 /* Map bold to the matching bold cut (Fett/Halbfett) */
 @font-face {
   font-family: 'DePixel';
-  src: url('/fonts/depixel/DePixelBreitFett.ttf') format('truetype'); /* or Halbfett if that's what you have */
+  src: url('/fonts/depixel/DePixelBreitFett.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -109,6 +125,7 @@ p {
   font-size: large;
 }
 
+/* Global button styles with modern retro feel */
 button {
   border: 2px solid var(--border);
   font-size: large;
@@ -116,27 +133,55 @@ button {
   padding: 2px;
   padding-left: 4px;
   padding-right: 4px;
+  transition: background-color var(--transition-fast), 
+              border-color var(--transition-fast),
+              box-shadow var(--transition-fast),
+              transform var(--transition-fast);
 }
 
 button:hover {
-  background-color: var(--border);
+  background-color: var(--highlight-dim);
+  border-color: var(--highlight);
   cursor: pointer;
+}
+
+button:active {
+  transform: scale(0.98);
 }
 
 button:disabled {
   background-color: var(--border);
+  border-color: var(--border);
   cursor: auto;
+  opacity: 0.6;
 }
 
+button:disabled:hover {
+  background-color: var(--border);
+  border-color: var(--border);
+  transform: none;
+}
+
+/* Input styles */
 input {
   font-size: large;
   border: 2px solid var(--border) !important;
   padding: 2px;
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+
+input:hover {
+  border-color: var(--highlight) !important;
 }
 
 input:focus {
-  outline: 2px solid var(--highlight);
-  outline-offset: 2px; /* optional */
+  outline: none;
+  border-color: var(--highlight) !important;
+  box-shadow: 0 0 0 2px var(--highlight-dim),
+              0 0 8px var(--highlight-glow);
 }
 
 canvas:focus:not(:focus-visible) {
@@ -157,13 +202,6 @@ html {
   touch-action: none;
 }
 
-input {
-  border: none;
-  background-color: none;
-  padding: 0;
-  margin: 0;
-}
-
 * {
   box-sizing: border-box;
   padding: 0;
@@ -173,6 +211,11 @@ input {
 a {
   color: inherit;
   text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--highlight);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -185,5 +228,11 @@ input,
 button,
 html,
 body {
-  font-family: 'medodioca', /*'DePixel',*/ system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family: 'medodioca', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+/* Utility class for highlight glow effect */
+.glow-on-hover:hover {
+  box-shadow: 0 0 8px var(--highlight-glow),
+              0 0 16px var(--highlight-dim);
 }

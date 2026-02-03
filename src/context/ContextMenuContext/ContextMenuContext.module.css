@@ -1,10 +1,11 @@
 .contextMenuContainer {
-  background-color: white;
-  border: 2px solid gray;
+  background-color: var(--background);
+  border: 2px solid var(--border);
   white-space: nowrap;
   position: absolute;
   outline: 0;
   flex-shrink: 0;
   display: block;
   width: max-content;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }

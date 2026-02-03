@@ -24,6 +24,7 @@ const ColorPickerSliderPointer = ({ y, setY, W, pointerColor }: ColorPickerSlide
         position: 'absolute',
         inset: 0,
         touchAction: 'none',
+        cursor: 'pointer',
       }}
     >
       <div

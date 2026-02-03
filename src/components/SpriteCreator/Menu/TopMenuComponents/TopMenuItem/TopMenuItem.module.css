@@ -1,11 +1,20 @@
 .topMenuItem {
   background-color: var(--background);
-  padding: 4px;
+  padding: 4px 8px;
   cursor: pointer;
   width: auto;
+  transition: background-color var(--transition-fast),
+  color var(--transition-fast);
 }
+
 .topMenuItem:hover {
-  background-color: var(--border);
+  background-color: var(--highlight-dim);
+  color: var(--highlight);
+}
+
+.topMenuItem:active {
+  background-color: var(--highlight);
+  color: var(--background);
 }
 
 .topMenuItemBorder {
@@ -15,9 +24,11 @@
 
 .disabled {
   color: var(--border);
+  opacity: 0.5;
 }
 
 .disabled:hover {
   background-color: var(--background) !important;
+  color: var(--border) !important;
   cursor: default;
 }

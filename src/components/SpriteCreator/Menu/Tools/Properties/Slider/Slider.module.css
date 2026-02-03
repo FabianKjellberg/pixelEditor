@@ -2,15 +2,23 @@
   display: flex;
   width: 100%;
 }
+
 .sliderBarContainer {
   width: 100%;
   position: relative;
   align-items: center;
   margin: 10px;
 }
+
 .sliderBar {
   border: 1px solid var(--border);
+  transition: border-color var(--transition-fast);
 }
+
+.sliderBarContainer:hover .sliderBar {
+  border-color: var(--highlight);
+}
+
 .sliderPoint {
   position: absolute;
   width: 14px;
@@ -19,6 +27,19 @@
   border: 2px solid var(--border);
   background-color: var(--highlight);
   cursor: pointer;
+  transition: transform var(--transition-fast),
+              box-shadow var(--transition-fast),
+              border-color var(--transition-fast);
+}
+
+.sliderPoint:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+  box-shadow: 0 0 8px var(--highlight-glow);
+  border-color: var(--highlight);
+}
+
+.sliderPoint:active {
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 .minMaxNr {
@@ -35,4 +56,5 @@
 
 .buttonPlusMinus button {
   width: 25px;
+  font-weight: bold;
 }
