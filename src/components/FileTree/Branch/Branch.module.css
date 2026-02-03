@@ -2,17 +2,17 @@
   --tree-indent: 15px;
   --row-h: 24px;
   --connector: var(--foreground);
-  --drop-accent: #54fe3a;
+  --drop-accent: var(--highlight);
   --slot-height: 6px;
-  --slot-highlight: color-mix(in srgb, var(--drop-accent) 10%, transparent);
-  --hover-tint: color-mix(in srgb, var(--drop-accent) 12%, transparent);
+  --slot-highlight: var(--highlight-dim);
+  --tree-hover-tint: var(--highlight-dim);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --drop-accent: #54fe3a;
-    --slot-highlight: color-mix(in srgb, var(--drop-accent) 18%, transparent);
-    --hover-tint: color-mix(in srgb, var(--drop-accent) 16%, transparent);
+    --drop-accent: var(--highlight);
+    --slot-highlight: var(--highlight-dim);
+    --tree-hover-tint: var(--highlight-dim);
   }
 }
 
@@ -21,6 +21,13 @@
   align-items: center;
   position: relative;
   min-height: var(--row-h);
+  transition: background-color var(--transition-fast);
+  border-radius: 3px;
+  padding: 2px 4px;
+}
+
+.branch:hover {
+  background-color: var(--tree-hover-tint);
 }
 
 .branch::before {
@@ -31,6 +38,11 @@
   width: var(--tree-indent);
   border-top: 1px dotted var(--connector);
   transform: translateY(-50%);
+  transition: border-color var(--transition-fast);
+}
+
+.branch:hover::before {
+  border-top-color: var(--highlight);
 }
 
 .subBranches {
@@ -63,11 +75,12 @@
   text-decoration: underline;
   background: none;
   color: var(--btn-fg);
-  transition: color 0.1s ease;
+  transition: color var(--transition-fast);
 }
 
 .branchAddBranch:hover {
-  color: var(--btn-fg-hover);
+  color: var(--highlight);
+  background: none;
 }
 
 .branchAddBranch p {
@@ -75,11 +88,12 @@
 }
 
 .dropOver {
-  background: var(--hover-tint);
+  background: var(--tree-hover-tint);
   border-radius: 3px;
-  outline: 2px dashed color-mix(in srgb, var(--drop-accent) 80%, transparent);
+  outline: 2px dashed var(--highlight);
   outline-offset: -2px;
-  transition: background-color 0.12s ease, outline-color 0.12s ease;
+  transition: background-color var(--transition-fast), 
+              outline-color var(--transition-fast);
 }
 
 .branch.dropOver::before {
@@ -102,6 +116,7 @@
   height: var(--slot-height);
   margin-left: calc(var(--tree-indent) - 1px);
   border-radius: 3px;
+  transition: background-color var(--transition-fast);
 }
 
 .dropSlotOver {
@@ -116,7 +131,8 @@
   transform: translateY(-50%);
   border-top: 2px solid transparent;
   pointer-events: none;
-  transition: border-color 0.12s ease, opacity 0.12s ease;
+  transition: border-color var(--transition-fast), 
+              opacity var(--transition-fast);
 }
 
 .dropSlotOver::before {

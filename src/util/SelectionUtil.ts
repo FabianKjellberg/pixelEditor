@@ -1,7 +1,6 @@
 import { getPixelIndex } from '@/helpers/color';
 import { Rectangle, SelectionLayer } from '@/models/Layer';
 import { edge, point } from '@/models/Selection';
-import { he } from 'zod/locales';
 
 function pointKey(p: point): string {
   return `${p.x},${p.y}`;

@@ -1,0 +1,13 @@
+.section {
+  margin-bottom: 30px;
+}
+
+.title {
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.content {
+  padding: 0 4px;
+}

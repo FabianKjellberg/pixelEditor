@@ -8,8 +8,16 @@
   padding-right: 8px;
   padding-top: 2px;
   cursor: pointer;
+  transition: background-color var(--transition-fast),
+  color var(--transition-fast);
 }
 
 .LoginMenuButton:hover {
-  background-color: var(--border);
+  background-color: var(--highlight-dim);
+  color: var(--highlight);
+}
+
+.LoginMenuButton:active {
+  background-color: var(--highlight);
+  color: var(--background);
 }

@@ -17,11 +17,18 @@
   flex-direction: column;
   overflow: hidden;
   overflow-y: scroll;
+  transition: border-color var(--transition-fast);
 }
+
+.toolContainer:hover {
+  border-color: color-mix(in srgb, var(--border), var(--highlight) 30%);
+}
+
 .toolsHeader {
   text-align: center;
   padding: 5px;
   text-decoration: underline;
+  color: var(--highlight);
 }
 
 .toolIconContainer {

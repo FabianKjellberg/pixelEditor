@@ -23,6 +23,9 @@
   min-width: 0;
   padding: 6px 8px;
   text-align: center;
+  transition: background-color var(--transition-fast),
+  border-color var(--transition-fast),
+  color var(--transition-fast);
 }
 
 .changeNameInput {
@@ -51,12 +54,20 @@
 .layerItemSelected {
   width: 100%;
   padding: 4px;
-  border: 2px solid var(--border);
-  outline: 2px solid var(--highlight);
+  border: 2px solid var(--highlight);
+  box-shadow: 0 0 0 2px var(--highlight-dim),
+  0 0 8px var(--highlight-glow);
   text-align: center;
+  background-color: var(--highlight-dim);
 }
 
 .layerItem:hover {
   cursor: pointer;
-  background-color: var(--btn-bg-hover);
+  background-color: var(--highlight-dim);
+  border-color: var(--highlight);
+}
+
+.layerItemSelected:hover {
+  cursor: pointer;
+  box-shadow: 0 0 0 2px var(--highlight-dim), 0 0 12px var(--highlight-glow);
 }

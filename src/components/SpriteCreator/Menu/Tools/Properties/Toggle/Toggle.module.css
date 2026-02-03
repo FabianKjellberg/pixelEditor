@@ -3,13 +3,22 @@
   border: 2px solid var(--border);
   gap: 0;
   cursor: pointer;
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+
+.toggleContainer:hover {
+  border-color: var(--highlight);
+  box-shadow: 0 0 6px var(--highlight-glow);
 }
 
 .toggleButton {
   width: 15px;
   height: 15px;
   background-color: var(--foreground);
-  transition: transform 160ms ease, background-color 160ms ease;
+  transition: transform 160ms ease, 
+              background-color 160ms ease,
+              box-shadow 160ms ease;
 }
 
 .buttonRow {
@@ -20,5 +29,6 @@
 
 .toggleButtonChecked {
   background-color: var(--highlight);
-  transform: translateX(15);
+  transform: translateX(15px);
+  box-shadow: 0 0 8px var(--highlight-glow);
 }
