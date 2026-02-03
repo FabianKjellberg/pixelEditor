@@ -18,14 +18,14 @@ const HomeContent = () => {
       <div>
         <h3>Hello</h3>
         <p>
-          I'm Fabian. I recently graduated in system development and I'm at my best when I'm
+          I&apos;m Fabian. I recently graduated in system development and I&apos;m at my best when I&apos;m
           building things and figuring them out as I go. I enjoy digging into how systems work,
           solving small problems, and slowly turning ideas into something real.
         </p>
         <br />
         <p>
-          This page is my space to experiment and share a couple of projects I'm currently working
-          on, one small and one a bit more ambitious. It's not a portfolio of perfection, but a
+          This page is my space to experiment and share a couple of projects I&apos;m currently working
+          on, one small and one a bit more ambitious. It&apos;s not a portfolio of perfection, but a
           place where I document progress, test ideas, and see how far I can take them.
         </p>
         <br />
@@ -130,7 +130,7 @@ const HomeContent = () => {
       <div className={style.breakRowLine} />
       <div className={style.footer}>
         <p>
-          Over time, I'll keep adding demos, write-ups, and short visual examples of my work here.
+          Over time, I&apos;ll keep adding demos, write-ups, and short visual examples of my work here.
         </p>
         <br />
         <p>Thank you for visiting my page, Hope you liked it.</p>

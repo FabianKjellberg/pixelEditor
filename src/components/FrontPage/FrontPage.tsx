@@ -18,7 +18,7 @@ const FrontPage = () => {
           <p>last updated: 2026-02-03</p>
         </div>
         <div className={style.header}>
-          <h1>Fabian's Development Page</h1>
+          <h1>Fabian&apos;s Development Page</h1>
         </div>
 
         <div className={style.tabBar}>

@@ -6,7 +6,7 @@ const Changelog = () => {
     <div>
       <h2>Changelog</h2>
       <br />
-      <p>Version history and what I've been up to. Point form, but I'll keep it readable.</p>
+      <p>Version history and what I&apos;ve been up to. Point form, but I&apos;ll keep it readable.</p>
       <br />
 
       <ChangelogEntry date="2026-02-02" title="User accounts">
@@ -76,22 +76,22 @@ const Changelog = () => {
           <p>
             Pen and eraser both use <code>clipLayerToSelection</code> so only pixels inside the
             selection get drawn or erased. Move tool: if you click inside the selection it extracts
-            those pixels into a "floating" layer, clears them from the base, and moves both the
+            those pixels into a &quot;floating&quot; layer, clears them from the base, and moves both the
             pixels and the selection rect until you release.
           </p>
         </li>
         <li>
-          <p>Top menu has "Clear selection" when a selection is active.</p>
+          <p>Top menu has &quot;Clear selection&quot; when a selection is active.</p>
         </li>
         <li>
           <p>
-            <b>Refactor (pen & eraser):</b> Drawing used to stamp the whole brush (size × size) at
-            every step along the stroke. That's O(stroke length × size²), which gets nasty for big
+            <b>Refactor (pen &amp; eraser):</b> Drawing used to stamp the whole brush (size × size) at
+            every step along the stroke. That&apos;s O(stroke length × size²), which gets nasty for big
             brushes. Now we only draw the <b>edges</b> of each step: along the line we advance one
-            pixel at a time and only write the leading row or column of the brush (the edge that's
-            "new"). So we go from O(stroke length × size²) down to O(stroke length × size + size):
+            pixel at a time and only write the leading row or column of the brush (the edge that&apos;s
+            &quot;new&quot;). So we go from O(stroke length × size²) down to O(stroke length × size + size):
             one pass along the stroke with size pixels per step, plus the first stamp. Same idea for
-            the eraser. We also keep a stroke matrix and stroke number so we don't double-write
+            the eraser. We also keep a stroke matrix and stroke number so we don&apos;t double-write
             overlapping pixels within a stroke.
           </p>
         </li>
