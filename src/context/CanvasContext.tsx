@@ -1,8 +1,6 @@
 'use client';
 
 import { Cordinate, Rectangle, SelectionLayer } from '@/models/Layer';
-import { convertSelectionLayer } from '@/util/LayerUtil';
-import { createSelectionLayer } from '@/util/SelectionUtil';
 import {
   createContext,
   useCallback,
@@ -19,6 +17,8 @@ const defaultPixelSize: number = 25;
 const defaultPan: Cordinate = { x: 0, y: 0 };
 
 type CanvasContextValue = {
+  projectId: string;
+  setProjectId: (id: string) => void;
   setDimensions: (width: number, height: number) => void;
   height: number;
   width: number;
@@ -39,6 +39,7 @@ type CanvasContextValue = {
 const CanvasContext = createContext<CanvasContextValue | undefined>(undefined);
 
 export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
+  const [projectId, setProjectId] = useState<string>(crypto.randomUUID());
   const [pixelSize, setPixelSize] = useState<number>(defaultPixelSize);
   const [width, setWidth] = useState<number>(defaultWidth);
   const [height, setHeight] = useState<number>(defaultHeight);
@@ -83,6 +84,8 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
 
   const value = useMemo(
     () => ({
+      projectId,
+      setProjectId,
       pixelSize,
       setPixelSize,
       width,
@@ -97,6 +100,8 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
       getSelectionLayer,
     }),
     [
+      projectId,
+      setProjectId,
       pixelSize,
       setPixelSize,
       height,

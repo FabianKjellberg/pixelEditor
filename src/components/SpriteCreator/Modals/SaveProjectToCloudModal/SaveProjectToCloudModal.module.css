@@ -1,0 +1,12 @@
+.modalContent {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

@@ -4,8 +4,8 @@ import { useLayerContext } from '@/context/LayerContext';
 import { Dispatch, SetStateAction, useMemo } from 'react';
 import styles from './LayerContextMenu.module.css';
 import { useContextMenuContext } from '@/context/ContextMenuContext/ContextMenuContext';
-import { Layer } from '@/models/Layer';
-import { createLayer } from '@/util/LayerUtil';
+import { LayerEntity } from '@/models/Layer';
+import { createLayerEntity } from '@/util/LayerUtil';
 
 function nextDuplicateName(name: string) {
   if (/\(\d+\)\s*$/.test(name)) {
@@ -29,7 +29,7 @@ const LayerContextMenu = ({ index, setEditTitleIndex }: LayerContextMenuProps) =
   };
 
   const onDuplicate = () => {
-    const duplicateLayer: Layer = structuredClone(allLayers[index]); // Node 17+/modern browsers
+    const duplicateLayer: LayerEntity = structuredClone(allLayers[index]); // Node 17+/modern browsers
 
     let duplicateNameExist = true;
     while (duplicateNameExist) {
@@ -44,10 +44,7 @@ const LayerContextMenu = ({ index, setEditTitleIndex }: LayerContextMenuProps) =
   };
 
   const onAddLayerBelow = () => {
-    addLayer(
-      createLayer({ x: 0, y: 0, width: 0, height: 0 }, 'Layer ' + (allLayers.length + 1)),
-      index + 1,
-    );
+    addLayer(createLayerEntity('Layer ' + (allLayers.length + 1)), index + 1);
 
     onHide();
   };

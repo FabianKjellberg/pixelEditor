@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// Only list vars you actually use. Optional ones are fine while WIP.
 const Schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
@@ -33,7 +32,7 @@ export const env = parsed.data;
 export const config = {
   apiBase: env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3000',
   featureXEnabled: env.EXP_FEATURE_X,
-  tmpSomething: env.TMP_SOMETHING ?? null, // easy to delete later
+  tmpSomething: env.TMP_SOMETHING ?? null,
 
   defaultColor: env.NEXT_PUBLIC_DEFAULT_COLOR,
 };

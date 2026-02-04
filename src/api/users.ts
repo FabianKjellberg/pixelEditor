@@ -21,8 +21,6 @@ export async function createAccount(username: string, password: string): Promise
   try {
     const response = await apiClient('POST', '/auth/register', { username, password });
 
-    console.log(response);
-
     if (response.status === 409) {
       return { ok: false, reason: 'username already exists' };
     }

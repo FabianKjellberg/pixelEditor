@@ -9,24 +9,26 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { Layer, Rectangle } from '@/models/Layer';
-import { createLayer } from '@/util/LayerUtil';
+import type { Layer, LayerEntity, Rectangle } from '@/models/Layer';
+import { createLayer, createLayerEntity } from '@/util/LayerUtil';
 
 const defaultRect: Rectangle = { x: 0, y: 0, width: 0, height: 0 };
-const defaultLayer: Layer[] = [createLayer(defaultRect, 'Layer 1')];
+const defaultLayer: LayerEntity[] = [createLayerEntity('Layer 1')];
 
 type LayerContextValue = {
-  allLayers: Layer[];
+  allLayers: LayerEntity[];
   activeLayerIndex: number;
   setActiveLayerIndex: (index: number) => void;
 
-  activeLayer: Layer;
-  getActiveLayer: () => Layer | undefined;
-  setActiveLayer: (updater: (prevLayer: Layer) => { layer: Layer; dirtyRect: Rectangle }) => void;
+  activeLayer: LayerEntity;
+  getActiveLayer: () => LayerEntity | undefined;
+  setActiveLayer: (
+    updater: (prevLayer: LayerEntity) => { layer: LayerEntity; dirtyRect: Rectangle },
+  ) => void;
   deleteLayer: (index: number) => void;
   moveLayer: (from: number, to: number) => void;
 
-  addLayer: (layer: Layer, index: number) => void;
+  addLayer: (layer: LayerEntity, index: number) => void;
   renameLayer: (name: string, layerIndex: number) => void;
 
   redrawVersion: number;
@@ -61,7 +63,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
     return queue;
   }, [dirtyQueueRef]);
 
-  const [allLayers, setAllLayers] = useState<Layer[]>(defaultLayer);
+  const [allLayers, setAllLayers] = useState<LayerEntity[]>(defaultLayer);
   const [activeLayerIndex, setActiveLayerIndex] = useState<number>(0);
 
   const allLayersRef = useRef(allLayers);
@@ -80,7 +82,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const setActiveLayer = useCallback(
-    (updater: (prevLayer: Layer) => { layer: Layer; dirtyRect: Rectangle }) => {
+    (updater: (prevLayer: LayerEntity) => { layer: LayerEntity; dirtyRect: Rectangle }) => {
       let dirtyToPush: Rectangle | null = null;
 
       setAllLayers((prev) => {
@@ -110,7 +112,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
     (index: number) => {
       if (allLayers.length <= 1) return;
 
-      const dirtyRect = allLayers[index].rect;
+      const dirtyRect = allLayers[index].layer.rect;
 
       if (index >= allLayers.length - 1) {
         setActiveLayerIndex(index - 1);
@@ -135,7 +137,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
 
   const activeLayer = useMemo(() => allLayers[activeLayerIndex], [allLayers, activeLayerIndex]);
 
-  const addLayer = useCallback((layer: Layer, index?: number) => {
+  const addLayer = useCallback((layer: LayerEntity, index?: number) => {
     setAllLayers((prev) => {
       const i = index == null ? prev.length : Math.max(0, Math.min(index, prev.length));
       return [...prev.slice(0, i), layer, ...prev.slice(i)];
@@ -157,7 +159,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
     (from: number, to: number) => {
       const activeLayerName = allLayers[activeLayerIndex].name;
 
-      const newLayers = (): Layer[] => {
+      const newLayers = (): LayerEntity[] => {
         if (allLayers.length === 0) return allLayers;
 
         const fromIdx = clamp(from, 0, allLayers.length - 1);
@@ -184,7 +186,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
 
-      pushDirty(allLayers[from].rect);
+      pushDirty(allLayers[from].layer.rect);
 
       setAllLayers(newLayers());
       setActiveLayerIndex(newIndex);

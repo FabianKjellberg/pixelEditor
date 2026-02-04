@@ -3,11 +3,10 @@
 import ToolButton from '../ToolButton/ToolButton';
 import { PenTool } from '@/models/Tools/PenTool';
 import { useLayerContext } from '@/context/LayerContext';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useToolContext } from '@/context/ToolContext';
 import { OpacityProperty, SizeProperty, SmoothEdgeProperty } from '@/models/Tools/Properties';
 import { useCanvasContext } from '@/context/CanvasContext';
-import { Rectangle } from '@/models/Layer';
 
 const PenToolComponent = () => {
   const { getActiveLayer, setActiveLayer } = useLayerContext();

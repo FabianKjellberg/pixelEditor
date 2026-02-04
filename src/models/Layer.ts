@@ -1,5 +1,10 @@
-export type Layer = {
+export type LayerEntity = {
   name: string;
+  id: string;
+  layer: Layer;
+};
+
+export type Layer = {
   rect: Rectangle;
   pixels: Uint32Array;
 };

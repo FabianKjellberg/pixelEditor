@@ -1,9 +1,9 @@
-import { Cordinate, Layer, Rectangle, SelectionLayer } from '../Layer';
+import { Cordinate, LayerEntity, Rectangle, SelectionLayer } from '../Layer';
 import { IProperty } from './Properties';
 
 export type IToolDeps = {
-  getLayer?: () => Layer | undefined;
-  setLayer?: (updater: (prev: Layer) => { layer: Layer; dirtyRect: Rectangle }) => void;
+  getLayer?: () => LayerEntity | undefined;
+  setLayer?: (updater: (prev: LayerEntity) => { layer: LayerEntity; dirtyRect: Rectangle }) => void;
   getSelectionLayer?: () => SelectionLayer | undefined;
   setSelectionLayer?: (selectionLayer: SelectionLayer) => void;
   getPrimaryColor?: () => number | undefined;

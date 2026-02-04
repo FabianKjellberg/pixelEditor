@@ -12,10 +12,10 @@ const ActiveLayerHighlighter = () => {
   const { pixelSize, width, height, pan } = useCanvasContext();
 
   const highLightStyle = useMemo(() => {
-    const x1cordinate = Math.min(Math.max(0, activeLayer.rect.x), width);
-    const x2cordinate = Math.min(width, activeLayer.rect.x + activeLayer.rect.width);
-    const y1cordinate = Math.min(Math.max(0, activeLayer.rect.y), height);
-    const y2cordinate = Math.min(height, activeLayer.rect.y + activeLayer.rect.height);
+    const x1cordinate = Math.min(Math.max(0, activeLayer.layer.rect.x), width);
+    const x2cordinate = Math.min(width, activeLayer.layer.rect.x + activeLayer.layer.rect.width);
+    const y1cordinate = Math.min(Math.max(0, activeLayer.layer.rect.y), height);
+    const y2cordinate = Math.min(height, activeLayer.layer.rect.y + activeLayer.layer.rect.height);
 
     // cordinates
     const x1 = pan.x + x1cordinate * pixelSize;
@@ -34,7 +34,7 @@ const ActiveLayerHighlighter = () => {
 
   return (
     <>
-      {activeLayer.rect.height > 0 && activeLayer.rect.width > 0 && (
+      {activeLayer.layer.rect.height > 0 && activeLayer.layer.rect.width > 0 && (
         <div style={highLightStyle} className={styles.layerHighlight} />
       )}
     </>

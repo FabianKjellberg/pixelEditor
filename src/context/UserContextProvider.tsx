@@ -7,7 +7,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 type UserContextValue = {
   user: User | null;
   loadingUser: boolean;
-  refetchUser: () => void;
+  refetchUser: () => Promise<void>;
   logout: () => Promise<void>;
 };
 

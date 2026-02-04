@@ -72,7 +72,7 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
 
     // For each layer, copy only overlapping subrect into layer canvas, then draw over accum
     for (const layer of allLayers) {
-      const L = layer.rect; // { x, y, width, height }
+      const L = layer.layer.rect; // { x, y, width, height }
       // overlap of (rx,ry,rw,rh) with layer rect
       const ix = Math.max(rx, L.x);
       const iy = Math.max(ry, L.y);
@@ -99,7 +99,7 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
       for (let yy = 0; yy < h; yy++) {
         const row = (srcStartY + yy) * W + srcStartX;
         for (let xx = 0; xx < w; xx++) {
-          const c = layer.pixels[row + xx] >>> 0;
+          const c = layer.layer.pixels[row + xx] >>> 0;
           data[di++] = (c >>> 24) & 255; // R
           data[di++] = (c >>> 16) & 255; // G
           data[di++] = (c >>> 8) & 255; // B

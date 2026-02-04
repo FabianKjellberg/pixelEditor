@@ -9,7 +9,7 @@ import {
   stampToCanvasLayer,
 } from '@/util/LayerUtil';
 import { ITool, IToolDeps } from './Tools';
-import { Cordinate, Layer, Rectangle, SelectionLayer } from '../Layer';
+import { Cordinate, Layer, LayerEntity, Rectangle, SelectionLayer } from '../Layer';
 import { getPixelIndex, rgbaToInt } from '@/helpers/color';
 
 export class MoveTool implements ITool {
@@ -40,10 +40,10 @@ export class MoveTool implements ITool {
 
       if (clickInSelection) {
         // Extract the selected pixels into a floating layer
-        this.floatingLayer = clipLayerToSelection(layer, selectionLayer);
+        this.floatingLayer = clipLayerToSelection(layer.layer, selectionLayer);
 
         // Create base layer with selection pixels removed (cleared to transparent)
-        this.baseLayer = this.clearSelectionFromLayer(layer, selectionLayer);
+        this.baseLayer = this.clearSelectionFromLayer(layer.layer, selectionLayer);
 
         // Store a copy of the selection layer to move along with the pixels
         this.movingSelectionLayer = {
@@ -60,12 +60,12 @@ export class MoveTool implements ITool {
     }
 
     // No selection or click outside selection: regular layer move
-    const localPos = { x: pixelPos.x - layer.rect.x, y: pixelPos.y - layer.rect.y };
+    const localPos = { x: pixelPos.x - layer.layer.rect.x, y: pixelPos.y - layer.layer.rect.y };
 
     const boundsItem = outOfBoundFinder(
       { x: localPos.x, y: localPos.y, width: 1, height: 1 },
-      layer.rect.width,
-      layer.rect.height,
+      layer.layer.rect.width,
+      layer.layer.rect.height,
     );
 
     // Early return if you click out of bounds
@@ -106,8 +106,12 @@ export class MoveTool implements ITool {
         reducedLayer.rect,
       );
 
-      this.toolDeps.setLayer?.(() => ({
-        layer: reducedLayer,
+      this.toolDeps.setLayer?.((prevLayer) => ({
+        layer: {
+          name: prevLayer.name,
+          id: prevLayer.id,
+          layer: reducedLayer,
+        },
         dirtyRect: dirtyRect,
       }));
     }
@@ -163,8 +167,12 @@ export class MoveTool implements ITool {
     // Create a temporary combined layer for display
     const displayLayer = stampToCanvasLayer(this.floatingLayer, this.baseLayer);
 
-    this.toolDeps.setLayer?.(() => ({
-      layer: displayLayer,
+    this.toolDeps.setLayer?.((prevLayer: LayerEntity) => ({
+      layer: {
+        layer: displayLayer,
+        id: prevLayer.id,
+        name: prevLayer.name,
+      },
       dirtyRect: dirtyRect,
     }));
   }
@@ -177,17 +185,17 @@ export class MoveTool implements ITool {
     if (layer == undefined) return;
     if (this.lastX === null || this.lastY === null) return;
 
-    const localPos = { x: x - layer.rect.x, y: y - layer.rect.y };
+    const localPos = { x: x - layer.layer.rect.x, y: y - layer.layer.rect.y };
 
     // Early return if hasn't moved
     if (this.lastX === localPos.x && this.lastY === localPos.y) return;
 
-    const originalRectangle = { ...layer.rect };
+    const originalRectangle = { ...layer.layer.rect };
 
-    layer.rect.x += localPos.x - this.lastX;
-    layer.rect.y += localPos.y - this.lastY;
+    layer.layer.rect.x += localPos.x - this.lastX;
+    layer.layer.rect.y += localPos.y - this.lastY;
 
-    const dirtyRectangle: Rectangle = combineRectangles(originalRectangle, layer.rect);
+    const dirtyRectangle: Rectangle = combineRectangles(originalRectangle, layer.layer.rect);
 
     this.toolDeps.setLayer?.(() => ({
       layer: { ...layer },

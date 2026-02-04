@@ -2,7 +2,7 @@
 
 import { useLayerContext } from '@/context/LayerContext';
 import styles from './LayerSelector.module.css';
-import { createLayer } from '@/util/LayerUtil';
+import { createLayer, createLayerEntity } from '@/util/LayerUtil';
 import { useState } from 'react';
 import { useContextMenuContext } from '@/context/ContextMenuContext/ContextMenuContext';
 import LayerContextMenu from './LayerContextMenu/LayerContextMenu';
@@ -57,10 +57,7 @@ const LayerSelector = () => {
       <button
         className={styles.layerItem}
         onClick={() =>
-          addLayer(
-            createLayer({ width: 0, height: 0, x: 0, y: 0 }, 'Layer ' + (allLayers.length + 1)),
-            allLayers.length,
-          )
+          addLayer(createLayerEntity('Layer ' + (allLayers.length + 1)), allLayers.length)
         }
       >
         +
