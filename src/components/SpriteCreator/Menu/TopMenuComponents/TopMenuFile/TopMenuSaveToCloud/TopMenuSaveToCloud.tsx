@@ -7,7 +7,7 @@ import TopMenuItem from '../../TopMenuItem/TopMenuItem';
 import { useModalContext } from '@/context/ModalContext/ModalContext';
 import SaveProjectToCloudModal from '@/components/SpriteCreator/Modals/SaveProjectToCloudModal/SaveProjectToCloudModal';
 import { useUserContext } from '@/context/UserContextProvider';
-import LoginModalContent from '../../TopMenuLogin/LoginModalContent/LoginModalContent';
+import LoginModalContent from '../../../../Modals/LoginModalContent/LoginModalContent';
 
 const TopMenuSaveToCloud = () => {
   const [IsLoadedFromCloud, setIsLoadedFromCloud] = useState<boolean>(false);
@@ -39,7 +39,6 @@ const TopMenuSaveToCloud = () => {
   return (
     <>
       <TopMenuItem text={'Save Project In Cloud'} onClick={handleClickSaveProject} />
-      <div className={topMenuStyle.topMenuItemBorder} />
     </>
   );
 };

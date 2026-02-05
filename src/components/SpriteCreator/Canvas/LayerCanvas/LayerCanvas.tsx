@@ -3,8 +3,9 @@
 import { useCanvasContext } from '@/context/CanvasContext';
 import { useLayerContext } from '@/context/LayerContext';
 import { Rectangle } from '@/models/Layer';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { ensureCanvas2D } from '@/helpers/canvas';
+import { createPreview } from '@/util/BlobUtil';
 
 type LayerCanvasProps = {
   canvasWidth: number;
@@ -27,7 +28,7 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
   );
 
   const { pixelSize, width, height, pan, setPixelSize, setPan } = useCanvasContext();
-  const { allLayers, redrawVersion, consumeDirty } = useLayerContext();
+  const { allLayers, redrawVersion, consumeDirty, registerPreviewProvider } = useLayerContext();
 
   const renderViewPort = () => {
     const vctx = viewportCtxRef.current;
@@ -199,6 +200,18 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
   }, [width, height]);
 
   if (!canvasHeight || !canvasWidth) return;
+
+  //make preview image from backingRef,
+  const requestPreview = useCallback(async (): Promise<Blob> => {
+    const backing = backingRef.current;
+    if (!backing) {
+      throw new Error('backing canvas not ready');
+    }
+
+    return await createPreview(backing);
+  }, []);
+
+  registerPreviewProvider(requestPreview);
 
   return (
     <>

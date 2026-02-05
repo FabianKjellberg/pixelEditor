@@ -13,6 +13,8 @@ import {
 } from 'react';
 import styles from './ContextMenuContext.module.css';
 
+import { createPortal } from 'react-dom';
+
 const defaultShowContextMenu: boolean = false;
 const defaultPosition: CSSProperties = { top: 0, left: 0 };
 

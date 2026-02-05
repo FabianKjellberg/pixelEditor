@@ -9,10 +9,9 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { Layer, LayerEntity, Rectangle } from '@/models/Layer';
-import { createLayer, createLayerEntity } from '@/util/LayerUtil';
+import type { LayerEntity, Rectangle } from '@/models/Layer';
+import { createLayerEntity } from '@/util/LayerUtil';
 
-const defaultRect: Rectangle = { x: 0, y: 0, width: 0, height: 0 };
 const defaultLayer: LayerEntity[] = [createLayerEntity('Layer 1')];
 
 type LayerContextValue = {
@@ -34,6 +33,9 @@ type LayerContextValue = {
   redrawVersion: number;
   consumeDirty: () => Rectangle[];
   markDirty: (dirty: Rectangle) => void;
+
+  requestPreview: () => Promise<Blob>;
+  registerPreviewProvider: (fn: () => Promise<Blob>) => void;
 };
 
 const LayerContext = createContext<LayerContextValue | undefined>(undefined);
@@ -194,24 +196,47 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
     [pushDirty, allLayers, setAllLayers, setActiveLayerIndex, activeLayerIndex],
   );
 
+  // get a preview blob from the canvas backing ref
+  const previewProviderRef = useRef<(() => Promise<Blob>) | null>(null);
+
+  const registerPreviewProvider = (fn: () => Promise<Blob>) => {
+    previewProviderRef.current = fn;
+  };
+
+  const requestPreview = (): Promise<Blob> => {
+    if (previewProviderRef.current) {
+      return previewProviderRef.current();
+    }
+
+    throw new Error('no preview function provided');
+  };
+
   const value = useMemo(
     () => ({
+      //layers
       allLayers,
       activeLayerIndex,
       setActiveLayerIndex,
 
+      //selected layer
       activeLayer,
       getActiveLayer,
       setActiveLayer,
+
+      //built in functions
       deleteLayer,
       moveLayer,
-
       addLayer,
       renameLayer,
 
+      //dirt rectangles
       redrawVersion,
       consumeDirty,
       markDirty: pushDirty,
+
+      //preview
+      requestPreview,
+      registerPreviewProvider,
     }),
     [
       allLayers,
@@ -227,6 +252,8 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       redrawVersion,
       consumeDirty,
       pushDirty,
+      requestPreview,
+      registerPreviewProvider,
     ],
   );
 

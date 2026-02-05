@@ -30,7 +30,10 @@ export default function RootLayout({
       <head>
         <link rel="icon" type="image/png" href="/favicon.png" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <div id="overlay-root" />
+        {children}
+      </body>
     </html>
   );
 }
