@@ -200,8 +200,6 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     });
   }, [width, height]);
 
-  if (!canvasHeight || !canvasWidth) return;
-
   //make preview image from backingRef,
   const requestPreview = useCallback(async (): Promise<Blob> => {
     const backing = backingRef.current;
@@ -211,6 +209,8 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
 
     return await createPreview(backing);
   }, []);
+
+  if (!canvasHeight || !canvasWidth) return;
 
   registerPreviewProvider(requestPreview);
 

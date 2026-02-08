@@ -115,7 +115,7 @@ export async function addLayer(
     const response = await apiClient('POST', '/layer/create', addLayerBody);
 
     if (response.ok) {
-      let previewOk = true;
+      const previewOk = true;
 
       const responseData: AddLayerResponseData = await response.json();
 

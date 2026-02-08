@@ -19,7 +19,7 @@ const Loading: React.FC<LoadingProps> = ({
   return (
     <div
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={{ ['--loader-size' as any]: `${size}px` }}
+      style={{ ['--loader-size' as string | number]: `${size}px` }}
       role="status"
       aria-live="polite"
     >
