@@ -1,0 +1,39 @@
+.changeCanvasSizeContainer {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 300px;
+}
+
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.inputInput {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  width: 100%;
+}
+
+.inputInputInput {
+  border: 2px solid var(--border);
+  width: 100%;
+}
+
+.buttonContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.confirmButton {
+  background-color: var(--foreground);
+  color: var(--background);
+}

@@ -54,3 +54,32 @@ export type ProjectPreview = {
   createdAt: Date;
   name: string;
 };
+
+export type FetchedProject = {
+  id: string;
+  name: string;
+  createdAt: Date;
+  latestActivity: Date | null;
+  width: number;
+  height: number;
+};
+
+export type FetchedLayer = {
+  id: string;
+  name: string;
+  signedBlobUrl: string;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+  zIndex: number;
+};
+
+export type ProjectWithLayers = {
+  project: FetchedProject;
+  layers: FetchedLayer[];
+};
+
+export type UpdateCanvasDimensionResponseData = {
+  previewUrl: string;
+};

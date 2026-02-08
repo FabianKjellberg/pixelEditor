@@ -1,20 +1,27 @@
-import { UrlHeader } from '@/models/apiModels/projectModels';
+import { FetchedLayer, UrlHeader } from '@/models/apiModels/projectModels';
+import { Layer, LayerEntity, Rectangle } from '@/models/Layer';
+import { createLayer, createLayerEntity } from './LayerUtil';
 
 export type BlobUrl = {
-  uploadUrl: string;
-  headers: UrlHeader;
+  url: string;
+  headers?: UrlHeader;
   expiration: string;
 };
 
-export function makeBlob(arr: Uint32Array) {
+export function makeBlob(arr: Uint32Array): Blob {
   const view = new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength);
   const copy = view.slice();
   return new Blob([copy], { type: 'application/octet-stream' });
 }
 
+export async function blobToUint32Array(blob: Blob): Promise<Uint32Array> {
+  const buffer = await blob.arrayBuffer();
+  return new Uint32Array(buffer);
+}
+
 export async function uploadBlob(blobUrl: BlobUrl, body: BodyInit): Promise<boolean> {
   try {
-    const response = await fetch(blobUrl.uploadUrl, {
+    const response = await fetch(blobUrl.url, {
       method: 'PUT',
       headers: blobUrl.headers,
       body,
@@ -32,8 +39,47 @@ export async function uploadBlob(blobUrl: BlobUrl, body: BodyInit): Promise<bool
   }
 }
 
-export async function downloadBlob(): Promise<boolean> {
-  return true;
+export async function downloadBlob(blobUrl: BlobUrl): Promise<Blob | null> {
+  try {
+    const response = await fetch(blobUrl.url, {
+      method: 'GET',
+      headers: blobUrl.headers,
+    });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '<could not read body>');
+      console.error('R2 upload failed:', response.status, response.statusText, text);
+    }
+
+    return response.blob();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function getLayerFromBlob(layer: FetchedLayer): Promise<LayerEntity | null> {
+  const blobUrl: BlobUrl = {
+    url: layer.signedBlobUrl,
+    expiration: '180',
+  };
+
+  const layerBlob = await downloadBlob(blobUrl);
+
+  if (!layerBlob) return null;
+
+  const pixels = await blobToUint32Array(layerBlob);
+
+  const layerRectangle: Rectangle = {
+    x: layer.x,
+    y: layer.y,
+    width: layer.width,
+    height: layer.height,
+  };
+
+  const newLayer: Layer = { rect: layerRectangle, pixels };
+
+  return createLayerEntity(layer.name, layer.id, newLayer);
 }
 
 export async function createPreview(

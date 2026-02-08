@@ -1,11 +1,13 @@
 import { NotAuthenticatedError } from '@/models/Error';
 import * as users from './users';
 import * as project from './project';
+import * as layer from './layer';
 
 // export api functions for easier usage. Each module should export functions that use the apiClient.
 export const api = {
   users,
   project,
+  layer,
 };
 
 type MethodNoBody = 'GET';

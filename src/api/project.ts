@@ -3,8 +3,11 @@ import { apiClient } from './client';
 import {
   CreateProjectRequest,
   CreateProjectResponse,
+  ProjectWithLayers,
   ProjectPreview,
+  UpdateCanvasDimensionResponseData,
 } from '@/models/apiModels/projectModels';
+import { BlobUrl, uploadBlob } from '@/util/BlobUtil';
 
 export async function createProject(
   id: string,
@@ -49,4 +52,44 @@ export async function getMyProjectPreviews(): Promise<ProjectPreview[] | null> {
   const data = (await response.json()) as ProjectPreview[];
 
   return data;
+}
+
+export async function getProject(projectId: string): Promise<ProjectWithLayers | null> {
+  const response = await apiClient('GET', `/project/${projectId}`);
+
+  if (!response.ok) return null;
+
+  const data = (await response.json()) as ProjectWithLayers;
+
+  return data;
+}
+
+export async function updateCanvasDimension(
+  width: number,
+  height: number,
+  projectId: string,
+  requestPreview: () => Promise<Blob>,
+): Promise<void> {
+  try {
+    const response = await apiClient('PUT', '/project/size', { width, height, projectId });
+
+    if (!response.ok) {
+      console.error('response not good, update canvas dimensions');
+      return;
+    }
+
+    const responseData: UpdateCanvasDimensionResponseData = await response.json();
+
+    const previewBlobUrl: BlobUrl = {
+      url: responseData.previewUrl,
+      headers: { 'Content-Type': 'image/webp' },
+      expiration: '180',
+    };
+    const previewBlob = await requestPreview();
+    const uploadOk = await uploadBlob(previewBlobUrl, previewBlob);
+
+    if (!uploadOk) console.error('failed uploading layer or preview');
+  } catch (error) {
+    throw new Error('updating size failed' + error);
+  }
 }

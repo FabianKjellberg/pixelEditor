@@ -1,20 +1,40 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import styles from './ProjectPreviewCard.module.css';
 import { ProjectPreview } from '@/models/apiModels/projectModels';
-import { useContextMenuContext } from '@/context/ContextMenuContext/ContextMenuContext';
 
 type ProjectPreviewCardProps = {
   project: ProjectPreview;
+  index: number;
+  onCardClickCallback: (index: number) => void;
+  selected: boolean;
 };
 
-const ProjectPreviewCard = ({ project }: ProjectPreviewCardProps) => {
-  //const { onShow, onHide } = useContextMenuContext();
+const ProjectPreviewCard = ({
+  project,
+  index,
+  onCardClickCallback,
+  selected,
+}: ProjectPreviewCardProps) => {
+  const onCardClick = useCallback(() => {
+    onCardClickCallback(index);
+  }, []);
+
+  const lastAccessed: Date = useMemo(
+    () => new Date(project.latestActivity ? project.latestActivity : project.createdAt),
+    [project.createdAt, project.latestActivity],
+  );
 
   return (
     <div className={styles.card}>
-      <div className={`${styles.image} ${styles.checkerBackground}`}>
+      <p className={styles.projectTitle} title={project.name}>
+        {project.name}
+      </p>
+      <div
+        className={`${styles.image} ${styles.checkerBackground} ${selected ? styles.selected : ''}`}
+        onClick={onCardClick}
+      >
         <img
           src={project.signedPreviewUrl}
           alt={project.name}
@@ -24,9 +44,8 @@ const ProjectPreviewCard = ({ project }: ProjectPreviewCardProps) => {
           draggable={false}
         />
       </div>
-
-      <p className={styles.projectTitle} title={project.name}>
-        {project.name}
+      <p className={styles.lastAccessed} title={project.name}>
+        Accessed: {lastAccessed.toLocaleDateString()}
       </p>
     </div>
   );

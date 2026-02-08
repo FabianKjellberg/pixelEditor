@@ -39,7 +39,7 @@ const LayerContextMenu = ({ index, setEditTitleIndex }: LayerContextMenuProps) =
         duplicateNameExist = false;
     }
 
-    addLayer(duplicateLayer, index + 1);
+    addLayer({ ...duplicateLayer, id: crypto.randomUUID() }, index + 1);
     onHide();
   };
 

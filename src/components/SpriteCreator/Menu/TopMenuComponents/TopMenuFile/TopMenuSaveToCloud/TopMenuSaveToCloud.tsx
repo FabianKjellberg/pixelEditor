@@ -8,18 +8,20 @@ import { useModalContext } from '@/context/ModalContext/ModalContext';
 import SaveProjectToCloudModal from '@/components/SpriteCreator/Modals/SaveProjectToCloudModal/SaveProjectToCloudModal';
 import { useUserContext } from '@/context/UserContextProvider';
 import LoginModalContent from '../../../../Modals/LoginModalContent/LoginModalContent';
+import { useCanvasContext } from '@/context/CanvasContext';
+import { useToastContext } from '@/context/ToastContext/ToastContext';
 
 const TopMenuSaveToCloud = () => {
-  const [IsLoadedFromCloud, setIsLoadedFromCloud] = useState<boolean>(false);
-
+  const { isLoadedFromCloud } = useCanvasContext();
   const { onShow } = useModalContext();
-  const { user } = useUserContext();
+  const { onToast } = useToastContext();
+  const { user, loadingUser } = useUserContext();
 
   const saveProjectToCloudModal = <SaveProjectToCloudModal />;
 
   const openSave = useCallback(() => {
-    onShow('save-project-to-cloud', saveProjectToCloudModal, 'Save to the cloud');
-  }, [user, saveProjectToCloudModal, onShow]);
+    onShow('save-project-to-cloud', saveProjectToCloudModal, 'Sync to the cloud');
+  }, [saveProjectToCloudModal, onShow]);
 
   const loginModal = <LoginModalContent onLoginCallback={openSave} />;
 
@@ -29,16 +31,21 @@ const TopMenuSaveToCloud = () => {
       return;
     }
 
-    if (IsLoadedFromCloud) {
+    if (isLoadedFromCloud) {
+      onToast('This project is already synced, no need to save it', 'warning');
       return;
     }
 
     onShow('save-project-to-cloud', saveProjectToCloudModal, 'Save to the cloud');
-  }, [user, IsLoadedFromCloud, onShow, loginModal, saveProjectToCloudModal]);
+  }, [user, isLoadedFromCloud, onShow, loginModal, saveProjectToCloudModal]);
 
   return (
     <>
-      <TopMenuItem text={'Save Project In Cloud'} onClick={handleClickSaveProject} />
+      <TopMenuItem
+        text={'Sync Project to Cloud'}
+        onClick={handleClickSaveProject}
+        disabled={loadingUser}
+      />
     </>
   );
 };

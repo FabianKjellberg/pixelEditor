@@ -8,13 +8,17 @@ import { useModalContext } from '@/context/ModalContext/ModalContext';
 import { api } from '@/api/client';
 import { useCanvasContext } from '@/context/CanvasContext';
 import { makeBlob, uploadBlob } from '@/util/BlobUtil';
+import { useToastContext } from '@/context/ToastContext/ToastContext';
+import Loading from '@/components/Loading/Loading';
 
 const SaveProjectToCloudModal = () => {
   const { allLayers, requestPreview } = useLayerContext();
-  const { projectId, width, height } = useCanvasContext();
+  const { projectId, width, height, setIsLoadedFromCloud } = useCanvasContext();
   const { onHide } = useModalContext();
+  const { onToast } = useToastContext();
 
   const [name, setName] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   const emptyName = useMemo(() => name === '', [name]);
 
@@ -26,43 +30,52 @@ const SaveProjectToCloudModal = () => {
   );
 
   const onClickSave = useCallback(async () => {
-    const urls = await api.project.createProject(projectId, name, width, height, allLayers);
-    const previewBlob = await requestPreview();
+    try {
+      setLoading(true);
 
-    if (!urls) {
-      console.error('failed to create project');
-    } else {
-      const preview: Promise<boolean> = uploadBlob(
-        {
-          uploadUrl: urls.preview.uploadUrl,
-          headers: urls.preview.headers,
-          expiration: urls.expiration,
-        },
-        previewBlob,
-      );
+      const urls = await api.project.createProject(projectId, name, width, height, allLayers);
+      const previewBlob = await requestPreview();
 
-      const layers: boolean[] = await Promise.all(
-        urls.layers.map(async (layer) => {
-          const layerBlob = makeBlob(
-            allLayers.find((al) => al.id === layer.layerId)?.layer.pixels || new Uint32Array(),
-          );
+      if (!urls) {
+        console.error('failed to create project');
+      } else {
+        const preview: Promise<boolean> = uploadBlob(
+          {
+            url: urls.preview.uploadUrl,
+            headers: urls.preview.headers,
+            expiration: urls.expiration,
+          },
+          previewBlob,
+        );
 
-          return uploadBlob(
-            {
-              uploadUrl: layer.uploadUrl,
-              headers: layer.headers,
-              expiration: urls.expiration,
-            },
-            layerBlob,
-          );
-        }),
-      );
+        const layers: boolean[] = await Promise.all(
+          urls.layers.map(async (layer) => {
+            const layerBlob = makeBlob(
+              allLayers.find((al) => al.id === layer.layerId)?.layer.pixels || new Uint32Array(),
+            );
 
-      const previewSuccess = await preview;
+            return uploadBlob(
+              {
+                url: layer.uploadUrl,
+                headers: layer.headers,
+                expiration: urls.expiration,
+              },
+              layerBlob,
+            );
+          }),
+        );
 
-      //TODO! implement refetching if upload fails, flag for not successfull saves of layers etc
+        const previewSuccess = await preview;
+
+        onToast(name + ' is now synced, and will save automatically', 'success');
+        setIsLoadedFromCloud(true);
+        onHide('save-project-to-cloud');
+        //TODO! implement refetching if upload fails, flag for not successfull saves of layers etc
+      }
+    } finally {
+      setLoading(false);
     }
-  }, [allLayers, name]);
+  }, [allLayers, name, setIsLoadedFromCloud]);
 
   const onClickCancel = useCallback(() => {
     onHide('save-project-to-cloud');
@@ -70,12 +83,22 @@ const SaveProjectToCloudModal = () => {
 
   return (
     <div className={styles.modalContent}>
+      <h2 className={styles.title}>Save project to cloud</h2>
+      <p className={styles.description}>
+        Syncing saves your project to your account. You can open it again anytime from &quot;Open
+        from cloud&quot;. Your canvas, layers, and pixels are stored safely.
+      </p>
+      <div className={styles.breakLine} />
       <p>Enter the name of your project</p>
       <input value={name} onChange={onChangeName} />
 
       <div className={styles.buttonContainer}>
-        <button disabled={emptyName} onClick={onClickSave}>
-          Save
+        <button
+          disabled={emptyName || loading}
+          onClick={onClickSave}
+          className={styles.loadingButton}
+        >
+          {loading ? <Loading withText={false} size={14} /> : <>Save</>}
         </button>
         <button onClick={onClickCancel}>Cancel</button>
       </div>

@@ -60,7 +60,7 @@ const BackgroundCanvas = ({ canvasWidth, canvasHeight }: BackgroundCanvasProps) 
         }
       }
     }
-  }, [width, height]);
+  }, [width, height, pixelSize]);
 
   useEffect(() => {
     if (viewPortRef.current) {

@@ -9,8 +9,13 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { LayerEntity, Rectangle } from '@/models/Layer';
-import { createLayerEntity } from '@/util/LayerUtil';
+import type { Layer, LayerEntity, Rectangle } from '@/models/Layer';
+import { createLayer, createLayerEntity } from '@/util/LayerUtil';
+import { FetchedLayer } from '@/models/apiModels/projectModels';
+import { getLayerFromBlob } from '@/util/BlobUtil';
+import { useCanvasContext } from './CanvasContext';
+import { useAutoSaveContext } from './AutoSaveContext';
+import { api } from '@/api/client';
 
 const defaultLayer: LayerEntity[] = [createLayerEntity('Layer 1')];
 
@@ -36,6 +41,9 @@ type LayerContextValue = {
 
   requestPreview: () => Promise<Blob>;
   registerPreviewProvider: (fn: () => Promise<Blob>) => void;
+
+  loadLayers: (layers: FetchedLayer[]) => Promise<void>;
+  resetToBlankProject: (width: number, height: number, layers?: LayerEntity[]) => void;
 };
 
 const LayerContext = createContext<LayerContextValue | undefined>(undefined);
@@ -43,6 +51,15 @@ const LayerContext = createContext<LayerContextValue | undefined>(undefined);
 export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [redrawVersion, setRedrawVersion] = useState(0);
   const dirtyQueueRef = useRef<Rectangle[]>([]);
+
+  const { getCanvasRect, isLoadedFromCloud, projectId } = useCanvasContext();
+  const { debounceSave, beginSaving, endSaving } = useAutoSaveContext();
+
+  const isLoadedFromCloudRef = useRef(isLoadedFromCloud);
+
+  useEffect(() => {
+    isLoadedFromCloudRef.current = isLoadedFromCloud;
+  }, [isLoadedFromCloud]);
 
   const pushDirty = useCallback(
     (dirtyRect: Rectangle): void => {
@@ -78,6 +95,21 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
     activeLayerIndexRef.current = activeLayerIndex;
   }, [activeLayerIndex]);
 
+  // get a preview blob from the canvas backing ref
+  const previewProviderRef = useRef<(() => Promise<Blob>) | null>(null);
+
+  const registerPreviewProvider = (fn: () => Promise<Blob>) => {
+    previewProviderRef.current = fn;
+  };
+
+  const requestPreview = (): Promise<Blob> => {
+    if (previewProviderRef.current) {
+      return previewProviderRef.current();
+    }
+
+    throw new Error('no preview function provided');
+  };
+
   const getActiveLayer = useCallback(() => {
     const idx = activeLayerIndexRef.current;
     return allLayersRef.current[idx];
@@ -97,18 +129,47 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
         // store dirty to push after state update is scheduled
         dirtyToPush = dirtyRect;
 
-        // no change -> return prev (optional micro-opt)
         if (nextLayer === prevLayer) return prev;
 
         pushDirty(dirtyToPush);
+
+        trySave(prevLayer);
 
         const next = prev.slice();
         next[idx] = nextLayer;
         return next;
       });
     },
-    [pushDirty],
+    [pushDirty, isLoadedFromCloud, debounceSave],
   );
+
+  const trySave = (layer: LayerEntity) => {
+    if (isLoadedFromCloudRef.current) {
+      debounceSave(layer.id, saveFunction);
+    }
+  };
+
+  const saveFunction = (layerId: string) => {
+    const layer: LayerEntity | undefined = allLayersRef.current.find((l) => l.id == layerId);
+
+    if (!layer) {
+      throw new Error('could not find layer to save');
+    }
+
+    if (!beginSaving(layerId)) {
+      // maybe implement a waiting here
+      throw new Error('this layer is already saving');
+    }
+
+    api.layer
+      .saveLayer(layer, requestPreview)
+      .catch((error) => {
+        throw new Error(error);
+      })
+      .finally(() => {
+        endSaving(layer.id);
+      });
+  };
 
   const deleteLayer = useCallback(
     (index: number) => {
@@ -127,6 +188,14 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
         setActiveLayerIndex(activeLayerIndex - 1);
       }
 
+      if (isLoadedFromCloud) {
+        const rect = allLayers[index].layer.rect;
+        const shouldPreview = rect.width > 0 && rect.height > 0;
+        const layerId = allLayers[index].id;
+
+        api.layer.deleteLayer(layerId, shouldPreview, requestPreview);
+      }
+
       setAllLayers((prev) => {
         const i = index == null ? prev.length : Math.max(0, Math.min(index, prev.length));
         return [...prev.slice(0, i), ...prev.slice(i + 1)];
@@ -139,20 +208,33 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
 
   const activeLayer = useMemo(() => allLayers[activeLayerIndex], [allLayers, activeLayerIndex]);
 
-  const addLayer = useCallback((layer: LayerEntity, index?: number) => {
-    setAllLayers((prev) => {
-      const i = index == null ? prev.length : Math.max(0, Math.min(index, prev.length));
-      return [...prev.slice(0, i), layer, ...prev.slice(i)];
-    });
-  }, []);
+  const addLayer = useCallback(
+    (layer: LayerEntity, index?: number) => {
+      setAllLayers((prev) => {
+        const i = index == null ? prev.length : Math.max(0, Math.min(index, prev.length));
+        return [...prev.slice(0, i), layer, ...prev.slice(i)];
+      });
+
+      setActiveLayerIndex(index ?? allLayers.length - 1);
+
+      if (isLoadedFromCloud) {
+        api.layer.addLayer(layer, projectId, requestPreview, index);
+      }
+    },
+    [isLoadedFromCloud, requestPreview, projectId, setActiveLayerIndex],
+  );
 
   const renameLayer = useCallback(
     (name: string, layerIndex: number) => {
       setAllLayers((prev) =>
         prev.map((layer, index) => (index === layerIndex ? { ...layer, name } : layer)),
       );
+
+      if (isLoadedFromCloud) {
+        api.layer.renameLayer(allLayers[layerIndex].id, name);
+      }
     },
-    [setAllLayers],
+    [setAllLayers, isLoadedFromCloud, allLayers],
   );
 
   const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max));
@@ -188,28 +270,50 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
 
+      const indexedLayers = newLayers();
+
+      if (isLoadedFromCloud) {
+        api.layer.moveLayers(indexedLayers, requestPreview);
+      }
+
       pushDirty(allLayers[from].layer.rect);
 
-      setAllLayers(newLayers());
+      setAllLayers(indexedLayers);
       setActiveLayerIndex(newIndex);
     },
     [pushDirty, allLayers, setAllLayers, setActiveLayerIndex, activeLayerIndex],
   );
 
-  // get a preview blob from the canvas backing ref
-  const previewProviderRef = useRef<(() => Promise<Blob>) | null>(null);
+  const resetToBlankProject = useCallback(
+    (width: number, height: number, layers?: LayerEntity[]) => {
+      const entities = layers ?? [
+        createLayerEntity('Layer 1', crypto.randomUUID(), createLayer({ x: 0, y: 0, width, height })),
+      ];
+      setAllLayers(entities);
+      setActiveLayerIndex(0);
+      pushDirty({ x: 0, y: 0, width, height });
+    },
+    [pushDirty, setAllLayers, setActiveLayerIndex],
+  );
 
-  const registerPreviewProvider = (fn: () => Promise<Blob>) => {
-    previewProviderRef.current = fn;
-  };
+  //Load layers
+  const loadLayers = useCallback(
+    async (layers: FetchedLayer[]): Promise<void> => {
+      console.log(layers);
 
-  const requestPreview = (): Promise<Blob> => {
-    if (previewProviderRef.current) {
-      return previewProviderRef.current();
-    }
+      const layerEntities: LayerEntity[] = (
+        await Promise.all(
+          layers.map(async (layer: FetchedLayer) => {
+            return getLayerFromBlob(layer);
+          }),
+        )
+      ).filter((layer): layer is LayerEntity => layer !== null);
 
-    throw new Error('no preview function provided');
-  };
+      setAllLayers(layerEntities);
+      pushDirty(getCanvasRect());
+    },
+    [getCanvasRect, setAllLayers],
+  );
 
   const value = useMemo(
     () => ({
@@ -237,6 +341,10 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       //preview
       requestPreview,
       registerPreviewProvider,
+
+      //load layers
+      loadLayers,
+      resetToBlankProject,
     }),
     [
       allLayers,
@@ -254,6 +362,8 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       pushDirty,
       requestPreview,
       registerPreviewProvider,
+      loadLayers,
+      resetToBlankProject,
     ],
   );
 

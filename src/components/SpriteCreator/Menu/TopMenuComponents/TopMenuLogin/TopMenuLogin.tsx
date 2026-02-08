@@ -15,9 +15,9 @@ const TopMenuLogin = () => {
   const { onShow: showContextMenu } = useContextMenuContext();
   const usernameRef = useRef<HTMLDivElement | null>(null);
 
-  const { user, loadingUser, refetchUser } = useUserContext();
+  const { user, loadingUser } = useUserContext();
 
-  const loginModal = <LoginModalContent onLoginCallback={refetchUser} />;
+  const loginModal = <LoginModalContent />;
 
   const openLoginModal = useCallback(() => {
     onShow('login-modal', loginModal, 'Login or Register a new Account');

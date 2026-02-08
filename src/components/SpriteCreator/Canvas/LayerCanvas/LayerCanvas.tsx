@@ -71,8 +71,9 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     // clear accumulation target (transparent)
     accumCtx.clearRect(0, 0, rw, rh);
 
-    // For each layer, copy only overlapping subrect into layer canvas, then draw over accum
-    for (const layer of allLayers) {
+    // Draw layers bottom-to-top: lower index = drawn first (bottom), higher index = drawn last (on top)
+    const layersBottomToTop = [...allLayers].reverse();
+    for (const layer of layersBottomToTop) {
       const L = layer.layer.rect; // { x, y, width, height }
       // overlap of (rx,ry,rw,rh) with layer rect
       const ix = Math.max(rx, L.x);

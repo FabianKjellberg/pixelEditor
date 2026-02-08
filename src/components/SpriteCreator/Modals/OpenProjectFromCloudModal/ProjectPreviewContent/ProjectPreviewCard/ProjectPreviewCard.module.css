@@ -1,10 +1,40 @@
 .card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .image {
   width: 128px;
   height: 128px;
-  border: 2px solid var(--border);
+  border: 3px solid var(--border);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.image:hover {
+  border-color: var(--highlight);
+  box-shadow: 0 0 8px var(--highlight-glow);
+}
+
+.image:active {
+  transform: scale(0.95);
+}
+
+.image.selected {
+  border: 3px solid var(--highlight);
+  box-shadow:
+    0 0 0 2px var(--highlight-dim),
+    0 0 12px var(--highlight-glow);
+}
+
+.image.selected:hover {
+  box-shadow:
+    0 0 0 2px var(--highlight-dim),
+    0 0 16px var(--highlight-glow);
 }
 
 .previewImg {
@@ -35,4 +65,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 16px;
+}
+
+.lastAccessed {
+  color: gray;
+  font-size: 14px;
 }
