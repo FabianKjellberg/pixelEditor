@@ -1,0 +1,25 @@
+.content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 128px);
+  gap: 12px;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-y: auto;
+  padding: 12px;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  overflow-y: scroll;
+  border: 2px solid var(--border-color);
+}
+
+.loadingContent {
+  background-color: black;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 12px;
+}

@@ -7,8 +7,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 type UserContextValue = {
   user: User | null;
   loadingUser: boolean;
-  refetchUser: () => void;
-  logout: () => Promise<void>;
+  refetchUser: () => Promise<void>;
+  logout: () => Promise<boolean>;
 };
 
 const UserContext = createContext<UserContextValue | undefined>(undefined);
@@ -24,11 +24,12 @@ export const UserContextProvider = ({ children }: { children: React.ReactNode })
     setLoadingUser(false);
   }, [setUser, setLoadingUser]);
 
-  const logout = useCallback(async () => {
+  const logout = useCallback(async (): Promise<boolean> => {
     const success = await apiLogout();
     if (success) {
       setUser(null);
     }
+    return success;
   }, [setUser]);
 
   useEffect(() => {

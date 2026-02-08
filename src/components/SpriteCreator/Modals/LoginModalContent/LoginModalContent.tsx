@@ -4,6 +4,8 @@ import React, { useCallback, useMemo, useState } from 'react';
 import styles from './LoginModalContent.module.css';
 import { api } from '@/api/client';
 import { useModalContext } from '@/context/ModalContext/ModalContext';
+import { useUserContext } from '@/context/UserContextProvider';
+import { useToastContext } from '@/context/ToastContext/ToastContext';
 
 enum MessageType {
   error = 'error',
@@ -17,6 +19,8 @@ interface LoginModalContentProps {
 
 const LoginModalContent = ({ onLoginCallback }: LoginModalContentProps) => {
   const { onHide } = useModalContext();
+  const { refetchUser } = useUserContext();
+  const { onToast } = useToastContext();
 
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -43,9 +47,10 @@ const LoginModalContent = ({ onLoginCallback }: LoginModalContentProps) => {
     if (!response.ok) {
       setMessage({ message: response.reason ?? '', type: MessageType.error });
     } else {
-      onHide('login-modal');
-
+      await refetchUser();
       if (onLoginCallback) onLoginCallback();
+      onHide('login-modal');
+      onToast('Welcome back ' + username, 'success');
     }
 
     setLoading(false);

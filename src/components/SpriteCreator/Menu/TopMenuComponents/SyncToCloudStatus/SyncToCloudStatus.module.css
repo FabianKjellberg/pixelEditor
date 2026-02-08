@@ -1,0 +1,23 @@
+.status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-left: 12px;
+  gap: 12px;
+}
+
+.statusText {
+  font-size: 20px;
+}
+
+.red {
+  color: red;
+}
+
+.green {
+  color: green;
+}
+
+.yellow {
+  color: yellow;
+}

@@ -3,8 +3,9 @@
 import { useCanvasContext } from '@/context/CanvasContext';
 import { useLayerContext } from '@/context/LayerContext';
 import { Rectangle } from '@/models/Layer';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { ensureCanvas2D } from '@/helpers/canvas';
+import { createPreview } from '@/util/BlobUtil';
 
 type LayerCanvasProps = {
   canvasWidth: number;
@@ -27,7 +28,7 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
   );
 
   const { pixelSize, width, height, pan, setPixelSize, setPan } = useCanvasContext();
-  const { allLayers, redrawVersion, consumeDirty } = useLayerContext();
+  const { allLayers, redrawVersion, consumeDirty, registerPreviewProvider } = useLayerContext();
 
   const renderViewPort = () => {
     const vctx = viewportCtxRef.current;
@@ -70,9 +71,10 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     // clear accumulation target (transparent)
     accumCtx.clearRect(0, 0, rw, rh);
 
-    // For each layer, copy only overlapping subrect into layer canvas, then draw over accum
-    for (const layer of allLayers) {
-      const L = layer.rect; // { x, y, width, height }
+    // Draw layers bottom-to-top: lower index = drawn first (bottom), higher index = drawn last (on top)
+    const layersBottomToTop = [...allLayers].reverse();
+    for (const layer of layersBottomToTop) {
+      const L = layer.layer.rect; // { x, y, width, height }
       // overlap of (rx,ry,rw,rh) with layer rect
       const ix = Math.max(rx, L.x);
       const iy = Math.max(ry, L.y);
@@ -99,7 +101,7 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
       for (let yy = 0; yy < h; yy++) {
         const row = (srcStartY + yy) * W + srcStartX;
         for (let xx = 0; xx < w; xx++) {
-          const c = layer.pixels[row + xx] >>> 0;
+          const c = layer.layer.pixels[row + xx] >>> 0;
           data[di++] = (c >>> 24) & 255; // R
           data[di++] = (c >>> 16) & 255; // G
           data[di++] = (c >>> 8) & 255; // B
@@ -198,7 +200,19 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     });
   }, [width, height]);
 
+  //make preview image from backingRef,
+  const requestPreview = useCallback(async (): Promise<Blob> => {
+    const backing = backingRef.current;
+    if (!backing) {
+      throw new Error('backing canvas not ready');
+    }
+
+    return await createPreview(backing);
+  }, []);
+
   if (!canvasHeight || !canvasWidth) return;
+
+  registerPreviewProvider(requestPreview);
 
   return (
     <>

@@ -1,0 +1,42 @@
+.modalContent {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 320px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.description {
+  color: var(--foreground);
+  font-size: 0.95em;
+  opacity: 0.9;
+  margin: 0;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.breakLine {
+  width: 100%;
+  height: 2px;
+  border: 1px solid var(--border);
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.loadingButton {
+  width: 57px;
+}

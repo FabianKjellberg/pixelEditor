@@ -4,10 +4,13 @@ import { useModalContext } from '@/context/ModalContext/ModalContext';
 import styles from './ChangeCanvasModal.module.css';
 import { useMemo, useState } from 'react';
 import { useCanvasContext } from '@/context/CanvasContext';
+import { api } from '@/api/client';
+import { useLayerContext } from '@/context/LayerContext';
 
 const ChangeCanvasModal = () => {
   const { onHide } = useModalContext();
-  const { width, height, setDimensions } = useCanvasContext();
+  const { width, height, setDimensions, isLoadedFromCloud, projectId } = useCanvasContext();
+  const { requestPreview } = useLayerContext();
   const [canvasWidth, setCanvasWidth] = useState<string>(width.toString());
   const [canvasHeight, setCanvasHeight] = useState<string>(height.toString());
 
@@ -52,7 +55,11 @@ const ChangeCanvasModal = () => {
     const w = Number(canvasWidth);
     const h = Number(canvasHeight);
 
-    if (w < 0 || w > 2048 || h < 0 || h > 2048) return;
+    if (w < 0 || w > 1024 || h < 0 || h > 1024) return;
+
+    if (isLoadedFromCloud) {
+      api.project.updateCanvasDimension(w, h, projectId, requestPreview);
+    }
 
     setDimensions(w, h);
     onHide('changeCanvasSize');
@@ -75,9 +82,9 @@ const ChangeCanvasModal = () => {
               value={canvasWidth}
               type="number"
               min={1}
-              max={2048}
+              max={1024}
               step={1}
-              onChange={(e) => onChangeWidth(e.target.value, { min: 1, max: 2048 })}
+              onChange={(e) => onChangeWidth(e.target.value, { min: 1, max: 1024 })}
               className={styles.inputInputInput}
             />
             <p>px</p>
@@ -88,9 +95,9 @@ const ChangeCanvasModal = () => {
               value={canvasHeight}
               type="number"
               min={1}
-              max={2048}
+              max={1024}
               step={1}
-              onChange={(e) => onChangeHeight(e.target.value, { min: 1, max: 2048 })}
+              onChange={(e) => onChangeHeight(e.target.value, { min: 1, max: 1024 })}
               className={styles.inputInputInput}
             />
             <p>px</p>

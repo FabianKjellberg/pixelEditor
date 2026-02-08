@@ -3,6 +3,7 @@ import {
   Cordinate,
   Direction,
   Layer,
+  LayerEntity,
   OutOfBoundItem,
   Rectangle,
   SelectionLayer,
@@ -16,13 +17,22 @@ import { blendColor } from './ColorUtil';
  * @param yPos
  * @returns
  */
-export function createLayer(rect: Rectangle, name: string, colorInt?: number): Layer {
+export function createLayer(rect: Rectangle, colorInt?: number): Layer {
   const pixels = new Uint32Array(Math.max(rect.width * rect.height, 0));
   pixels.fill(colorInt ?? rgbaToInt(0, 0, 0, 0));
   return {
-    name,
     rect,
     pixels,
+  };
+}
+
+export function createLayerEntity(name: string, id?: string, layer?: Layer): LayerEntity {
+  const layerForEntity = layer ? layer : createLayer({ x: 0, y: 0, width: 0, height: 0 });
+
+  return {
+    name: name,
+    layer: layerForEntity,
+    id: id ? id : crypto.randomUUID(),
   };
 }
 
@@ -70,7 +80,7 @@ export function increaseLayerBoundary(dir: Direction, l: Layer): Layer {
   const y = OriginalLayer.rect.y - dir.top;
 
   //new Layer with updated dimensions and positioning
-  const layer = createLayer({ width, height, x, y }, OriginalLayer.name);
+  const layer = createLayer({ width, height, x, y });
 
   const widthLeftOffset = dir.left;
   const hegihtTopOffset = dir.top * width;
@@ -95,14 +105,14 @@ export function decreaseLayerBoundary(dir: Direction, l: Layer) {
 
   //early return if the height or width would not exist :)
   if (width <= 0 || height <= 0) {
-    return createLayer({ width: 0, height: 0, x: 0, y: 0 }, OriginalLayer.name);
+    return createLayer({ width: 0, height: 0, x: 0, y: 0 });
   }
 
   const x = OriginalLayer.rect.x + dir.left;
   const y = OriginalLayer.rect.y + dir.top;
 
   //new layer with update dimensions and positioning
-  const layer = createLayer({ width, height, x, y }, OriginalLayer.name);
+  const layer = createLayer({ width, height, x, y });
 
   const widthLeftOffset = dir.left;
   const heightTopOffset = dir.top * OriginalLayer.rect.width;
@@ -380,7 +390,7 @@ export function drawLine(
     height: size,
   };
 
-  const firstStamp = createLayer(r1, 'no name', color);
+  const firstStamp = createLayer(r1, color);
 
   const r2: Rectangle = {
     x: x2 - r,
@@ -390,7 +400,7 @@ export function drawLine(
   };
 
   const outRectangle: Rectangle = combineRectangles(r1, r2);
-  const out: Layer = createLayer(outRectangle, 'noName');
+  const out: Layer = createLayer(outRectangle);
   //stamp first layer
 
   //console.log(firstInStroke);
@@ -459,12 +469,12 @@ export function drawLine(
 export function clipLayerToSelection(layer: Layer, selectionLayer: SelectionLayer): Layer {
   // return if there is no intersection between the rectangles
   if (!isRectanglesIntersecting(layer.rect, selectionLayer.rect)) {
-    return createLayer({ x: layer.rect.x, y: layer.rect.y, width: 0, height: 0 }, layer.name);
+    return createLayer({ x: layer.rect.x, y: layer.rect.y, width: 0, height: 0 });
   }
 
   const intersectingRect = rectangleIntersection(layer.rect, selectionLayer.rect);
 
-  const out: Layer = createLayer(intersectingRect, layer.name);
+  const out: Layer = createLayer(intersectingRect);
 
   for (let y: number = 0; y < out.rect.height; y++) {
     for (let x: number = 0; x < out.rect.width; x++) {
@@ -494,7 +504,7 @@ export function clipLayerToSelection(layer: Layer, selectionLayer: SelectionLaye
 export function clipLayerToRect(layer: Layer, rect: Rectangle): Layer {
   const intersectingRect = rectangleIntersection(layer.rect, rect);
 
-  const out: Layer = createLayer(intersectingRect, layer.name);
+  const out: Layer = createLayer(intersectingRect);
 
   for (let y: number = 0; y < out.rect.height; y++) {
     for (let x: number = 0; x < out.rect.width; x++) {
@@ -527,7 +537,7 @@ export function rectangleIntersection(r1: Rectangle, r2: Rectangle): Rectangle {
 export function stampToCanvasLayer(stamp: Layer, originalLayer: Layer): Layer {
   //create a new layer with both (layers)
   const combinedRectangle: Rectangle = combineRectangles(originalLayer.rect, stamp.rect);
-  const combinedLayer: Layer = createLayer(combinedRectangle, originalLayer.name);
+  const combinedLayer: Layer = createLayer(combinedRectangle);
 
   //copy from original layer to new
   replacePixels(combinedLayer, originalLayer);
@@ -720,7 +730,7 @@ export function reduceLayerToContent(layer: Layer): Layer {
 
   // If entire layer is empty, return empty layer
   if (leftTrim === width) {
-    return createLayer({ x: layer.rect.x, y: layer.rect.y, width: 0, height: 0 }, layer.name);
+    return createLayer({ x: layer.rect.x, y: layer.rect.y, width: 0, height: 0 });
   }
 
   // Scan from right edge
@@ -773,10 +783,7 @@ export function reduceLayerToContent(layer: Layer): Layer {
   const newX = layer.rect.x + leftTrim;
   const newY = layer.rect.y + topTrim;
 
-  const reducedLayer = createLayer(
-    { x: newX, y: newY, width: newWidth, height: newHeight },
-    layer.name,
-  );
+  const reducedLayer = createLayer({ x: newX, y: newY, width: newWidth, height: newHeight });
 
   // Copy pixels to reduced layer
   for (let y = 0; y < newHeight; y++) {

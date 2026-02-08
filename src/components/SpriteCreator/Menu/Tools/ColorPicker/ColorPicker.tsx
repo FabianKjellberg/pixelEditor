@@ -5,7 +5,7 @@ import styles from './ColorPicker.module.css';
 import { useToolContext } from '@/context/ToolContext';
 import { intToCssRgba } from '@/helpers/color';
 import { useModalContext } from '@/context/ModalContext/ModalContext';
-import ColorPickerModal from './ColorPickerModal';
+import ColorPickerModal from '../../../Modals/ColorPicketModal/ColorPickerModal';
 
 const ColorPicker = () => {
   const { setPrimaryColor, setSecondaryColor, primaryColor, secondaryColor, flipPrimarySecondary } =

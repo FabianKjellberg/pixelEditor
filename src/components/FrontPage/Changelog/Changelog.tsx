@@ -9,6 +9,56 @@ const Changelog = () => {
       <p>Version history and what I&apos;ve been up to. Point form, but I&apos;ll keep it readable.</p>
       <br />
 
+      <ChangelogEntry date="2026-02-08" title="Cloud sync, autosave & file menu">
+        <li>
+          <p>
+            <b>Autosave—how it works.</b> When a project is synced (loaded from cloud or created with
+            &quot;sync to cloud&quot; checked), every layer edit—pen, eraser, move, rename, add, delete—schedules
+            a debounced save. Five seconds after you stop editing, the client calls the backend for
+            signed upload URLs, then uploads the changed layer pixels and a fresh preview to R2. No
+            manual save needed. <code>AutoSaveContext</code> tracks which layers are dirty and whether
+            a save is in flight; <code>LayerContext</code> wires <code>debounceSave</code> into{' '}
+            <code>setActiveLayer</code>, <code>deleteLayer</code>, <code>moveLayer</code>,{' '}
+            <code>renameLayer</code>, and <code>addLayer</code>. The sync status in the top menu shows
+            green when everything&apos;s synced, yellow when there are unsaved changes or a save running,
+            and prompts you to log in if you&apos;re not.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>File menu.</b> New Project: pick name, width, height; optional sync-to-cloud checkbox
+            (disabled when not logged in). Save to Cloud: uploads project + layers + preview. Open from
+            Cloud: lists your projects with previews; Open is disabled when dirty or saving. Change
+            canvas size syncs dimensions to the backend when the project is synced.
+          </p>
+        </li>
+        <li>
+          <p>
+            Checkbox component, logout disabled when dirty/saving + reset to blank 64×64 on success,{' '}
+            <code>resetToBlankProject</code> in LayerContext.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Bug fixes.</b> The checkered transparency background wasn&apos;t updating when you zoomed—it
+            stayed white or checkered based on the initial pixel size. Added <code>pixelSize</code> to the
+            backing canvas effect deps so it redraws correctly. Layers were also drawing in the wrong
+            order: lower layers appeared on top. Fixed by drawing in reverse array order so the first
+            layer in the list appears underneath and the last on top, as expected.
+          </p>
+        </li>
+        <li>
+          <p>
+            Backend endpoints for this release: <code>POST /auth/register</code>, <code>POST /auth/login</code>,{' '}
+            <code>POST /auth/refresh</code>, <code>POST /auth/logout</code>, <code>GET /auth/test-auth</code>,{' '}
+            <code>GET /user/me</code>, <code>POST /project/create</code>, <code>GET /project/previews</code>,{' '}
+            <code>GET /project/:id</code>, <code>PUT /project/size</code>, <code>PUT /layer/save</code>,{' '}
+            <code>DELETE /layer/delete</code>, <code>POST /layer/create</code>, <code>PUT /layer/name</code>,{' '}
+            <code>PUT /layer/move</code>. API docs updated with full response coverage.
+          </p>
+        </li>
+      </ChangelogEntry>
+
       <ChangelogEntry date="2026-02-02" title="User accounts">
         <li>
           <p>

@@ -1,8 +1,7 @@
 'use client';
 
+import { FetchedProject } from '@/models/apiModels/projectModels';
 import { Cordinate, Rectangle, SelectionLayer } from '@/models/Layer';
-import { convertSelectionLayer } from '@/util/LayerUtil';
-import { createSelectionLayer } from '@/util/SelectionUtil';
 import {
   createContext,
   useCallback,
@@ -19,6 +18,12 @@ const defaultPixelSize: number = 25;
 const defaultPan: Cordinate = { x: 0, y: 0 };
 
 type CanvasContextValue = {
+  isLoadedFromCloud: boolean;
+  setIsLoadedFromCloud: (isLoaded: boolean) => void;
+
+  projectId: string;
+  setProjectId: (id: string) => void;
+
   setDimensions: (width: number, height: number) => void;
   height: number;
   width: number;
@@ -34,11 +39,15 @@ type CanvasContextValue = {
   selectionLayer: SelectionLayer | undefined;
   getSelectionLayer: () => SelectionLayer | undefined;
   setSelectionLayer: (selectionLayer: SelectionLayer | undefined) => void;
+
+  loadProject: (project: FetchedProject) => void;
 };
 
 const CanvasContext = createContext<CanvasContextValue | undefined>(undefined);
 
 export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
+  const [isLoadedFromCloud, setIsLoadedFromCloud] = useState<boolean>(false);
+  const [projectId, setProjectId] = useState<string>(crypto.randomUUID());
   const [pixelSize, setPixelSize] = useState<number>(defaultPixelSize);
   const [width, setWidth] = useState<number>(defaultWidth);
   const [height, setHeight] = useState<number>(defaultHeight);
@@ -81,8 +90,21 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
     setWidth(width);
   }, []);
 
+  const loadProject = useCallback(
+    (project: FetchedProject) => {
+      setIsLoadedFromCloud(true);
+      setDimensions(project.width, project.height);
+      setProjectId(project.id);
+    },
+    [setIsLoadedFromCloud, setDimensions, setProjectId],
+  );
+
   const value = useMemo(
     () => ({
+      isLoadedFromCloud,
+      setIsLoadedFromCloud,
+      projectId,
+      setProjectId,
       pixelSize,
       setPixelSize,
       width,
@@ -95,8 +117,13 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
       selectionLayer,
       setSelectionLayer: setSelectionLayerCallback,
       getSelectionLayer,
+      loadProject,
     }),
     [
+      isLoadedFromCloud,
+      setIsLoadedFromCloud,
+      projectId,
+      setProjectId,
       pixelSize,
       setPixelSize,
       height,
@@ -109,6 +136,7 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
       selectionLayer,
       setSelectionLayerCallback,
       getSelectionLayer,
+      loadProject,
     ],
   );
 

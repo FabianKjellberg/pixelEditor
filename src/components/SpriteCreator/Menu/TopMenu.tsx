@@ -1,4 +1,5 @@
 import styles from './Menu.module.css';
+import SyncToCloudStatus from './TopMenuComponents/SyncToCloudStatus/SyncToCloudStatus';
 import TopMenuButtonItem from './TopMenuComponents/TopMenuButton/TopMenuButton';
 import TopMenuCanvas from './TopMenuComponents/TopMenuCanvas/TopMenuCanvas';
 import TopMenuFile from './TopMenuComponents/TopMenuFile/TopMenuFile';
@@ -15,6 +16,7 @@ const TopMenu = () => {
           <TopMenuButtonItem label={'Canvas'} contextMenu={<TopMenuCanvas />} />
           <TopMenuButtonItem label={'Layer'} contextMenu={<TopMenuLayer />} />
           <TopMenuButtonItem label={'Selection'} contextMenu={<TopMenuSelection />} />
+          <SyncToCloudStatus />
         </div>
         <div className={styles.rightSide}>
           <TopMenuLogin />

@@ -1,5 +1,14 @@
 import { NotAuthenticatedError } from '@/models/Error';
 import * as users from './users';
+import * as project from './project';
+import * as layer from './layer';
+
+// export api functions for easier usage. Each module should export functions that use the apiClient.
+export const api = {
+  users,
+  project,
+  layer,
+};
 
 type MethodNoBody = 'GET';
 type MethodWithBody = 'PUT' | 'POST' | 'DELETE';
@@ -7,8 +16,6 @@ type MethodWithBody = 'PUT' | 'POST' | 'DELETE';
 type HttpMethod = MethodNoBody | MethodWithBody;
 
 const baseUrl: string | undefined = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-console.log('baseUrl', baseUrl);
 
 if (!baseUrl) {
   throw new Error('NEXT_PUBLIC_API_BASE_URL is not set');
@@ -173,8 +180,3 @@ export async function clientLogout(): Promise<boolean> {
     return false;
   }
 }
-
-// export api functions for easier usage. Each module should export functions that use the apiClient.
-export const api = {
-  users,
-};

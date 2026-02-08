@@ -1,5 +1,5 @@
 import { intToRGB, rgbaToInt } from '@/helpers/color';
-import { Cordinate, Layer, Rectangle } from '../Layer';
+import { Cordinate, Layer, LayerEntity, Rectangle } from '../Layer';
 import { getProperty, IProperty, OpacityProperty, PropertyType, SizeProperty } from './Properties';
 import { ITool, IToolDeps } from './Tools';
 import { config } from '@/config/env';
@@ -10,7 +10,6 @@ import {
   drawLine,
   getPixelPositions,
   isRectanglesIntersecting,
-  stampLayer,
   stampToCanvasLayer,
 } from '@/util/LayerUtil';
 
@@ -22,7 +21,7 @@ export class PenTool implements ITool {
   private lastX: number | null = null;
   private lastY: number | null = null;
   private strokeNr: number = 1;
-  private strokeMatrix: Layer = createLayer({ x: 0, y: 0, width: 0, height: 0 }, 'strokeMatrix', 0);
+  private strokeMatrix: Layer = createLayer({ x: 0, y: 0, width: 0, height: 0 }, 0);
 
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {}
@@ -124,10 +123,14 @@ export class PenTool implements ITool {
 
     const dirtyRectangle: Rectangle = filterCanvas.rect;
 
-    setLayer((prevLayer: Layer) => {
-      const newLayer = stampToCanvasLayer(filterCanvas, prevLayer);
+    setLayer((prevLayer: LayerEntity) => {
+      const newLayer = stampToCanvasLayer(filterCanvas, prevLayer.layer);
       return {
-        layer: newLayer,
+        layer: {
+          layer: newLayer,
+          name: prevLayer.name,
+          id: prevLayer.id,
+        },
         dirtyRect: dirtyRectangle,
       };
     });
@@ -142,7 +145,7 @@ export class PenTool implements ITool {
     }
 
     this.strokeNr = 1;
-    this.strokeMatrix = createLayer(canvasRect, 'strokedaddy', 0);
+    this.strokeMatrix = createLayer(canvasRect, 0);
   }
 }
 

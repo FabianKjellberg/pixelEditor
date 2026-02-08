@@ -8,8 +8,9 @@
   padding-right: 8px;
   padding-top: 2px;
   cursor: pointer;
-  transition: background-color var(--transition-fast),
-  color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .LoginMenuButton:hover {
@@ -20,4 +21,14 @@
 .LoginMenuButton:active {
   background-color: var(--highlight);
   color: var(--background);
+}
+
+.fakeLoginMenuButton {
+  height: calc(var(--top-menu-height) - 4px);
+  border-left: 2px solid var(--border);
+  width: fit-content;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 2px;
+  display: flex;
 }

@@ -29,20 +29,6 @@ const methodStyles: Record<HttpMethod, string> = {
   DELETE: styles.methodDelete,
 };
 
-const authBadgeStyles: Record<AuthType, string> = {
-  credentials: styles.authBadgeCredentials,
-  bearer: styles.authBadgeBearer,
-  cookie: styles.authBadgeCookie,
-  public: styles.authBadgePublic,
-};
-
-const authBadgeLabels: Record<AuthType, string> = {
-  credentials: 'Credentials',
-  bearer: 'Bearer Token',
-  cookie: 'Refresh Cookie',
-  public: 'Public',
-};
-
 const ApiEndpoint = ({
   method,
   path,
@@ -63,7 +49,6 @@ const ApiEndpoint = ({
       >
         <span className={`${styles.method} ${methodStyles[method]}`}>{method}</span>
         <span className={styles.path}>{path}</span>
-        <span className={authBadgeStyles[authType]}>{authBadgeLabels[authType]}</span>
         <span className={`${styles.expandIcon} ${isExpanded ? styles.expandIconOpen : ''}`}>▶</span>
       </button>
       <div className={`${styles.detailsWrapper} ${isExpanded ? styles.detailsWrapperOpen : ''}`}>
@@ -81,11 +66,14 @@ const ApiEndpoint = ({
             {requestNote && (
               <>
                 <h5>Request</h5>
-                <p className={styles.responseNote} dangerouslySetInnerHTML={{ __html: requestNote }} />
+                <p
+                  className={styles.responseNote}
+                  dangerouslySetInnerHTML={{ __html: requestNote }}
+                />
               </>
             )}
 
-            {authType === 'bearer' && !requestBody && !requestNote && (
+            {authType === 'bearer' && (
               <>
                 <h5>Request Headers</h5>
                 <pre className={styles.codeBlock}>{'Authorization: Bearer <accessToken>'}</pre>
@@ -95,11 +83,12 @@ const ApiEndpoint = ({
             {responses.map((response, index) => (
               <React.Fragment key={index}>
                 <h5>Response ({response.status})</h5>
-                {response.body && (
-                  <pre className={styles.codeBlock}>{response.body}</pre>
-                )}
+                {response.body && <pre className={styles.codeBlock}>{response.body}</pre>}
                 {response.note && (
-                  <p className={styles.responseNote} dangerouslySetInnerHTML={{ __html: response.note }} />
+                  <p
+                    className={styles.responseNote}
+                    dangerouslySetInnerHTML={{ __html: response.note }}
+                  />
                 )}
               </React.Fragment>
             ))}
