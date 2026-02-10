@@ -16,6 +16,7 @@ export class Eraser implements ITool {
   //variable to know if the eraser is "held down" on the canvas
   private erasing = false;
   name: string = 'eraser';
+  deps = {};
 
   //variables to make sure that move doesnt try to draw every move if it has already drew on the pixel
   private lastX: number | null = null;
@@ -24,7 +25,9 @@ export class Eraser implements ITool {
   private strokeMatrix: Layer = createLayer({ x: 0, y: 0, width: 0, height: 0 }, 0);
 
   //Constructor make sure that the tool accesses the currently selected layer
-  constructor(private toolDeps: IToolDeps) {}
+  constructor(private toolDeps: IToolDeps) {
+    this.deps = toolDeps;
+  }
 
   /** -- INTERFACE METHODS -- **/
   onDown(x: number, y: number, pixelSize: number): void {

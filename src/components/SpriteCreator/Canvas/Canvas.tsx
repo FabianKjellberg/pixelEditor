@@ -10,6 +10,7 @@ import useSize from '@/hooks/useSize';
 import Selection from './Selection/Selection';
 import { useSettingsContext } from '@/context/SettingsContext';
 import ToolOverlay from './ToolOverlay/ToolOverlay';
+import { MouseEventContextProvider } from '@/context/MouseEventContext/MouseEventContext';
 
 const Canvas = () => {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -23,8 +24,10 @@ const Canvas = () => {
         {width && height && <LayerCanvas canvasWidth={width} canvasHeight={height} />}
         {showSelectedLayerBoundary && <ActiveLayerHighlighter />}
         <Selection canvasWidth={width} canvasHeight={height} />
-        {width && height && <ToolOverlay canvasWidth={width} canvasHeight={height} />}
-        <ClickHandler />
+        <MouseEventContextProvider>
+          {width && height && <ToolOverlay canvasWidth={width} canvasHeight={height} />}
+          <ClickHandler />
+        </MouseEventContextProvider>
       </div>
     </div>
   );

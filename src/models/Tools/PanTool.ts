@@ -5,8 +5,11 @@ export class PanTool implements ITool {
   name: string = 'panTool';
   private paning: boolean = false;
   private relativeCanvasPos: Cordinate | null = null;
+  deps: IToolDeps = {};
 
-  constructor(private toolDeps: IToolDeps) {}
+  constructor(private toolDeps: IToolDeps) {
+    this.deps = toolDeps;
+  }
 
   onDown(x: number, y: number): void {
     this.paning = true;

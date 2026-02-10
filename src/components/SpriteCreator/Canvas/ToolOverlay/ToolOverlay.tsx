@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useCanvasContext } from '@/context/CanvasContext';
 import { useToolContext } from '@/context/ToolContext';
 import { Cordinate } from '@/models/Layer';
+import { getProperty, IProperty, PropertyType, SizeProperty } from '@/models/Tools/Properties';
+import { useMouseEventContext } from '@/context/MouseEventContext/MouseEventContext';
 
 type ToolOverlayProps = {
   canvasWidth: number;
@@ -16,8 +18,9 @@ const ToolOverlay = ({ canvasWidth, canvasHeight }: ToolOverlayProps) => {
 
   const { pixelSize, width, height, pan } = useCanvasContext();
   const { activeTool } = useToolContext();
+  const { onPointerMoveEvent, onPointerLeaveEvent } = useMouseEventContext();
 
-  const [mousePosition, setMousePosition] = useState<Cordinate | null>(null);
+  const [mousePosition, setMousePosition] = useState<Cordinate | null>({ x: 13, y: 13 });
 
   const render = useCallback(() => {
     const canvas = viewPortRef.current;
@@ -26,25 +29,52 @@ const ToolOverlay = ({ canvasWidth, canvasHeight }: ToolOverlayProps) => {
 
     const dpr = window.devicePixelRatio || 1;
 
-    // Reset transform to DPR space for crisp clearing
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = false;
 
-    // Clear in CSS pixel space
     const cssW = canvas.width / dpr;
     const cssH = canvas.height / dpr;
     ctx.clearRect(0, 0, cssW, cssH);
 
-    // Apply same transform as your main canvases
+    if (!mousePosition) return;
+
     const zoom = Math.max(1, pixelSize | 0);
     ctx.translate(pan.x, pan.y);
     ctx.scale(zoom, zoom);
 
-    // draw function here
-    // use mousePosition + activeTool + (width/height if needed)
-  }, [pixelSize, pan /* include deps you need for redraw */]);
+    const properties: IProperty[] = activeTool.deps.getProperties?.(activeTool.name) ?? [];
+    const sizeProp = getProperty<SizeProperty>(properties, PropertyType.Size);
+    const size = sizeProp?.value ?? 0;
+    const r = Math.floor(size / 2);
 
-  // Init context
+    // tools with size for now
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.globalCompositeOperation = 'difference';
+    ctx.fillStyle = 'gray';
+    ctx.fillRect(mousePosition!.x - r, mousePosition!.y - r, size, size);
+    ctx.restore();
+  }, [pixelSize, pan, mousePosition]);
+
+  useEffect(() => {
+    if (!onPointerMoveEvent) return;
+
+    const c = onPointerMoveEvent.pos;
+
+    const x = Math.floor(c.x / pixelSize);
+    const y = Math.floor(c.y / pixelSize);
+
+    if (mousePosition?.x == x && mousePosition.y == y) return;
+
+    setMousePosition({ x, y });
+  }, [onPointerMoveEvent?.trigger]);
+
+  useEffect(() => {
+    if (!onPointerLeaveEvent) return;
+
+    setMousePosition(null);
+  }, [onPointerLeaveEvent?.trigger]);
+
   useEffect(() => {
     const canvas = viewPortRef.current;
     if (!canvas) return;
@@ -52,7 +82,6 @@ const ToolOverlay = ({ canvasWidth, canvasHeight }: ToolOverlayProps) => {
     render();
   }, [render]);
 
-  // DPR-resize viewport canvas like BackgroundCanvas
   useEffect(() => {
     const canvas = viewPortRef.current;
     if (!canvas) return;
@@ -68,49 +97,13 @@ const ToolOverlay = ({ canvasWidth, canvasHeight }: ToolOverlayProps) => {
     render();
   }, [canvasWidth, canvasHeight, render]);
 
-  // Re-render on state changes that affect overlay
   useEffect(() => {
     render();
   }, [render, mousePosition, activeTool, width, height, pixelSize, pan]);
 
-  const onMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const canvas = viewPortRef.current;
-      if (!canvas) return;
-
-      const rect = canvas.getBoundingClientRect();
-
-      // Mouse position in CSS pixels relative to the canvas element
-      const xCss = e.clientX - rect.left;
-      const yCss = e.clientY - rect.top;
-
-      // If you want "world" (canvas pixel-grid) coordinates that match your drawing space:
-      const zoom = Math.max(1, pixelSize | 0);
-      const worldX = (xCss - pan.x) / zoom;
-      const worldY = (yCss - pan.y) / zoom;
-
-      const pos: Cordinate = { x: worldX, y: worldY };
-      setMousePosition(pos);
-
-      console.log(pos);
-    },
-    [pan.x, pan.y, pixelSize],
-  );
-
-  const onMouseLeave = useCallback(() => {
-    setMousePosition(null);
-  }, []);
-
   if (!canvasHeight || !canvasWidth) return null;
 
-  return (
-    <canvas
-      ref={viewPortRef}
-      onMouseMove={onMouseMove}
-      onMouseLeave={onMouseLeave}
-      // important for overlay behavior in a stacked canvas setup:
-    />
-  );
+  return <canvas ref={viewPortRef} />;
 };
 
 export default ToolOverlay;

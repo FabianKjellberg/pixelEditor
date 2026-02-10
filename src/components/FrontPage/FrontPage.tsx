@@ -15,7 +15,7 @@ const FrontPage = () => {
     <>
       <div className={`${style.mainPage}`}>
         <div>
-          <p>last updated: 2026-02-08</p>
+          <p>last updated: 2026-02-10</p>
         </div>
         <div className={style.header}>
           <h1>Fabian&apos;s Development Page</h1>
@@ -31,7 +31,9 @@ const FrontPage = () => {
           </button>
           <button
             type="button"
-            className={activeTab === 'documentation' ? `${style.tab} ${style.tabActive}` : style.tab}
+            className={
+              activeTab === 'documentation' ? `${style.tab} ${style.tabActive}` : style.tab
+            }
             onClick={() => setActiveTab('documentation')}
           >
             Documentation

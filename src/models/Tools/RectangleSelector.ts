@@ -6,6 +6,7 @@ import { combinedSelections, createSelectionRectangleLayer } from '@/util/Select
 
 export class RectangleSelector implements ITool {
   name: string = 'rectangleSelector';
+  deps: IToolDeps = {};
   oldSelection: SelectionLayer | undefined = undefined;
   selecting: boolean = false;
   lastX: number | null = null;
@@ -13,7 +14,9 @@ export class RectangleSelector implements ITool {
   originX: number | null = null;
   originY: number | null = null;
 
-  constructor(private toolDeps: IToolDeps) {}
+  constructor(private toolDeps: IToolDeps) {
+    this.deps = toolDeps;
+  }
   onDown(x: number, y: number, pixelSize: number): void {
     this.oldSelection = this.toolDeps.getSelectionLayer?.();
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
