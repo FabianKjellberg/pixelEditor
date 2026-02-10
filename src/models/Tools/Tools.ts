@@ -19,6 +19,7 @@ export type IToolDeps = {
 };
 
 export interface ITool {
+  deps: IToolDeps;
   name: string;
   onDown(x: number, y: number, pixelSize: number): void;
   onMove(x: number, y: number, pixelSize: number): void;

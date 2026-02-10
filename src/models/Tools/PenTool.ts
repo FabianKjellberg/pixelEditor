@@ -23,8 +23,12 @@ export class PenTool implements ITool {
   private strokeNr: number = 1;
   private strokeMatrix: Layer = createLayer({ x: 0, y: 0, width: 0, height: 0 }, 0);
 
+  deps: IToolDeps = {};
+
   //Constructor make sure that the tool accesses the currently selected layer
-  constructor(private toolDeps: IToolDeps) {}
+  constructor(private toolDeps: IToolDeps) {
+    this.deps = toolDeps;
+  }
   //Interface methods
   onDown(x: number, y: number, pixelSize: number): void {
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);

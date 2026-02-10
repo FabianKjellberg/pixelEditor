@@ -9,15 +9,20 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { ITool } from '@/models/Tools/Tools';
+import type { ITool, IToolDeps } from '@/models/Tools/Tools';
 import type { IProperty } from '@/models/Tools/Properties';
 
 // Example fallback tool so the app has something usable by default
 class NoopTool implements ITool {
   name: string = 'noop';
+  deps: IToolDeps;
   onMove(_x: number, _y: number): void {}
   onUp(_x: number, _y: number): void {}
   onDown = (_x: number, _y: number) => {};
+
+  constructor(deps: IToolDeps) {
+    this.deps = deps;
+  }
 }
 
 type ToolContextValue = {
@@ -40,7 +45,7 @@ type ToolContextValue = {
 const ToolContext = createContext<ToolContextValue | undefined>(undefined);
 
 export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
-  const [activeTool, setActiveTool] = useState<ITool>(new NoopTool());
+  const [activeTool, setActiveTool] = useState<ITool>(new NoopTool({}));
   const [primaryColor, setPrimaryColor] = useState<number>(0x000000ff);
   const [secondaryColor, setSecondaryColor] = useState<number>(0xffffffff);
   const [propertiesMap, setPropertiesMap] = useState<Map<string, IProperty[]>>(new Map());

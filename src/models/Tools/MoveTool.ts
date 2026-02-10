@@ -14,6 +14,7 @@ import { getPixelIndex, rgbaToInt } from '@/helpers/color';
 
 export class MoveTool implements ITool {
   name: string = 'moveTool';
+  deps: IToolDeps = {};
   private moving: boolean = false;
   private lastX: number | null = null;
   private lastY: number | null = null;
@@ -24,7 +25,9 @@ export class MoveTool implements ITool {
   private baseLayer: Layer | null = null; // Original layer with selection pixels removed
   private movingSelectionLayer: SelectionLayer | null = null; // Selection layer being moved
 
-  constructor(private toolDeps: IToolDeps) {}
+  constructor(private toolDeps: IToolDeps) {
+    this.deps = toolDeps;
+  }
 
   onDown(x: number, y: number, pixelSize: number): void {
     const layer = this.toolDeps.getLayer?.() || undefined;

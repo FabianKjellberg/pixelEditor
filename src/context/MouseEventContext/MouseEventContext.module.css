@@ -1,0 +1,10 @@
+.mouseEvents :focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.mouseEvents {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  touch-action: none;
+}
