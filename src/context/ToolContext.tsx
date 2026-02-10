@@ -15,7 +15,7 @@ import type { IProperty } from '@/models/Tools/Properties';
 // Example fallback tool so the app has something usable by default
 class NoopTool implements ITool {
   name: string = 'noop';
-  deps: {};
+  deps: IToolDeps;
   onMove(_x: number, _y: number): void {}
   onUp(_x: number, _y: number): void {}
   onDown = (_x: number, _y: number) => {};
