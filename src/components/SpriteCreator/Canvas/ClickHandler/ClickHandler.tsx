@@ -16,6 +16,10 @@ const ClickHandler = () => {
   const [pixelDecimalSize, setPixelDecimalSize] = useState<number>(pixelSize);
 
   useEffect(() => {
+    console.log(activeTool);
+  }, [activeTool]);
+
+  useEffect(() => {
     setPanTool(new PanTool({ getPan: getPan, setPan: setPan }));
   }, [setPan, getPan]);
 

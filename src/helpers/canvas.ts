@@ -1,3 +1,5 @@
+import { Cordinate } from '@/models/Layer';
+
 type LocalRef<T> = { current: T | null };
 
 export function ensureCanvas2D(
@@ -28,4 +30,14 @@ export function ensureCanvas2D(
   }
 
   return ctxRef.current;
+}
+
+export function getCanvasPosition<T extends Element>(
+  e: React.PointerEvent<T>,
+  pan: Cordinate,
+): Cordinate {
+  const el = e.currentTarget;
+  const rect = el.getBoundingClientRect();
+
+  return { x: e.clientX - rect.left - pan.x, y: e.clientY - rect.top - pan.y };
 }
