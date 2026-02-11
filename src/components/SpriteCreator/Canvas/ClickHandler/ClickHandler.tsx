@@ -6,10 +6,13 @@ import { CSSProperties, useEffect, useMemo, useState } from 'react';
 import { Cordinate } from '@/models/Layer';
 import { PanTool } from '@/models/Tools/PanTool';
 import { useMouseEventContext } from '@/context/MouseEventContext/MouseEventContext';
+import { useLayerContext } from '@/context/LayerContext';
 
 const ClickHandler = () => {
   const { activeTool } = useToolContext();
   const { pixelSize, pan, getPan, setPan, setPixelSize } = useCanvasContext();
+
+  const { undo, redo } = useUndoRedoContext();
 
   const {
     onPointerDownEvent,
@@ -70,6 +73,11 @@ const ClickHandler = () => {
   useEffect(() => {
     if (!onKeyDownEvent) return;
 
+    if (onKeyDownEvent.ctrlDown && onKeyDownEvent.shiftDown && onKeyDownEvent.key == 'z') {
+      redo();
+    } else if (onKeyDownEvent.ctrlDown && onKeyDownEvent.key == 'z') {
+      undo();
+    }
     setCtrlDown(onKeyDownEvent.ctrlDown);
   }, [onKeyDownEvent?.trigger]);
 

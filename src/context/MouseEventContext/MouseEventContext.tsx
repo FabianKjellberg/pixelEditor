@@ -30,6 +30,8 @@ type MouseEventContextValue = {
 
 export type KeyEvent = {
   ctrlDown: boolean;
+  shiftDown: boolean;
+  key: string;
   trigger: number; //call via useEffect
 };
 
@@ -55,7 +57,9 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
   const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = useCallback(
     (c) => {
       setOnKeyDownEvent((prev) => ({
-        ctrlDown: c.ctrlKey ? true : false,
+        ctrlDown: c.ctrlKey,
+        shiftDown: c.shiftKey,
+        key: c.key.toLowerCase(),
         trigger: prev ? prev.trigger + 1 : 0,
       }));
     },
@@ -66,7 +70,9 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
   const onKeyUp: React.KeyboardEventHandler<HTMLDivElement> = useCallback(
     (c) => {
       setOnKeyUpEvent((prev) => ({
-        ctrlDown: c.ctrlKey ? true : false,
+        ctrlDown: c.ctrlKey,
+        shiftDown: c.shiftKey,
+        key: c.code,
         trigger: prev ? prev.trigger + 1 : 0,
       }));
     },

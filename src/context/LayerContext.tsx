@@ -29,6 +29,12 @@ type LayerContextValue = {
   setActiveLayer: (
     updater: (prevLayer: LayerEntity) => { layer: LayerEntity; dirtyRect: Rectangle },
   ) => void;
+  setLayerById: (
+    layerId: string,
+    pixels: Uint32Array,
+    rect: Rectangle,
+    dirtyRect: Rectangle,
+  ) => void;
   deleteLayer: (index: number) => void;
   moveLayer: (from: number, to: number) => void;
 
@@ -115,6 +121,34 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
     return allLayersRef.current[idx];
   }, []);
 
+  const saveFunction = (layerId: string) => {
+    const layer: LayerEntity | undefined = allLayersRef.current.find((l) => l.id == layerId);
+
+    if (!layer) {
+      throw new Error('could not find layer to save');
+    }
+
+    if (!beginSaving(layerId)) {
+      // maybe implement a waiting here
+      throw new Error('this layer is already saving');
+    }
+
+    api.layer
+      .saveLayer(layer, requestPreview)
+      .catch((error) => {
+        throw new Error(error);
+      })
+      .finally(() => {
+        endSaving(layer.id);
+      });
+  };
+
+  const trySave = (layer: LayerEntity) => {
+    if (isLoadedFromCloudRef.current) {
+      debounceSave(layer.id, saveFunction);
+    }
+  };
+
   const setActiveLayer = useCallback(
     (updater: (prevLayer: LayerEntity) => { layer: LayerEntity; dirtyRect: Rectangle }) => {
       let dirtyToPush: Rectangle | null = null;
@@ -140,36 +174,30 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
         return next;
       });
     },
-    [pushDirty, isLoadedFromCloud, debounceSave],
+    [pushDirty, debounceSave, trySave],
   );
 
-  const trySave = (layer: LayerEntity) => {
-    if (isLoadedFromCloudRef.current) {
-      debounceSave(layer.id, saveFunction);
-    }
-  };
+  const setLayerById = useCallback(
+    (layerId: string, pixels: Uint32Array, rect: Rectangle, dirtyRect: Rectangle) => {
+      setAllLayers((prev) => {
+        const idx = prev.findIndex((l) => l.id === layerId);
+        if (idx === -1) return prev;
 
-  const saveFunction = (layerId: string) => {
-    const layer: LayerEntity | undefined = allLayersRef.current.find((l) => l.id == layerId);
+        const prevEntry = prev[idx];
 
-    if (!layer) {
-      throw new Error('could not find layer to save');
-    }
+        pushDirty(dirtyRect);
+        trySave(prevEntry);
 
-    if (!beginSaving(layerId)) {
-      // maybe implement a waiting here
-      throw new Error('this layer is already saving');
-    }
-
-    api.layer
-      .saveLayer(layer, requestPreview)
-      .catch((error) => {
-        throw new Error(error);
-      })
-      .finally(() => {
-        endSaving(layer.id);
+        const next = prev.slice();
+        next[idx] = {
+          ...prevEntry,
+          layer: { ...prevEntry.layer, pixels, rect },
+        };
+        return next;
       });
-  };
+    },
+    [setAllLayers, pushDirty, trySave],
+  );
 
   const deleteLayer = useCallback(
     (index: number) => {
@@ -287,7 +315,11 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
   const resetToBlankProject = useCallback(
     (width: number, height: number, layers?: LayerEntity[]) => {
       const entities = layers ?? [
-        createLayerEntity('Layer 1', crypto.randomUUID(), createLayer({ x: 0, y: 0, width, height })),
+        createLayerEntity(
+          'Layer 1',
+          crypto.randomUUID(),
+          createLayer({ x: 0, y: 0, width, height }),
+        ),
       ];
       setAllLayers(entities);
       setActiveLayerIndex(0);
@@ -326,6 +358,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       activeLayer,
       getActiveLayer,
       setActiveLayer,
+      setLayerById,
 
       //built in functions
       deleteLayer,
