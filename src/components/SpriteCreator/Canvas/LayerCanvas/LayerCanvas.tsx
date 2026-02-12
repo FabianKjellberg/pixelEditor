@@ -221,10 +221,6 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     return await createPreview(backing);
   }, []);
 
-  if (!canvasHeight || !canvasWidth) return;
-
-  registerPreviewProvider(requestPreview);
-
   const getColorFromCanvas = useCallback((x: number, y: number): RGBAobj => {
     const backing = backingRef.current;
     if (!backing) {
@@ -233,6 +229,10 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
 
     return getColorFromBackingRef(x, y, backing);
   }, []);
+
+  if (!canvasHeight || !canvasWidth) return;
+
+  registerPreviewProvider(requestPreview);
 
   registerGetColorFromCordinateProvider(getColorFromCanvas);
 
