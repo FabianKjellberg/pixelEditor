@@ -5,6 +5,7 @@ import { LayerProvider } from '@/context/LayerContext';
 import { ModalProvider } from '@/context/ModalContext/ModalContext';
 import { SettingsProvider } from '@/context/SettingsContext';
 import { ToolProvider } from '@/context/ToolContext';
+import { UndoRedoContextProvider } from '@/context/UndoRedoContext';
 import { UserContextProvider } from '@/context/UserContextProvider';
 
 const ContextProviderWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -13,11 +14,13 @@ const ContextProviderWrapper = ({ children }: { children: React.ReactNode }) => 
       <AutoSaveProvider>
         <CanvasProvider>
           <LayerProvider>
-            <ToolProvider>
-              <ModalProvider>
-                <ContextMenuProvider>{children}</ContextMenuProvider>
-              </ModalProvider>
-            </ToolProvider>
+            <UndoRedoContextProvider>
+              <ToolProvider>
+                <ModalProvider>
+                  <ContextMenuProvider>{children}</ContextMenuProvider>
+                </ModalProvider>
+              </ToolProvider>
+            </UndoRedoContextProvider>
           </LayerProvider>
         </CanvasProvider>
       </AutoSaveProvider>

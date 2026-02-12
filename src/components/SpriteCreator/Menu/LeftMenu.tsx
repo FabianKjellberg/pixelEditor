@@ -5,6 +5,7 @@ import MoveComponent from './Tools/MoveComponent/MoveComponent';
 import Properties from './Tools/Properties/Properties';
 import PanToolComponent from './Tools/PanToolComponent/PanToolComponent';
 import RectangleSelectorComponent from './Tools/RectangleSelectorComponent/RectangleSelectorComponent';
+import EyedropperComponent from './Tools/EyedropperComponent/EyedropperComponent';
 
 const LeftMenu = () => {
   return (
@@ -23,6 +24,7 @@ const LeftMenu = () => {
             </div>
             <div className={menuStyles.toolIconRow}>
               <RectangleSelectorComponent />
+              <EyedropperComponent />
             </div>
           </div>
         </div>

@@ -10,6 +10,50 @@ const Changelog = () => {
         Version history and what I&apos;ve been up to. Point form, but I&apos;ll keep it readable.
       </p>
       <br />
+      <ChangelogEntry date="2026-02-12" title="Eyedropper tool & undo/redo">
+        <li>
+          <p>
+            <b>Eyedropper tool.</b> Click anywhere on the canvas to pick up the color from that pixel.
+            The color gets set as your primary color, so you can quickly grab colors you&apos;re already
+            using in your artwork. The tool reads directly from the rendered canvas, so it works with
+            layers, transparency, and whatever you see on screen.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Undo and redo.</b> Made a mistake? Hit Undo (Ctrl+Z or Edit menu) to step back through
+            your changes. Redo (Ctrl+Y or Edit menu) brings them back. The system tracks checkpoints
+            for pen strokes, eraser actions, and move operations, so you can undo individual tool
+            actions. Each checkpoint saves the state of the layer that changed, so undoing restores
+            exactly how things were before that edit.
+          </p>
+        </li>
+        <li>
+          <p>
+            Undo/redo is built as a generic framework (<code>UndoRedoContext</code>) that any tool can
+            hook into. Tools create checkpoints when you start an action (like clicking to start a pen
+            stroke) and record the layer state when you finish (like releasing the mouse). The context
+            manages the undo/redo stack and provides <code>checkPoint</code> and <code>hasBaseline</code>
+            APIs so tools know when they can safely create checkpoints.
+          </p>
+        </li>
+        <li>
+          <p>
+            Pen, Eraser, and Move tools all create checkpoints now. The system tracks which layer was
+            last changed so it can restore the right one when you undo. Preview provider logic moved
+            from <code>LayerContext</code> to <code>CanvasContext</code> to support the eyedropper
+            reading colors from the canvas.
+          </p>
+        </li>
+        <li>
+          <p>
+            Mouse event handling got some cleanup: better pointer capture management and pointer event
+            handling so tools respond more reliably when you drag across the canvas. Top menu now has
+            Edit entries for Undo and Redo alongside the keyboard shortcuts.
+          </p>
+        </li>
+      </ChangelogEntry>
+
       <ChangelogEntry date="2026-02-10" title="Tool overlay">
         <li>
           <p>

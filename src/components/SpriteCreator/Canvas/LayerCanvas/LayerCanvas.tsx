@@ -6,6 +6,8 @@ import { Rectangle } from '@/models/Layer';
 import { useCallback, useEffect, useRef } from 'react';
 import { ensureCanvas2D } from '@/helpers/canvas';
 import { createPreview } from '@/util/BlobUtil';
+import { getColorFromBackingRef } from '@/util/ColorUtil';
+import { RGBAobj } from '@/models/Tools/Color';
 
 type LayerCanvasProps = {
   canvasWidth: number;
@@ -27,8 +29,17 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     null,
   );
 
-  const { pixelSize, width, height, pan, setPixelSize, setPan } = useCanvasContext();
-  const { allLayers, redrawVersion, consumeDirty, registerPreviewProvider } = useLayerContext();
+  const {
+    pixelSize,
+    width,
+    height,
+    pan,
+    setPixelSize,
+    setPan,
+    registerPreviewProvider,
+    registerGetColorFromCordinateProvider,
+  } = useCanvasContext();
+  const { allLayers, redrawVersion, consumeDirty } = useLayerContext();
 
   const renderViewPort = () => {
     const vctx = viewportCtxRef.current;
@@ -210,9 +221,20 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     return await createPreview(backing);
   }, []);
 
+  const getColorFromCanvas = useCallback((x: number, y: number): RGBAobj => {
+    const backing = backingRef.current;
+    if (!backing) {
+      throw new Error('backing canvas not ready');
+    }
+
+    return getColorFromBackingRef(x, y, backing);
+  }, []);
+
   if (!canvasHeight || !canvasWidth) return;
 
   registerPreviewProvider(requestPreview);
+
+  registerGetColorFromCordinateProvider(getColorFromCanvas);
 
   return (
     <>

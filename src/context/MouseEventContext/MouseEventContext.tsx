@@ -1,3 +1,5 @@
+'use client';
+
 import {
   createContext,
   CSSProperties,
@@ -20,28 +22,31 @@ type MouseEventContextValue = {
   onKeyDownEvent: KeyEvent | null;
   onKeyUpEvent: KeyEvent | null;
 
-  onPointerDownEvent: PointerEvent | null;
-  onPointerUpEvent: PointerEvent | null;
-  onPointerMoveEvent: PointerEvent | null;
-  onPointerLeaveEvent: PointerEvent | null;
+  onPointerDownEvent: PointerEventPayload | null;
+  onPointerUpEvent: PointerEventPayload | null;
+  onPointerMoveEvent: PointerEventPayload | null;
+  onPointerLeaveEvent: PointerEventPayload | null;
+  onPointerCancelEvent: PointerEventPayload | null;
 
   onScrollEvent: ScrollEvent | null;
 };
 
 export type KeyEvent = {
   ctrlDown: boolean;
-  trigger: number; //call via useEffect
+  shiftDown: boolean;
+  key: string;
+  trigger: number;
 };
 
-export type PointerEvent = {
+export type PointerEventPayload = {
   pos: Cordinate;
-  trigger: number; //call via useEffect
+  trigger: number;
 };
 
 export type ScrollEvent = {
   deltaY: number;
   pos: Cordinate;
-  trigger: number; //call via useEffect
+  trigger: number;
 };
 
 const MouseEventContext = createContext<MouseEventContextValue | undefined>(undefined);
@@ -52,84 +57,100 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
   const [cursorType, setCursorType] = useState<CSSProperties>({ cursor: 'pointer' });
 
   const [onKeyDownEvent, setOnKeyDownEvent] = useState<KeyEvent | null>(null);
-  const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = useCallback(
-    (c) => {
-      setOnKeyDownEvent((prev) => ({
-        ctrlDown: c.ctrlKey ? true : false,
-        trigger: prev ? prev.trigger + 1 : 0,
-      }));
-    },
-    [onKeyDownEvent, setOnKeyDownEvent],
-  );
+  const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = useCallback((e) => {
+    setOnKeyDownEvent((prev) => ({
+      ctrlDown: e.ctrlKey,
+      shiftDown: e.shiftKey,
+      key: e.key.toLowerCase(),
+      trigger: prev ? prev.trigger + 1 : 0,
+    }));
+  }, []);
 
   const [onKeyUpEvent, setOnKeyUpEvent] = useState<KeyEvent | null>(null);
-  const onKeyUp: React.KeyboardEventHandler<HTMLDivElement> = useCallback(
-    (c) => {
-      setOnKeyUpEvent((prev) => ({
-        ctrlDown: c.ctrlKey ? true : false,
-        trigger: prev ? prev.trigger + 1 : 0,
-      }));
-    },
-    [onKeyUpEvent, setOnKeyUpEvent],
-  );
+  const onKeyUp: React.KeyboardEventHandler<HTMLDivElement> = useCallback((e) => {
+    setOnKeyUpEvent((prev) => ({
+      ctrlDown: e.ctrlKey,
+      shiftDown: e.shiftKey,
+      key: e.key.toLowerCase(),
+      trigger: prev ? prev.trigger + 1 : 0,
+    }));
+  }, []);
 
-  const [onPointerDownEvent, setOnPointerDownEvent] = useState<PointerEvent | null>(null);
+  const [onPointerDownEvent, setOnPointerDownEvent] = useState<PointerEventPayload | null>(null);
   const onPointerDown: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
-      const c = getCanvasPosition(e, pan);
+      e.currentTarget.focus();
+      e.currentTarget.setPointerCapture(e.pointerId);
 
+      const c = getCanvasPosition(e, pan);
       setOnPointerDownEvent((prev) => ({ pos: c, trigger: prev ? prev.trigger + 1 : 0 }));
     },
-    [pan, onPointerDownEvent, setOnPointerDownEvent],
+    [pan],
   );
 
-  const [onPointerMoveEvent, setOnPointerMoveEvent] = useState<PointerEvent | null>(null);
+  const [onPointerMoveEvent, setOnPointerMoveEvent] = useState<PointerEventPayload | null>(null);
   const onPointerMove: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       const c = getCanvasPosition(e, pan);
-
       setOnPointerMoveEvent((prev) => ({ pos: c, trigger: prev ? prev.trigger + 1 : 0 }));
     },
-    [pan, onPointerMoveEvent, setOnPointerMoveEvent],
+    [pan],
   );
 
-  const [onPointerUpEvent, setOnPointerUpEvent] = useState<PointerEvent | null>(null);
+  const [onPointerUpEvent, setOnPointerUpEvent] = useState<PointerEventPayload | null>(null);
   const onPointerUp: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       const c = getCanvasPosition(e, pan);
 
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+
       setOnPointerUpEvent((prev) => ({ pos: c, trigger: prev ? prev.trigger + 1 : 0 }));
     },
-    [pan, onPointerUpEvent, setOnPointerUpEvent],
+    [pan],
   );
 
-  const [onPointerLeaveEvent, setOnPointerLeaveEvent] = useState<PointerEvent | null>(null);
+  const [onPointerLeaveEvent, setOnPointerLeaveEvent] = useState<PointerEventPayload | null>(null);
   const onPointerLeave: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       const c = getCanvasPosition(e, pan);
-
       setOnPointerLeaveEvent((prev) => ({ pos: c, trigger: prev ? prev.trigger + 1 : 0 }));
     },
-    [pan, onPointerLeaveEvent, setOnPointerLeaveEvent],
+    [pan],
+  );
+
+  const [onPointerCancelEvent, setOnPointerCancelEvent] = useState<PointerEventPayload | null>(
+    null,
+  );
+  const onPointerCancel: React.PointerEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      const c = getCanvasPosition(e, pan);
+
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+
+      setOnPointerCancelEvent((prev) => ({ pos: c, trigger: prev ? prev.trigger + 1 : 0 }));
+      setOnPointerUpEvent((prev) => ({ pos: c, trigger: prev ? prev.trigger + 1 : 0 }));
+    },
+    [pan],
   );
 
   const [onScrollEvent, setOnScrollEvent] = useState<ScrollEvent | null>(null);
-  const onScroll: React.WheelEventHandler<HTMLDivElement> = useCallback(
-    (e) => {
-      e.stopPropagation();
+  const onScroll: React.WheelEventHandler<HTMLDivElement> = useCallback((e) => {
+    e.stopPropagation();
 
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-      setOnScrollEvent((prev) => ({
-        deltaY: e.deltaY,
-        trigger: prev ? prev.trigger + 1 : 0,
-        pos: { x, y },
-      }));
-    },
-    [onScrollEvent, setOnScrollEvent],
-  );
+    setOnScrollEvent((prev) => ({
+      deltaY: e.deltaY,
+      trigger: prev ? prev.trigger + 1 : 0,
+      pos: { x, y },
+    }));
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -143,21 +164,20 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
       onPointerUpEvent,
       onPointerMoveEvent,
       onPointerLeaveEvent,
+      onPointerCancelEvent,
 
       onScrollEvent,
     }),
     [
       cursorType,
       setCursorType,
-
       onKeyDownEvent,
       onKeyUpEvent,
-
       onPointerDownEvent,
       onPointerUpEvent,
       onPointerMoveEvent,
       onPointerLeaveEvent,
-
+      onPointerCancelEvent,
       onScrollEvent,
     ],
   );
@@ -171,16 +191,13 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
         style={cursorType}
         onKeyDown={onKeyDown}
         onKeyUp={onKeyUp}
-        onPointerEnter={(e) => e.currentTarget.focus()}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerLeave={onPointerLeave}
+        onPointerCancel={onPointerCancel}
         onContextMenu={(e) => e.preventDefault()}
         onWheel={onScroll}
-        onScroll={(e) => {
-          e.preventDefault();
-        }}
       />
     </MouseEventContext.Provider>
   );
@@ -188,6 +205,7 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
 
 export const useMouseEventContext = () => {
   const ctx = useContext(MouseEventContext);
+
   if (!ctx) {
     throw new Error('have to be inside MouseEventProvider to retrieve context');
   }

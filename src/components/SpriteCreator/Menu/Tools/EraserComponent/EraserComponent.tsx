@@ -7,11 +7,13 @@ import { useToolContext } from '@/context/ToolContext';
 import { useEffect } from 'react';
 import { OpacityProperty, SizeProperty } from '@/models/Tools/Properties';
 import { useCanvasContext } from '@/context/CanvasContext';
+import { useUndoRedoContext } from '@/context/UndoRedoContext';
 
 const EraserComponent = () => {
   const { getActiveLayer, setActiveLayer } = useLayerContext();
   const { getProperties, setProperties } = useToolContext();
   const { getSelectionLayer, getCanvasRect } = useCanvasContext();
+  const { checkPoint, hasBaseline } = useUndoRedoContext();
 
   useEffect(() => {
     const existing = getProperties('eraser');
@@ -30,6 +32,8 @@ const EraserComponent = () => {
           getProperties,
           getCanvasRect,
           getSelectionLayer,
+          checkPoint,
+          hasBaseline,
         })
       }
     />

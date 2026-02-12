@@ -25,6 +25,8 @@ export class MoveTool implements ITool {
   private baseLayer: Layer | null = null; // Original layer with selection pixels removed
   private movingSelectionLayer: SelectionLayer | null = null; // Selection layer being moved
 
+  private layerLastMoved: LayerEntity | null = null;
+
   constructor(private toolDeps: IToolDeps) {
     this.deps = toolDeps;
   }
@@ -32,6 +34,12 @@ export class MoveTool implements ITool {
   onDown(x: number, y: number, pixelSize: number): void {
     const layer = this.toolDeps.getLayer?.() || undefined;
     if (layer == undefined) return;
+
+    const hasBaseLine = this.deps.hasBaseline?.(layer.id);
+
+    if (hasBaseLine === false) {
+      this.deps.checkPoint?.(layer);
+    }
 
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
     const selectionLayer = this.toolDeps.getSelectionLayer?.();
@@ -95,31 +103,35 @@ export class MoveTool implements ITool {
   }
 
   onUp(_x: number, _y: number): void {
-    // If we were moving a selection, merge the floating layer back
     if (this.selectionActive && this.floatingLayer && this.baseLayer) {
-      // Combine base layer + floating layer
       const combinedLayer = stampToCanvasLayer(this.floatingLayer, this.baseLayer);
-
-      // Reduce layer to content (trim empty edges)
       const reducedLayer = reduceLayerToContent(combinedLayer);
 
-      // Calculate dirty rect that covers both the base and floating areas
       const dirtyRect = combineRectangles(
         combineRectangles(this.baseLayer.rect, this.floatingLayer.rect),
         reducedLayer.rect,
       );
 
-      this.toolDeps.setLayer?.((prevLayer) => ({
-        layer: {
-          name: prevLayer.name,
-          id: prevLayer.id,
+      const current = this.toolDeps.getLayer?.();
+      if (current) {
+        const finalLayerEntity: LayerEntity = {
+          id: current.id,
+          name: current.name,
           layer: reducedLayer,
-        },
-        dirtyRect: dirtyRect,
-      }));
+        };
+
+        this.layerLastMoved = finalLayerEntity;
+
+        this.toolDeps.setLayer?.(() => ({
+          layer: finalLayerEntity,
+          dirtyRect,
+        }));
+      }
     }
 
-    // Reset state
+    if (this.layerLastMoved) this.deps.checkPoint?.(this.layerLastMoved);
+
+    // reset
     this.moving = false;
     this.lastX = null;
     this.lastY = null;
@@ -127,6 +139,7 @@ export class MoveTool implements ITool {
     this.floatingLayer = null;
     this.baseLayer = null;
     this.movingSelectionLayer = null;
+    this.layerLastMoved = null;
   }
 
   /**
@@ -170,39 +183,58 @@ export class MoveTool implements ITool {
     // Create a temporary combined layer for display
     const displayLayer = stampToCanvasLayer(this.floatingLayer, this.baseLayer);
 
-    this.toolDeps.setLayer?.((prevLayer: LayerEntity) => ({
-      layer: {
-        layer: displayLayer,
+    this.toolDeps.setLayer?.((prevLayer: LayerEntity) => {
+      const layerEntity: LayerEntity = {
         id: prevLayer.id,
         name: prevLayer.name,
-      },
-      dirtyRect: dirtyRect,
-    }));
+        layer: displayLayer,
+      };
+
+      this.layerLastMoved = layerEntity;
+
+      return {
+        layer: layerEntity,
+        dirtyRect,
+      };
+    });
   }
 
   /**
    * Move the whole layer (original behavior when no selection)
    */
   private moveWholeLayer(x: number, y: number): void {
-    const layer = this.toolDeps.getLayer?.();
-    if (layer == undefined) return;
+    const layerEntity = this.toolDeps.getLayer?.();
+    if (!layerEntity) return;
     if (this.lastX === null || this.lastY === null) return;
 
-    const localPos = { x: x - layer.layer.rect.x, y: y - layer.layer.rect.y };
-
-    // Early return if hasn't moved
+    const localPos = { x: x - layerEntity.layer.rect.x, y: y - layerEntity.layer.rect.y };
     if (this.lastX === localPos.x && this.lastY === localPos.y) return;
 
-    const originalRectangle = { ...layer.layer.rect };
+    const originalRect = { ...layerEntity.layer.rect };
 
-    layer.layer.rect.x += localPos.x - this.lastX;
-    layer.layer.rect.y += localPos.y - this.lastY;
+    const nextRect: Rectangle = {
+      ...layerEntity.layer.rect,
+      x: layerEntity.layer.rect.x + (localPos.x - this.lastX),
+      y: layerEntity.layer.rect.y + (localPos.y - this.lastY),
+    };
 
-    const dirtyRectangle: Rectangle = combineRectangles(originalRectangle, layer.layer.rect);
+    const nextLayer: Layer = {
+      ...layerEntity.layer,
+      rect: nextRect,
+    };
+
+    const nextEntity: LayerEntity = {
+      ...layerEntity,
+      layer: nextLayer,
+    };
+
+    const dirtyRect = combineRectangles(originalRect, nextRect);
+
+    this.layerLastMoved = nextEntity;
 
     this.toolDeps.setLayer?.(() => ({
-      layer: { ...layer },
-      dirtyRect: dirtyRectangle,
+      layer: nextEntity,
+      dirtyRect,
     }));
   }
 
