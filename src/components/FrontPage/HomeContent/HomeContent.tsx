@@ -41,7 +41,11 @@ const HomeContent = () => {
 
       <div>
         <h2>Pixel Art Creation Tool</h2>
-        <br />
+        <div className={style.createPixelButtonContainer} style={{ marginTop: '16px', marginBottom: '24px' }}>
+          <button className={style.createPixelButton} onClick={handleButtonClick}>
+            Try it out
+          </button>
+        </div>
         <p>
           This is my main project and where I spend most of my development time. It&apos;s a 
           browser-based pixel art editor built from scratch with React and HTML Canvas. The goal 
@@ -81,14 +85,6 @@ const HomeContent = () => {
             text={"Pick from unlimited colors and place the picker right where you're working"}
             video={'/videos/colorpicker.mp4'}
           />
-        </div>
-
-        <br />
-        <div className={style.createPixelButtonContainer}>
-          <h3>Click below to try out the tool yourself</h3>
-          <button className={style.createPixelButton} onClick={handleButtonClick}>
-            Click me
-          </button>
         </div>
       </div>
 

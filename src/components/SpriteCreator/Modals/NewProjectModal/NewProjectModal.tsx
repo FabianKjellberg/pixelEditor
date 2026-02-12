@@ -16,14 +16,8 @@ import Loading from '@/components/Loading/Loading';
 
 const NewProjectModal = () => {
   const { onHide } = useModalContext();
-  const {
-    width,
-    height,
-    setDimensions,
-    setIsLoadedFromCloud,
-    setProjectId,
-  } = useCanvasContext();
-  const { requestPreview, resetToBlankProject } = useLayerContext();
+  const { setDimensions, setIsLoadedFromCloud, setProjectId, requestPreview } = useCanvasContext();
+  const { resetToBlankProject } = useLayerContext();
   const { dirty, isSaving } = useAutoSaveContext();
   const { user } = useUserContext();
 
@@ -89,13 +83,9 @@ const NewProjectModal = () => {
         const layer = createLayer({ x: 0, y: 0, width: w, height: h });
         const layerEntity = createLayerEntity('Layer 1', crypto.randomUUID(), layer);
 
-        const urls = await api.project.createProject(
-          newProjectId,
-          canvasName || 'Untitled',
-          w,
-          h,
-          [layerEntity],
-        );
+        const urls = await api.project.createProject(newProjectId, canvasName || 'Untitled', w, h, [
+          layerEntity,
+        ]);
         if (!urls) {
           console.error('Failed to create project');
           return;
@@ -212,11 +202,7 @@ const NewProjectModal = () => {
           />
         </div>
         <div className={styles.buttonContainer}>
-          <button
-            onClick={createNewProject}
-            className={styles.confirmButton}
-            disabled={disabled}
-          >
+          <button onClick={createNewProject} className={styles.confirmButton} disabled={disabled}>
             {creating ? <Loading withText={false} size={14} /> : 'create'}
           </button>
           <button onClick={() => onHide('new-project-modal')} disabled={creating}>
