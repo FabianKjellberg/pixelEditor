@@ -5,12 +5,11 @@ import styles from './ChangeCanvasModal.module.css';
 import { useMemo, useState } from 'react';
 import { useCanvasContext } from '@/context/CanvasContext';
 import { api } from '@/api/client';
-import { useLayerContext } from '@/context/LayerContext';
 
 const ChangeCanvasModal = () => {
   const { onHide } = useModalContext();
-  const { width, height, setDimensions, isLoadedFromCloud, projectId } = useCanvasContext();
-  const { requestPreview } = useLayerContext();
+  const { width, height, setDimensions, isLoadedFromCloud, projectId, requestPreview } =
+    useCanvasContext();
   const [canvasWidth, setCanvasWidth] = useState<string>(width.toString());
   const [canvasHeight, setCanvasHeight] = useState<string>(height.toString());
 
