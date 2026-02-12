@@ -16,13 +16,15 @@ export class Eraser implements ITool {
   //variable to know if the eraser is "held down" on the canvas
   private erasing = false;
   name: string = 'eraser';
-  deps = {};
+  deps: IToolDeps = {};
 
   //variables to make sure that move doesnt try to draw every move if it has already drew on the pixel
   private lastX: number | null = null;
   private lastY: number | null = null;
   private strokeNr: number = 1;
   private strokeMatrix: Layer = createLayer({ x: 0, y: 0, width: 0, height: 0 }, 0);
+
+  private layerLastErased: LayerEntity | null = null;
 
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {
@@ -32,6 +34,15 @@ export class Eraser implements ITool {
   /** -- INTERFACE METHODS -- **/
   onDown(x: number, y: number, pixelSize: number): void {
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
+
+    const layer = this.deps.getLayer?.();
+    if (!layer) return;
+
+    const hasBaseLine = this.deps.hasBaseline?.(layer.id);
+
+    if (hasBaseLine === false) {
+      this.deps.checkPoint?.(layer);
+    }
 
     this.erase(pixelPos.x, pixelPos.y);
 
@@ -53,6 +64,11 @@ export class Eraser implements ITool {
     this.lastX = null;
     this.lastY = null;
     this.strokeNr++;
+
+    const checkPoint = this.deps.checkPoint;
+    if (!this.layerLastErased || !checkPoint) return;
+
+    checkPoint(this.layerLastErased);
   }
 
   /** -- OTHER METHODS -- **/
@@ -122,14 +138,15 @@ export class Eraser implements ITool {
     // Update layer using eraseFromCanvasLayer
     setLayer((prevLayer: LayerEntity) => {
       const newLayer = eraseFromCanvasLayer(filterCanvas, prevLayer.layer);
-      return {
-        layer: {
-          layer: newLayer,
-          id: prevLayer.id,
-          name: prevLayer.name,
-        },
-        dirtyRect: dirtyRectangle,
+      const layer = {
+        layer: newLayer,
+        name: prevLayer.name,
+        id: prevLayer.id,
       };
+
+      this.layerLastErased = layer;
+
+      return { layer: layer, dirtyRect: dirtyRectangle };
     });
   };
 

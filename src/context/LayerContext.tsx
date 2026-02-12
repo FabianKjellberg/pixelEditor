@@ -45,9 +45,6 @@ type LayerContextValue = {
   consumeDirty: () => Rectangle[];
   markDirty: (dirty: Rectangle) => void;
 
-  requestPreview: () => Promise<Blob>;
-  registerPreviewProvider: (fn: () => Promise<Blob>) => void;
-
   loadLayers: (layers: FetchedLayer[]) => Promise<void>;
   resetToBlankProject: (width: number, height: number, layers?: LayerEntity[]) => void;
 };
@@ -58,7 +55,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [redrawVersion, setRedrawVersion] = useState(0);
   const dirtyQueueRef = useRef<Rectangle[]>([]);
 
-  const { getCanvasRect, isLoadedFromCloud, projectId } = useCanvasContext();
+  const { getCanvasRect, isLoadedFromCloud, projectId, requestPreview } = useCanvasContext();
   const { debounceSave, beginSaving, endSaving } = useAutoSaveContext();
 
   const isLoadedFromCloudRef = useRef(isLoadedFromCloud);
@@ -100,21 +97,6 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     activeLayerIndexRef.current = activeLayerIndex;
   }, [activeLayerIndex]);
-
-  // get a preview blob from the canvas backing ref
-  const previewProviderRef = useRef<(() => Promise<Blob>) | null>(null);
-
-  const registerPreviewProvider = (fn: () => Promise<Blob>) => {
-    previewProviderRef.current = fn;
-  };
-
-  const requestPreview = (): Promise<Blob> => {
-    if (previewProviderRef.current) {
-      return previewProviderRef.current();
-    }
-
-    throw new Error('no preview function provided');
-  };
 
   const getActiveLayer = useCallback(() => {
     const idx = activeLayerIndexRef.current;
@@ -371,10 +353,6 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       consumeDirty,
       markDirty: pushDirty,
 
-      //preview
-      requestPreview,
-      registerPreviewProvider,
-
       //load layers
       loadLayers,
       resetToBlankProject,
@@ -393,8 +371,6 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       redrawVersion,
       consumeDirty,
       pushDirty,
-      requestPreview,
-      registerPreviewProvider,
       loadLayers,
       resetToBlankProject,
     ],

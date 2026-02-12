@@ -5,10 +5,12 @@ import { useCanvasContext } from '@/context/CanvasContext';
 import ToolButton from '../ToolButton/ToolButton';
 import { MoveTool } from '@/models/Tools/MoveTool';
 import { useMemo } from 'react';
+import { useUndoRedoContext } from '@/context/UndoRedoContext';
 
 const MoveComponent = () => {
   const { getActiveLayer, setActiveLayer } = useLayerContext();
   const { getSelectionLayer, setSelectionLayer } = useCanvasContext();
+  const { checkPoint, hasBaseline } = useUndoRedoContext();
 
   const tool = useMemo(
     () =>
@@ -17,6 +19,8 @@ const MoveComponent = () => {
         getLayer: getActiveLayer,
         getSelectionLayer,
         setSelectionLayer,
+        checkPoint,
+        hasBaseline,
       }),
     [getActiveLayer, setActiveLayer, getSelectionLayer, setSelectionLayer],
   );

@@ -1,4 +1,5 @@
 import { intToRGB, rgbaToInt } from '@/helpers/color';
+import { RGBAobj } from '@/models/Tools/Color';
 
 export function blendColor(top: number, bottom: number): number {
   const t = intToRGB(top);
@@ -44,4 +45,22 @@ function blendOverOpaque(top: number, bottom: number): number {
   const bl = Math.round(t.b * aT + b.b * invA);
 
   return rgbaToInt(r, g, bl, 255);
+}
+
+export function getColorFromBackingRef(
+  x: number,
+  y: number,
+  backingRef: HTMLCanvasElement,
+): RGBAobj {
+  const ctx = backingRef.getContext('2d');
+
+  if (!ctx) throw new Error('no context provided');
+
+  const { data } = ctx.getImageData(x, y, 1, 1);
+  return {
+    r: data[0],
+    g: data[1],
+    b: data[2],
+    a: data[3],
+  };
 }

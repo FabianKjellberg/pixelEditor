@@ -16,6 +16,8 @@ export type IToolDeps = {
   setPan?: (cord: Cordinate) => void;
   getCanvasRect?: () => Rectangle;
   setCanvasRect?: (rect: Rectangle) => void;
+  checkPoint?: (layer: LayerEntity) => void;
+  hasBaseline?: (layerId: string) => boolean;
 };
 
 export interface ITool {

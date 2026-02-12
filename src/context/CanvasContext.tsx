@@ -2,6 +2,7 @@
 
 import { FetchedProject } from '@/models/apiModels/projectModels';
 import { Cordinate, Rectangle, SelectionLayer } from '@/models/Layer';
+import { RGBAobj } from '@/models/Tools/Color';
 import {
   createContext,
   useCallback,
@@ -41,6 +42,12 @@ type CanvasContextValue = {
   setSelectionLayer: (selectionLayer: SelectionLayer | undefined) => void;
 
   loadProject: (project: FetchedProject) => void;
+
+  requestPreview: () => Promise<Blob>;
+  registerPreviewProvider: (fn: () => Promise<Blob>) => void;
+
+  registerGetColorFromCordinateProvider: (fn: (x: number, y: number) => RGBAobj) => void;
+  getColorFromCanvas: (x: number, y: number) => RGBAobj;
 };
 
 const CanvasContext = createContext<CanvasContextValue | undefined>(undefined);
@@ -99,6 +106,35 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
     [setIsLoadedFromCloud, setDimensions, setProjectId],
   );
 
+  // get a preview blob from the canvas backing ref
+  const previewProviderRef = useRef<(() => Promise<Blob>) | null>(null);
+
+  const registerPreviewProvider = (fn: () => Promise<Blob>) => {
+    previewProviderRef.current = fn;
+  };
+
+  const requestPreview = (): Promise<Blob> => {
+    if (previewProviderRef.current) {
+      return previewProviderRef.current();
+    }
+
+    throw new Error('no preview function provided');
+  };
+
+  const getColorFromCanvasProviderRef = useRef<((x: number, y: number) => RGBAobj) | null>(null);
+
+  const registerGetColorFromCordinateProvider = (fn: (x: number, y: number) => RGBAobj) => {
+    getColorFromCanvasProviderRef.current = fn;
+  };
+
+  const getColorFromCanvas = (x: number, y: number): RGBAobj => {
+    if (getColorFromCanvasProviderRef.current) {
+      return getColorFromCanvasProviderRef.current(x, y);
+    }
+
+    throw new Error('no function provided');
+  };
+
   const value = useMemo(
     () => ({
       isLoadedFromCloud,
@@ -118,6 +154,10 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
       setSelectionLayer: setSelectionLayerCallback,
       getSelectionLayer,
       loadProject,
+      requestPreview,
+      registerPreviewProvider,
+      registerGetColorFromCordinateProvider,
+      getColorFromCanvas,
     }),
     [
       isLoadedFromCloud,
@@ -137,6 +177,10 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
       setSelectionLayerCallback,
       getSelectionLayer,
       loadProject,
+      requestPreview,
+      registerPreviewProvider,
+      registerGetColorFromCordinateProvider,
+      getColorFromCanvas,
     ],
   );
 

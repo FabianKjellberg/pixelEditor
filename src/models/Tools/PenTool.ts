@@ -23,6 +23,8 @@ export class PenTool implements ITool {
   private strokeNr: number = 1;
   private strokeMatrix: Layer = createLayer({ x: 0, y: 0, width: 0, height: 0 }, 0);
 
+  private layerLastDrawn: LayerEntity | null = null;
+
   deps: IToolDeps = {};
 
   //Constructor make sure that the tool accesses the currently selected layer
@@ -32,6 +34,16 @@ export class PenTool implements ITool {
   //Interface methods
   onDown(x: number, y: number, pixelSize: number): void {
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
+
+    //add a baseline entry if none exists
+    const layer = this.deps.getLayer?.();
+    if (!layer) return;
+
+    const hasBaseLine = this.deps.hasBaseline?.(layer.id);
+
+    if (hasBaseLine === false) {
+      this.deps.checkPoint?.(layer);
+    }
 
     //Draw
     this.draw(pixelPos.x, pixelPos.y);
@@ -59,6 +71,11 @@ export class PenTool implements ITool {
     this.lastX = null;
     this.lastY = null;
     this.strokeNr++;
+
+    const checkPoint = this.deps.checkPoint;
+    if (!this.layerLastDrawn || !checkPoint) return;
+
+    checkPoint(this.layerLastDrawn);
   }
 
   //Other Methods
@@ -129,14 +146,15 @@ export class PenTool implements ITool {
 
     setLayer((prevLayer: LayerEntity) => {
       const newLayer = stampToCanvasLayer(filterCanvas, prevLayer.layer);
-      return {
-        layer: {
-          layer: newLayer,
-          name: prevLayer.name,
-          id: prevLayer.id,
-        },
-        dirtyRect: dirtyRectangle,
+      const layer = {
+        layer: newLayer,
+        name: prevLayer.name,
+        id: prevLayer.id,
       };
+
+      this.layerLastDrawn = layer;
+
+      return { layer: layer, dirtyRect: dirtyRectangle };
     });
   };
 

@@ -12,8 +12,8 @@ import { useToastContext } from '@/context/ToastContext/ToastContext';
 import Loading from '@/components/Loading/Loading';
 
 const SaveProjectToCloudModal = () => {
-  const { allLayers, requestPreview } = useLayerContext();
-  const { projectId, width, height, setIsLoadedFromCloud } = useCanvasContext();
+  const { allLayers } = useLayerContext();
+  const { projectId, width, height, setIsLoadedFromCloud, requestPreview } = useCanvasContext();
   const { onHide } = useModalContext();
   const { onToast } = useToastContext();
 

@@ -7,6 +7,7 @@ import { Cordinate } from '@/models/Layer';
 import { PanTool } from '@/models/Tools/PanTool';
 import { useMouseEventContext } from '@/context/MouseEventContext/MouseEventContext';
 import { useLayerContext } from '@/context/LayerContext';
+import { useUndoRedoContext } from '@/context/UndoRedoContext';
 
 const ClickHandler = () => {
   const { activeTool } = useToolContext();
@@ -25,6 +26,7 @@ const ClickHandler = () => {
   } = useMouseEventContext();
 
   const [ctrlDown, setCtrlDown] = useState<boolean>(false);
+  const [mouseDown, setMouseDown] = useState<boolean>(false);
   const [panTool, setPanTool] = useState<PanTool>(new PanTool({ getPan: getPan, setPan: setPan }));
   const [pixelDecimalSize, setPixelDecimalSize] = useState<number>(pixelSize);
 
@@ -39,6 +41,8 @@ const ClickHandler = () => {
   //Pointer down event
   useEffect(() => {
     if (!onPointerDownEvent) return;
+
+    setMouseDown(true);
 
     const c = onPointerDownEvent.pos;
     if (ctrlDown) {
@@ -66,6 +70,9 @@ const ClickHandler = () => {
 
     const c = onPointerUpEvent.pos;
 
+    setMouseDown(false);
+
+    panTool.onUp(c.x, c.y);
     activeTool.onUp(c.x, c.y, pixelSize);
   }, [onPointerUpEvent?.trigger]);
 
@@ -73,9 +80,14 @@ const ClickHandler = () => {
   useEffect(() => {
     if (!onKeyDownEvent) return;
 
-    if (onKeyDownEvent.ctrlDown && onKeyDownEvent.shiftDown && onKeyDownEvent.key == 'z') {
+    if (
+      onKeyDownEvent.ctrlDown &&
+      onKeyDownEvent.shiftDown &&
+      onKeyDownEvent.key == 'z' &&
+      !mouseDown
+    ) {
       redo();
-    } else if (onKeyDownEvent.ctrlDown && onKeyDownEvent.key == 'z') {
+    } else if (onKeyDownEvent.ctrlDown && onKeyDownEvent.key == 'z' && !mouseDown) {
       undo();
     }
     setCtrlDown(onKeyDownEvent.ctrlDown);
@@ -93,8 +105,9 @@ const ClickHandler = () => {
   useEffect(() => {
     if (ctrlDown) setCursorType({ cursor: 'move' });
     else if (activeTool.name == 'pencil' || activeTool.name == 'eraser')
-      setCursorType({ cursor: 'none' });
-    else if (activeTool.name == 'rectangleSelector') setCursorType({ cursor: 'crosshair' });
+      setCursorType({ cursor: 'crosshair' });
+    else if (activeTool.name == 'rectangleSelector' || activeTool.name == 'eyedropper')
+      setCursorType({ cursor: 'crosshair' });
     else if (activeTool.name == 'moveTool') setCursorType({ cursor: 'move' });
     else if (activeTool.name == 'panTool') setCursorType({ cursor: 'grab' });
     else setCursorType({ cursor: 'pointer' });

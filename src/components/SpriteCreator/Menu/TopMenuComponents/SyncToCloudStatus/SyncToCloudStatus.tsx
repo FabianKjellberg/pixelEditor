@@ -31,7 +31,7 @@ const SyncToCloudStatus = () => {
 
   const statusText = useMemo(() => {
     if (!user) return 'login to sync your projects';
-    if (!isLoadedFromCloud) return 'Save project to cloud to sync';
+    if (!isLoadedFromCloud) return 'File -> Save project to cloud, to sync this project';
 
     if (isSaving) return 'Saving...';
 
