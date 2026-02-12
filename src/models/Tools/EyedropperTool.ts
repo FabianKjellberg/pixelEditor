@@ -2,6 +2,7 @@ import { getPixelPositions } from '@/util/LayerUtil';
 import { ITool, IToolDeps } from './Tools';
 import { RGBAobj } from './Color';
 import { rgbaToInt } from '@/helpers/color';
+import { blendColor } from '@/util/ColorUtil';
 
 export class EyedropperTool implements ITool {
   deps: IToolDeps;
@@ -37,6 +38,10 @@ export class EyedropperTool implements ITool {
       return;
     }
 
-    this.deps.setPrimaryColor?.(rgbaToInt(color.r, color.g, color.b));
+    const top = rgbaToInt(color.r, color.g, color.b, color.a);
+
+    const blendedToWhite = blendColor(top, -1);
+
+    this.deps.setPrimaryColor?.(blendedToWhite);
   }
 }
