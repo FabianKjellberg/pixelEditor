@@ -16,7 +16,8 @@ import Loading from '@/components/Loading/Loading';
 
 const NewProjectModal = () => {
   const { onHide } = useModalContext();
-  const { setDimensions, setIsLoadedFromCloud, setProjectId, requestPreview } = useCanvasContext();
+  const { setDimensions, setIsLoadedFromCloud, setProjectId, requestPreview, setProjectName } =
+    useCanvasContext();
   const { resetToBlankProject } = useLayerContext();
   const { dirty, isSaving } = useAutoSaveContext();
   const { user } = useUserContext();
@@ -91,6 +92,7 @@ const NewProjectModal = () => {
           return;
         }
 
+        setProjectName(canvasName);
         setProjectId(newProjectId);
         setDimensions(w, h);
         resetToBlankProject(w, h, [layerEntity]);

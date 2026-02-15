@@ -13,7 +13,8 @@ import Loading from '@/components/Loading/Loading';
 
 const SaveProjectToCloudModal = () => {
   const { allLayers } = useLayerContext();
-  const { projectId, width, height, setIsLoadedFromCloud, requestPreview } = useCanvasContext();
+  const { projectId, width, height, setIsLoadedFromCloud, requestPreview, setProjectName } =
+    useCanvasContext();
   const { onHide } = useModalContext();
   const { onToast } = useToastContext();
 
@@ -69,6 +70,7 @@ const SaveProjectToCloudModal = () => {
 
         onToast(name + ' is now synced, and will save automatically', 'success');
         setIsLoadedFromCloud(true);
+        setProjectName(name);
         onHide('save-project-to-cloud');
         //TODO! implement refetching if upload fails, flag for not successfull saves of layers etc
       }

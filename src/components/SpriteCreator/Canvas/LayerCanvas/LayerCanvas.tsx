@@ -38,6 +38,7 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     setPan,
     registerPreviewProvider,
     registerGetColorFromCordinateProvider,
+    registerDownloadPng,
   } = useCanvasContext();
   const { allLayers, redrawVersion, consumeDirty } = useLayerContext();
 
@@ -230,11 +231,27 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     return getColorFromBackingRef(x, y, backing);
   }, []);
 
+  const downloadPng = useCallback((projectName: string) => {
+    const backing = backingRef.current;
+
+    if (!backing) {
+      throw new Error('backing canvas not ready');
+    }
+
+    const dataUrl = backing.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = projectName + '.png';
+    link.href = dataUrl;
+    link.click();
+  }, []);
+
   if (!canvasHeight || !canvasWidth) return;
 
   registerPreviewProvider(requestPreview);
 
   registerGetColorFromCordinateProvider(getColorFromCanvas);
+
+  registerDownloadPng(downloadPng);
 
   return (
     <>

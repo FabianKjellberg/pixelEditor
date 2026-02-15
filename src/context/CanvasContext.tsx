@@ -48,6 +48,12 @@ type CanvasContextValue = {
 
   registerGetColorFromCordinateProvider: (fn: (x: number, y: number) => RGBAobj) => void;
   getColorFromCanvas: (x: number, y: number) => RGBAobj;
+
+  registerDownloadPng: (fn: (projectName: string) => void) => void;
+  downloadPng: () => void;
+
+  projectName: string;
+  setProjectName: (name: string) => void;
 };
 
 const CanvasContext = createContext<CanvasContextValue | undefined>(undefined);
@@ -60,6 +66,7 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
   const [height, setHeight] = useState<number>(defaultHeight);
   const [pan, setPanState] = useState<Cordinate>(defaultPan);
   const [selectionLayer, setSelectionLayer] = useState<SelectionLayer | undefined>(undefined);
+  const [projectName, setProjectName] = useState<string>('Untitled 1');
 
   const panRef = useRef(pan);
   const selectionLayerRef = useRef(selectionLayer);
@@ -102,6 +109,7 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoadedFromCloud(true);
       setDimensions(project.width, project.height);
       setProjectId(project.id);
+      setProjectName(project.name);
     },
     [setIsLoadedFromCloud, setDimensions, setProjectId],
   );
@@ -135,6 +143,20 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
     throw new Error('no function provided');
   };
 
+  const downloadPngProviderRef = useRef<((projectName: string) => void) | null>(null);
+
+  const registerDownloadPng = (fn: (projectName: string) => void) => {
+    downloadPngProviderRef.current = fn;
+  };
+
+  const downloadPng = () => {
+    if (downloadPngProviderRef.current !== null) {
+      return downloadPngProviderRef.current(projectName);
+    }
+
+    throw new Error('no function provided');
+  };
+
   const value = useMemo(
     () => ({
       isLoadedFromCloud,
@@ -158,6 +180,10 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
       registerPreviewProvider,
       registerGetColorFromCordinateProvider,
       getColorFromCanvas,
+      registerDownloadPng,
+      downloadPng,
+      projectName,
+      setProjectName,
     }),
     [
       isLoadedFromCloud,
@@ -181,6 +207,10 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
       registerPreviewProvider,
       registerGetColorFromCordinateProvider,
       getColorFromCanvas,
+      registerDownloadPng,
+      downloadPng,
+      projectName,
+      setProjectName,
     ],
   );
 
