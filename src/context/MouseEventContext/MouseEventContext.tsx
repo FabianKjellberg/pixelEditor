@@ -40,6 +40,7 @@ export type KeyEvent = {
 
 export type PointerEventPayload = {
   pos: Cordinate;
+  mouseButton: number;
   trigger: number;
 };
 
@@ -83,7 +84,11 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
       e.currentTarget.setPointerCapture(e.pointerId);
 
       const c = getCanvasPosition(e, pan);
-      setOnPointerDownEvent((prev) => ({ pos: c, trigger: prev ? prev.trigger + 1 : 0 }));
+      setOnPointerDownEvent((prev) => ({
+        pos: c,
+        trigger: prev ? prev.trigger + 1 : 0,
+        mouseButton: e.button,
+      }));
     },
     [pan],
   );
@@ -92,7 +97,11 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
   const onPointerMove: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       const c = getCanvasPosition(e, pan);
-      setOnPointerMoveEvent((prev) => ({ pos: c, trigger: prev ? prev.trigger + 1 : 0 }));
+      setOnPointerMoveEvent((prev) => ({
+        pos: c,
+        trigger: prev ? prev.trigger + 1 : 0,
+        mouseButton: 0,
+      }));
     },
     [pan],
   );
@@ -106,7 +115,11 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
         e.currentTarget.releasePointerCapture(e.pointerId);
       }
 
-      setOnPointerUpEvent((prev) => ({ pos: c, trigger: prev ? prev.trigger + 1 : 0 }));
+      setOnPointerUpEvent((prev) => ({
+        pos: c,
+        trigger: prev ? prev.trigger + 1 : 0,
+        mouseButton: e.button,
+      }));
     },
     [pan],
   );
@@ -115,7 +128,11 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
   const onPointerLeave: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       const c = getCanvasPosition(e, pan);
-      setOnPointerLeaveEvent((prev) => ({ pos: c, trigger: prev ? prev.trigger + 1 : 0 }));
+      setOnPointerLeaveEvent((prev) => ({
+        pos: c,
+        trigger: prev ? prev.trigger + 1 : 0,
+        mouseButton: 0,
+      }));
     },
     [pan],
   );
@@ -131,8 +148,16 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
         e.currentTarget.releasePointerCapture(e.pointerId);
       }
 
-      setOnPointerCancelEvent((prev) => ({ pos: c, trigger: prev ? prev.trigger + 1 : 0 }));
-      setOnPointerUpEvent((prev) => ({ pos: c, trigger: prev ? prev.trigger + 1 : 0 }));
+      setOnPointerCancelEvent((prev) => ({
+        pos: c,
+        trigger: prev ? prev.trigger + 1 : 0,
+        mouseButton: 0,
+      }));
+      setOnPointerUpEvent((prev) => ({
+        pos: c,
+        trigger: prev ? prev.trigger + 1 : 0,
+        mouseButton: 0,
+      }));
     },
     [pan],
   );

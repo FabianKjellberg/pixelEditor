@@ -20,7 +20,7 @@ const ToolOverlay = ({ canvasWidth, canvasHeight }: ToolOverlayProps) => {
   const { activeTool } = useToolContext();
   const { onPointerMoveEvent, onPointerLeaveEvent } = useMouseEventContext();
 
-  const [mousePosition, setMousePosition] = useState<Cordinate | null>({ x: 13, y: 13 });
+  const [mousePosition, setMousePosition] = useState<Cordinate | null>(null);
 
   const render = useCallback(() => {
     const canvas = viewPortRef.current;
@@ -44,7 +44,12 @@ const ToolOverlay = ({ canvasWidth, canvasHeight }: ToolOverlayProps) => {
 
     const properties: IProperty[] = activeTool.deps.getProperties?.(activeTool.name) ?? [];
     const sizeProp = getProperty<SizeProperty>(properties, PropertyType.Size);
-    const size = sizeProp?.value ?? 0;
+    let size = sizeProp?.value ?? 0;
+
+    if (activeTool.name === 'rectangleTool' || activeTool.name === 'ovalTool') {
+      size = 1;
+    }
+
     const r = Math.floor(size / 2);
 
     // tools with size for now

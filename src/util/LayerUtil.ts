@@ -1,4 +1,4 @@
-import { getPixelIndex, intToRGB, rgbaToInt } from '@/helpers/color';
+import { getLocalPixelIndex, getPixelIndex, intToRGB, rgbaToInt } from '@/helpers/color';
 import {
   Cordinate,
   Direction,
@@ -9,6 +9,7 @@ import {
   SelectionLayer,
 } from '@/models/Layer';
 import { blendColor } from './ColorUtil';
+import { buffer } from 'stream/consumers';
 /**
  *
  * @param width
@@ -377,9 +378,9 @@ export function drawLine(
   y2: number,
   size: number,
   color: number,
-  strokeLayer: Layer,
-  strokeNr: number,
   firstInStroke: boolean,
+  strokeLayer?: Layer,
+  strokeNr?: number,
 ): Layer {
   const r = Math.floor(size / 2);
 
@@ -404,7 +405,11 @@ export function drawLine(
   //stamp first layer
 
   //console.log(firstInStroke);
-  if (firstInStroke) replacePixelsWithStroke(out, firstStamp, strokeLayer, strokeNr);
+  if (firstInStroke && strokeLayer && strokeNr) {
+    replacePixelsWithStroke(out, firstStamp, strokeLayer, strokeNr);
+  } else if (firstInStroke) {
+    replacePixels(out, firstStamp);
+  }
 
   const dX = Math.abs(x1 - x2);
   const dY = Math.abs(y1 - y2);
@@ -436,24 +441,29 @@ export function drawLine(
     //Draw verticallys
     if (stepX != lastStepX) {
       for (let j: number = 0; j < size; j++) {
-        const strokeLayerIndex = getPixelIndex(edgeY + j * -yDir, strokeLayer.rect.width, edgeX);
-        if (strokeLayer.pixels[strokeLayerIndex] == strokeNr) {
-          continue;
-        }
+        //if you can draw on the same place twice
+        if (strokeLayer && strokeNr) {
+          const strokeLayerIndex = getPixelIndex(edgeY + j * -yDir, strokeLayer.rect.width, edgeX);
+          if (strokeLayer.pixels[strokeLayerIndex] == strokeNr) {
+            continue;
+          }
 
-        strokeLayer.pixels[strokeLayerIndex] = strokeNr;
+          strokeLayer.pixels[strokeLayerIndex] = strokeNr;
+        }
         out.pixels[getPixelIndex(localY + j * -yDir, out.rect.width, localX)] = color;
       }
     }
     //Draw Horizontally
     if (stepY != lastStepY) {
       for (let j: number = 0; j < size; j++) {
-        const strokeLayerIndex = getPixelIndex(edgeY, strokeLayer.rect.width, edgeX + j * -xDir);
-        if (strokeLayer.pixels[strokeLayerIndex] == strokeNr) {
-          continue;
-        }
+        if (strokeLayer && strokeNr) {
+          const strokeLayerIndex = getPixelIndex(edgeY, strokeLayer.rect.width, edgeX + j * -xDir);
+          if (strokeLayer.pixels[strokeLayerIndex] == strokeNr) {
+            continue;
+          }
 
-        strokeLayer.pixels[strokeLayerIndex] = strokeNr;
+          strokeLayer.pixels[strokeLayerIndex] = strokeNr;
+        }
         out.pixels[getPixelIndex(localY, out.rect.width, localX + j * -xDir)] = color;
       }
     }
@@ -589,10 +599,10 @@ export function replacePixelsWithStroke(
       }
 
       const srcIndex = getPixelIndex(y, from.rect.width, x);
-      const srcPixel = from.pixels[srcIndex];
+      const srrpixel = from.pixels[srcIndex];
 
       // Defensive: never stamp "empty" into destination (prevents accidental erasing).
-      if (srcPixel === EMPTY) continue;
+      if (srrpixel === EMPTY) continue;
 
       const strokeIdx = getPixelIndex(globalY, strokeLayer.rect.width, globalX);
       if (strokeLayer.pixels[strokeIdx] === strokeNr) continue;
@@ -606,7 +616,7 @@ export function replacePixelsWithStroke(
 
       const dstIndex = getPixelIndex(destY, to.rect.width, destX);
 
-      to.pixels[dstIndex] = srcPixel;
+      to.pixels[dstIndex] = srrpixel;
       strokeLayer.pixels[strokeIdx] = strokeNr;
     }
   }
@@ -797,4 +807,308 @@ export function reduceLayerToContent(layer: Layer): Layer {
   }
 
   return reducedLayer;
+}
+
+export function getSmallestRectangleFromPoints(
+  xArray: number[],
+  yArray: number[],
+  buffer: number,
+): Rectangle {
+  const minX = Math.min(...xArray) - buffer;
+  const maxX = Math.max(...xArray) + buffer;
+  const minY = Math.min(...yArray) - buffer;
+  const maxY = Math.max(...yArray) + buffer;
+
+  const width = maxX - minX + 1;
+  const height = maxY - minY + 1;
+
+  return {
+    x: minX,
+    y: minY,
+    width,
+    height,
+  };
+}
+
+export function drawRectangle(
+  rect: Rectangle,
+  strokeSize: number,
+  strokeColor: number,
+  fillColor?: number,
+): Layer {
+  // early return if stroke takes up whole
+  if (strokeSize * 2 >= rect.width || strokeSize * 2 >= rect.height)
+    return createLayer(rect, strokeColor);
+
+  const layer = createLayer(rect, fillColor);
+
+  for (let i = 0; i < strokeSize; i++) {
+    for (let j = 0; j < rect.width; j++) {
+      const bottomIndex = getPixelIndex(rect.height - i - 1, rect.width, j);
+      const topIndex = getPixelIndex(i, rect.width, j);
+
+      layer.pixels[bottomIndex] = strokeColor;
+      layer.pixels[topIndex] = strokeColor;
+    }
+  }
+
+  for (let i = 0; i < strokeSize; i++) {
+    for (let j = strokeSize; j + strokeSize < rect.height; j++) {
+      const leftIndex = getPixelIndex(j, rect.width, i);
+      const rightIndex = getPixelIndex(j, rect.width, rect.width - i - 1);
+
+      layer.pixels[leftIndex] = strokeColor;
+      layer.pixels[rightIndex] = strokeColor;
+    }
+  }
+
+  return layer;
+}
+
+export function drawOval(
+  rect: Rectangle,
+  strokeSize: number,
+  strokeColor: number,
+  fillColor?: number,
+): Layer {
+  const w = rect.width;
+  const h = rect.height;
+
+  const layer = createLayer(rect, undefined);
+
+  if (w <= 0 || h <= 0) return layer;
+
+  const a = w / 2;
+  const b = h / 2;
+  const cx = w / 2;
+  const cy = h / 2;
+
+  if (strokeSize <= 0) {
+    // fill-only ellipse
+    if (fillColor === undefined) return layer;
+
+    const invA2 = a === 0 ? 0 : 1 / (a * a);
+    const invB2 = b === 0 ? 0 : 1 / (b * b);
+
+    for (let y = 0; y < h; y++) {
+      const dy = y - cy;
+      const dy2 = dy * dy;
+      for (let x = 0; x < w; x++) {
+        const dx = x - cx;
+        const v = (a === 0 ? 0 : dx * dx * invA2) + (b === 0 ? 0 : dy2 * invB2);
+        if (v <= 1) layer.pixels[getPixelIndex(y, w, x)] = fillColor;
+      }
+    }
+    return layer;
+  }
+
+  const invA2 = a === 0 ? 0 : 1 / (a * a);
+  const invB2 = b === 0 ? 0 : 1 / (b * b);
+
+  const innerA = a - strokeSize;
+  const innerB = b - strokeSize;
+
+  const hasInner = innerA > 0 && innerB > 0;
+  const invInnerA2 = hasInner ? 1 / (innerA * innerA) : 0;
+  const invInnerB2 = hasInner ? 1 / (innerB * innerB) : 0;
+
+  if (!hasInner) {
+    for (let y = 0; y < h; y++) {
+      const dy = y - cy;
+      const dy2 = dy * dy;
+      for (let x = 0; x < w; x++) {
+        const dx = x - cx;
+        const outer = (a === 0 ? 0 : dx * dx * invA2) + (b === 0 ? 0 : dy2 * invB2);
+        if (outer <= 1) layer.pixels[getPixelIndex(y, w, x)] = strokeColor;
+      }
+    }
+    return layer;
+  }
+
+  for (let y = 0; y < h; y++) {
+    const py = y + 0.5;
+    const dy = py - cy;
+    const dy2 = dy * dy;
+
+    for (let x = 0; x < w; x++) {
+      const px = x + 0.5;
+      const dx = px - cx;
+      const dx2 = dx * dx;
+
+      const outer = dx2 * invA2 + dy2 * invB2;
+      if (outer > 1) continue;
+
+      const idx = getPixelIndex(y, w, x);
+
+      if (!hasInner) {
+        layer.pixels[idx] = strokeColor;
+        continue;
+      }
+
+      const inner = dx2 * invInnerA2 + dy2 * invInnerB2;
+
+      if (inner > 1) layer.pixels[idx] = strokeColor;
+      else if (fillColor !== undefined) layer.pixels[idx] = fillColor;
+    }
+  }
+
+  return layer;
+}
+
+export function fillLayerScanLine(
+  color: number,
+  t: number,
+  sl: Layer, // selected layer
+  sPos: Cordinate,
+  sel?: SelectionLayer,
+): Layer | null {
+  const index = getPixelIndex(sPos.y, sl.rect.width, sPos.x);
+
+  const oc: number = sl.pixels[index];
+
+  if (oc == color) return null;
+
+  const out = createLayer(sl.rect);
+
+  //first seed
+  const seeds: Cordinate[] = [sPos];
+
+  let debugCount = 0;
+
+  while (seeds.length > 0) {
+    debugCount++;
+    if (debugCount > 1000) {
+      debugger;
+    }
+
+    const op = seeds.pop();
+
+    if (!op) continue;
+
+    sl.pixels[getPixelIndex(op.y, sl.rect.width, op.x)] = color;
+    out.pixels[getPixelIndex(op.y, sl.rect.width, op.x)] = color;
+
+    let rp = { x: op.x + 1, y: op.y };
+    let lp = { x: op.x - 1, y: op.y };
+
+    const originalTopClear: boolean = compareTolerance(op.x, op.y + 1, oc, sl, t, color, sel);
+    const originalBottomClear: boolean = compareTolerance(op.x, op.y - 1, oc, sl, t, color, sel);
+
+    if (originalTopClear) {
+      seeds.push({ x: op.x, y: op.y + 1 });
+    }
+
+    if (originalBottomClear) {
+      seeds.push({ x: op.x, y: op.y - 1 });
+    }
+
+    let prevTopClear = originalTopClear;
+    let prevBottomClear = originalBottomClear;
+    //right
+    let rightClear: boolean = compareTolerance(rp.x, rp.y, oc, sl, t, color, sel);
+
+    while (rightClear) {
+      const index = getPixelIndex(rp.y, sl.rect.width, rp.x);
+
+      sl.pixels[index] = color;
+      out.pixels[index] = color;
+
+      const topClear: boolean = compareTolerance(rp.x, rp.y + 1, oc, sl, t, color, sel);
+      const bottomClear: boolean = compareTolerance(rp.x, rp.y - 1, oc, sl, t, color, sel);
+
+      if (!prevTopClear && topClear) seeds.push({ x: rp.x, y: rp.y + 1 });
+      if (!prevBottomClear && bottomClear) seeds.push({ x: rp.x, y: rp.y - 1 });
+
+      prevTopClear = topClear;
+      prevBottomClear = bottomClear;
+
+      rightClear = compareTolerance(rp.x + 1, rp.y, oc, sl, t, color, sel);
+
+      rp.x++;
+    }
+
+    prevTopClear = originalTopClear;
+    prevBottomClear = originalBottomClear;
+
+    //left
+    let leftClear: boolean = compareTolerance(lp.x, lp.y, oc, sl, t, color, sel);
+
+    while (leftClear) {
+      const index = getPixelIndex(lp.y, sl.rect.width, lp.x);
+      sl.pixels[index] = color;
+      out.pixels[index] = color;
+
+      const topClear: boolean = compareTolerance(lp.x, lp.y + 1, oc, sl, t, color, sel);
+      const bottomClear: boolean = compareTolerance(lp.x, lp.y - 1, oc, sl, t, color, sel);
+
+      if (!prevTopClear && topClear) seeds.push({ x: lp.x, y: lp.y + 1 });
+      if (!prevBottomClear && bottomClear) seeds.push({ x: lp.x, y: lp.y - 1 });
+
+      prevTopClear = topClear;
+      prevBottomClear = bottomClear;
+
+      leftClear = compareTolerance(lp.x - 1, lp.y, oc, sl, t, color, sel);
+
+      lp.x--;
+    }
+  }
+
+  return reduceLayerToContent(out);
+}
+
+function compareTolerance(
+  x: number,
+  y: number,
+  oc: number,
+  layer: Layer,
+  t: number,
+  fillColor: number,
+  sel?: SelectionLayer,
+): boolean {
+  if (outOfBounds({ x, y }, layer.rect)) return false;
+
+  const width = layer.rect.width;
+  const compareColor = layer.pixels[getPixelIndex(y, width, x)] >>> 0;
+
+  if (sel) {
+    const selectionIndex = getLocalPixelIndex(x, y, sel.rect);
+
+    if (selectionIndex === -1) return false;
+
+    const hasSelection = sel.pixels[selectionIndex];
+
+    if (hasSelection == 0) return false;
+  }
+
+  if (compareColor == fillColor) {
+    return false;
+  }
+
+  // Fast path for exact match
+  if (t === 0) {
+    return compareColor === oc;
+  }
+
+  const r1 = (oc >>> 24) & 255;
+  const g1 = (oc >>> 16) & 255;
+  const b1 = (oc >>> 8) & 255;
+  const a1 = oc & 255;
+
+  const r2 = (compareColor >>> 24) & 255;
+  const g2 = (compareColor >>> 16) & 255;
+  const b2 = (compareColor >>> 8) & 255;
+  const a2 = compareColor & 255;
+
+  const diff = Math.max(Math.abs(r1 - r2), Math.abs(g1 - g2), Math.abs(b1 - b2), Math.abs(a1 - a2));
+
+  return diff <= t;
+}
+
+function outOfBounds(cor: Cordinate, rect: Rectangle): boolean {
+  return (
+    cor.x < rect.x ||
+    cor.y < rect.y ||
+    cor.x >= rect.x + rect.width ||
+    cor.y >= rect.y + rect.height
+  );
 }

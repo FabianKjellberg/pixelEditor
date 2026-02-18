@@ -23,7 +23,7 @@ export type IToolDeps = {
 export interface ITool {
   deps: IToolDeps;
   name: string;
-  onDown(x: number, y: number, pixelSize: number): void;
+  onDown(x: number, y: number, pixelSize: number, mouseButton: number): void;
   onMove(x: number, y: number, pixelSize: number): void;
-  onUp(x: number, y: number, pixelSize: number): void;
+  onUp(x: number, y: number, pixelSize: number, mouseButton: number): void;
 }

@@ -115,9 +115,9 @@ export class Eraser implements ITool {
       y,
       size,
       eraserStrength,
+      firstInStroke,
       this.strokeMatrix,
       this.strokeNr,
-      firstInStroke,
     );
 
     // Return early if erasing outside of canvas

@@ -48,7 +48,7 @@ const ClickHandler = () => {
     if (ctrlDown) {
       panTool.onDown(c.x, c.y);
     } else {
-      activeTool.onDown(c.x, c.y, pixelSize);
+      activeTool.onDown(c.x, c.y, pixelSize, onPointerDownEvent.mouseButton);
     }
   }, [onPointerDownEvent?.trigger]);
 
@@ -73,7 +73,7 @@ const ClickHandler = () => {
     setMouseDown(false);
 
     panTool.onUp(c.x, c.y);
-    activeTool.onUp(c.x, c.y, pixelSize);
+    activeTool.onUp(c.x, c.y, pixelSize, onPointerUpEvent.mouseButton);
   }, [onPointerUpEvent?.trigger]);
 
   //Key down event
@@ -104,7 +104,13 @@ const ClickHandler = () => {
   // set different cursors
   useEffect(() => {
     if (ctrlDown) setCursorType({ cursor: 'move' });
-    else if (activeTool.name == 'pencil' || activeTool.name == 'eraser')
+    else if (
+      activeTool.name == 'pencil' ||
+      activeTool.name == 'eraser' ||
+      activeTool.name == 'rectangleTool' ||
+      activeTool.name == 'ovalTool' ||
+      activeTool.name == 'lineTool'
+    )
       setCursorType({ cursor: 'crosshair' });
     else if (activeTool.name == 'rectangleSelector' || activeTool.name == 'eyedropper')
       setCursorType({ cursor: 'crosshair' });

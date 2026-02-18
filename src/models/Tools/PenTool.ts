@@ -22,6 +22,7 @@ export class PenTool implements ITool {
   private lastY: number | null = null;
   private strokeNr: number = 1;
   private strokeMatrix: Layer = createLayer({ x: 0, y: 0, width: 0, height: 0 }, 0);
+  private color: number | null = null;
 
   private layerLastDrawn: LayerEntity | null = null;
 
@@ -32,7 +33,9 @@ export class PenTool implements ITool {
     this.deps = toolDeps;
   }
   //Interface methods
-  onDown(x: number, y: number, pixelSize: number): void {
+  onDown(x: number, y: number, pixelSize: number, mouseButton: number): void {
+    if (mouseButton !== 0 && mouseButton !== 2) return;
+
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
 
     //add a baseline entry if none exists
@@ -44,6 +47,18 @@ export class PenTool implements ITool {
     if (hasBaseLine === false) {
       this.deps.checkPoint?.(layer);
     }
+
+    //get color and opacity
+    const color: number =
+      mouseButton == 0
+        ? (this.toolDeps.getPrimaryColor?.() ?? config.defaultColor)
+        : (this.toolDeps.getSecondaryColor?.() ?? config.defaultColor);
+    const properties: IProperty[] = this.toolDeps.getProperties?.('pencil') ?? [];
+    const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
+
+    //add Opacity to color
+    const rgba = intToRGB(color);
+    this.color = rgbaToInt(rgba.r, rgba.g, rgba.b, opacityProperty?.value ?? 255);
 
     //Draw
     this.draw(pixelPos.x, pixelPos.y);
@@ -76,6 +91,7 @@ export class PenTool implements ITool {
     if (!this.layerLastDrawn || !checkPoint) return;
 
     checkPoint(this.layerLastDrawn);
+    this.layerLastDrawn = null;
   }
 
   //Other Methods
@@ -83,16 +99,9 @@ export class PenTool implements ITool {
     const setLayer = this.toolDeps.setLayer;
     if (setLayer == undefined) return;
 
-    let color: number = this.toolDeps.getPrimaryColor?.() ?? config.defaultColor;
-
     //get properties
     const properties: IProperty[] = this.toolDeps.getProperties?.('pencil') ?? [];
     const sizeProp = getProperty<SizeProperty>(properties, PropertyType.Size);
-    const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
-
-    //add Opacity to properties
-    const rgba = intToRGB(color);
-    color = rgbaToInt(rgba.r, rgba.g, rgba.b, opacityProperty?.value ?? 255);
 
     //Return early if tool doesnt have access to getting canvas boundary
     const getCanvasRect = this.toolDeps.getCanvasRect;
@@ -105,6 +114,8 @@ export class PenTool implements ITool {
     //get Props
     const selectedLayer = this.toolDeps.getSelectionLayer?.();
     const size = sizeProp?.value ?? 0;
+
+    if (!this.color) return;
 
     const firstInStroke: boolean = this.lastX == null && this.lastY == null;
 
@@ -123,10 +134,10 @@ export class PenTool implements ITool {
       x,
       y,
       size,
-      color,
+      this.color,
+      firstInStroke,
       this.strokeMatrix,
       this.strokeNr,
-      firstInStroke,
     );
 
     // return early if line is outside of canvas

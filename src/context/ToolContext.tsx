@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react';
 import type { ITool, IToolDeps } from '@/models/Tools/Tools';
-import type { IProperty } from '@/models/Tools/Properties';
+import { upsertProperty, type AnyProperty, type IProperty } from '@/models/Tools/Properties';
 
 // Example fallback tool so the app has something usable by default
 class NoopTool implements ITool {
@@ -33,6 +33,8 @@ type ToolContextValue = {
   setProperties: (toolKey: string, properties: IProperty[]) => void;
   properties: IProperty[];
 
+  ensureProperties: (toolKey: string, defaults: AnyProperty[]) => void;
+
   primaryColor: number;
   getPrimaryColor: () => number;
   setPrimaryColor: (color: number) => void;
@@ -48,19 +50,18 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeTool, setActiveTool] = useState<ITool>(new NoopTool({}));
   const [primaryColor, setPrimaryColor] = useState<number>(0x000000ff);
   const [secondaryColor, setSecondaryColor] = useState<number>(0xffffffff);
-  const [propertiesMap, setPropertiesMap] = useState<Map<string, IProperty[]>>(new Map());
+  const [propertiesMap, setPropertiesMap] = useState<Map<string, AnyProperty[]>>(new Map());
 
   const propertiesRef = useRef(propertiesMap);
   useEffect(() => {
     propertiesRef.current = propertiesMap;
   }, [propertiesMap]);
 
-  const getProperties = useCallback(
-    (toolKey: string) => propertiesRef.current.get(toolKey) ?? [],
-    [propertiesMap],
-  );
+  const getProperties = useCallback((toolKey: string) => {
+    return propertiesRef.current.get(toolKey) ?? [];
+  }, []);
 
-  const setProperties = useCallback((toolKey: string, properties: IProperty[]) => {
+  const setProperties = useCallback((toolKey: string, properties: AnyProperty[]) => {
     setPropertiesMap((prev) => {
       const next = new Map(prev);
       next.set(toolKey, properties);
@@ -68,10 +69,39 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-  const properties = useMemo(
-    () => propertiesMap.get(activeTool.name) ?? [],
-    [propertiesMap, activeTool.name],
-  );
+  useEffect(() => {
+    console.log(propertiesMap);
+  }, [propertiesMap]);
+
+  const ensureProperties = useCallback((toolKey: string, defaults: AnyProperty[]) => {
+    setPropertiesMap((prev) => {
+      const current = prev.get(toolKey) ?? [];
+
+      // First, remove any duplicate properties by propertyType (keep the first occurrence)
+      const uniqueCurrent = current.filter(
+        (prop, index, self) => self.findIndex((p) => p.propertyType === prop.propertyType) === index,
+      );
+
+      let nextProps = uniqueCurrent;
+
+      // Then upsert each default property
+      for (const def of defaults) {
+        nextProps = upsertProperty(nextProps, def) as AnyProperty[];
+      }
+
+      // If nothing changed, return prev map to avoid rerenders
+      const changed =
+        nextProps.length !== current.length ||
+        nextProps.some((p, i) => p.propertyType !== current[i]?.propertyType) ||
+        uniqueCurrent.length !== current.length;
+
+      if (!changed) return prev;
+
+      const next = new Map(prev);
+      next.set(toolKey, nextProps);
+      return next;
+    });
+  }, []);
 
   const primaryColorRef = useRef(primaryColor);
   const secondaryColorRef = useRef(secondaryColor);
@@ -92,6 +122,11 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
     setSecondaryColor(primaryColorTemp);
   }, [setPrimaryColor, setSecondaryColor]);
 
+  const properties = useMemo(
+    () => propertiesMap.get(activeTool.name) ?? [],
+    [propertiesMap, activeTool.name],
+  );
+
   const value = useMemo(
     () => ({
       activeTool,
@@ -99,6 +134,7 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
       properties,
       setProperties,
       getProperties,
+      ensureProperties,
       setPrimaryColor,
       getPrimaryColor,
       primaryColor,
@@ -109,10 +145,10 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
     }),
     [
       activeTool,
-      setActiveTool,
       properties,
       setProperties,
       getProperties,
+      ensureProperties,
       setPrimaryColor,
       getPrimaryColor,
       primaryColor,
