@@ -988,8 +988,8 @@ export function fillLayerScanLine(
     sl.pixels[getPixelIndex(op.y, sl.rect.width, op.x)] = color;
     out.pixels[getPixelIndex(op.y, sl.rect.width, op.x)] = color;
 
-    let rp = { x: op.x + 1, y: op.y };
-    let lp = { x: op.x - 1, y: op.y };
+    const rp = { x: op.x + 1, y: op.y };
+    const lp = { x: op.x - 1, y: op.y };
 
     const originalTopClear: boolean = compareTolerance(op.x, op.y + 1, oc, sl, t, color, sel);
     const originalBottomClear: boolean = compareTolerance(op.x, op.y - 1, oc, sl, t, color, sel);
