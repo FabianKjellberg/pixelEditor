@@ -75,6 +75,7 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
         penStroke.points[0].x * pixelSize,
         penStroke.points[0].y * pixelSize,
         pixelSize,
+        0,
       );
 
       for (let i = 1; i < penStroke.points.length; i++) {
