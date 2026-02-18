@@ -109,7 +109,8 @@ const ClickHandler = () => {
       activeTool.name == 'eraser' ||
       activeTool.name == 'rectangleTool' ||
       activeTool.name == 'ovalTool' ||
-      activeTool.name == 'lineTool'
+      activeTool.name == 'lineTool' ||
+      activeTool.name == 'fillBucket'
     )
       setCursorType({ cursor: 'crosshair' });
     else if (activeTool.name == 'rectangleSelector' || activeTool.name == 'eyedropper')

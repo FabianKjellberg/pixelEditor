@@ -10,6 +10,41 @@ const Changelog = () => {
         Version history and what I&apos;ve been up to. Point form, but I&apos;ll keep it readable.
       </p>
       <br />
+      <ChangelogEntry date="2026-02-18" title="Shape tools, bucket fill & multi-tool selection">
+        <li>
+          <p>
+            <b>Rectangle and Ellipse shape tools.</b> Draw perfect rectangles and ellipses by clicking
+            and dragging on the canvas. Both tools share the same set of properties: <b>Stroke width</b>{' '}
+            controls the thickness of the outline (1–64 pixels), <b>Opacity</b> sets transparency (1–255),
+            <b>Fill shape</b> toggles whether the shape is filled with your secondary color, and{' '}
+            <b>Align stroke</b> lets you position the stroke inside, centered, or outside the shape
+            boundary. Left-click uses your primary color for the stroke (and secondary for fill if enabled);
+            right-click swaps them. When a selection is active, shapes only draw within the selected area.
+            Shapes work with undo/redo.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Bucket fill tool.</b> Click anywhere on the canvas to flood-fill connected pixels with
+            your primary color (or secondary color with right-click). The <b>Tolerance</b> property (0–255)
+            controls how similar colors need to be to get filled—higher values fill more varied colors,
+            useful for filling areas with slight color variations. <b>Opacity</b> (1–255) sets the
+            transparency of the fill. The tool uses a scanline flood-fill algorithm for efficient filling
+            of large areas. When a selection is active, the bucket only fills pixels within the selected
+            area and won&apos;t fill outside it.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Multi-tool selection.</b> Some tools now support multiple variants accessible through a
+            right-click menu. Right-click on the shape tools button (marked with an arrow indicator) to
+            see all available shape tools: Line, Rectangle, and Ellipse. Click any tool in the menu to
+            switch to it. The button icon updates to show the currently selected tool. This keeps the
+            toolbar compact while giving quick access to related tools.
+          </p>
+        </li>
+      </ChangelogEntry>
+
       <ChangelogEntry date="2026-02-12" title="Eyedropper tool & undo/redo">
         <li>
           <p>
