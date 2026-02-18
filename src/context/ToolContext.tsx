@@ -69,17 +69,14 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-  useEffect(() => {
-    console.log(propertiesMap);
-  }, [propertiesMap]);
-
   const ensureProperties = useCallback((toolKey: string, defaults: AnyProperty[]) => {
     setPropertiesMap((prev) => {
       const current = prev.get(toolKey) ?? [];
 
       // First, remove any duplicate properties by propertyType (keep the first occurrence)
       const uniqueCurrent = current.filter(
-        (prop, index, self) => self.findIndex((p) => p.propertyType === prop.propertyType) === index,
+        (prop, index, self) =>
+          self.findIndex((p) => p.propertyType === prop.propertyType) === index,
       );
 
       let nextProps = uniqueCurrent;
