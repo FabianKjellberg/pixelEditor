@@ -1,0 +1,77 @@
+.multiChoiceWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.selectedChoiceButton {
+  width: 100%;
+  text-align: start;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  padding: 4px 8px;
+  background-color: var(--background);
+  gap: 8px;
+}
+
+.selectedChoiceButton:hover {
+  border-color: var(--highlight);
+  box-shadow: 0 0 6px var(--highlight-glow);
+}
+
+.choiceText {
+  flex: 1;
+  text-align: start;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdownArrow {
+  font-size: 10px;
+  transition: transform var(--transition-fast);
+  color: var(--foreground);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.dropdownArrowOpen {
+  transform: rotate(180deg);
+}
+
+.selectButtons {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  z-index: 10000;
+  background-color: var(--background);
+  border: 2px solid var(--border);
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.selectButtons button {
+  border: none;
+  height: 24px;
+  text-align: start;
+  padding: 4px 8px;
+  cursor: pointer;
+  background-color: var(--background);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  width: 100%;
+}
+
+.selectButtons button:hover {
+  background-color: var(--highlight-dim);
+  color: var(--highlight);
+}
+
+.selectButtons button.selectedOption {
+  background-color: var(--highlight-dim);
+  color: var(--highlight);
+  font-weight: bold;
+}

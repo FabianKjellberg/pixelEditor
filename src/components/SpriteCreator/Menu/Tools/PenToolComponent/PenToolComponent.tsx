@@ -11,7 +11,8 @@ import { useUndoRedoContext } from '@/context/UndoRedoContext';
 
 const PenToolComponent = () => {
   const { getActiveLayer, setActiveLayer } = useLayerContext();
-  const { setActiveTool, getPrimaryColor, getProperties, setProperties } = useToolContext();
+  const { setActiveTool, getPrimaryColor, getProperties, setProperties, getSecondaryColor } =
+    useToolContext();
   const { getSelectionLayer, getCanvasRect } = useCanvasContext();
   const { checkPoint, hasBaseline } = useUndoRedoContext();
 
@@ -32,6 +33,7 @@ const PenToolComponent = () => {
         setLayer: setActiveLayer,
         getLayer: getActiveLayer,
         getPrimaryColor,
+        getSecondaryColor,
         getProperties,
         getSelectionLayer,
         getCanvasRect,

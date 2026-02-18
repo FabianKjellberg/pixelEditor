@@ -12,4 +12,11 @@ export interface IToggle {
   label: string;
 }
 
-export type UIControlSpec = ISlider | IToggle;
+export interface IMultiChoice {
+  type: 'multiChoice';
+  label: string;
+  choices: string[];
+  allowEmpty: boolean;
+}
+
+export type UIControlSpec = ISlider | IToggle | IMultiChoice;

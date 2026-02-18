@@ -56,10 +56,6 @@ export const UndoRedoContextProvider = ({ children }: { children: ReactNode }) =
     redo: [],
   });
 
-  useEffect(() => {
-    console.log(history);
-  }, [history]);
-
   const canUndo = useMemo((): boolean => history.undo.length > 1, [history.undo]);
 
   const undo = useCallback(() => {

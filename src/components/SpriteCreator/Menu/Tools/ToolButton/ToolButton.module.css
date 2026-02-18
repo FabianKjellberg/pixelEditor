@@ -3,17 +3,22 @@
   font-family: 'DePixel';
   font-weight: 400;
   padding: 5px;
+  position: relative;
+  --tool-border-color: var(--border);
   border: 3px solid var(--border) !important;
-  transition: background-color var(--transition-fast),
-              border-color var(--transition-fast),
-              box-shadow var(--transition-fast),
-              transform var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .toolButton:hover {
   background-color: var(--highlight-dim);
   border-color: var(--highlight) !important;
   box-shadow: 0 0 8px var(--highlight-glow);
+
+  --tool-border-color: var(--highlight);
 }
 
 .toolButton:active {
@@ -22,14 +27,18 @@
 
 .toolButton[aria-pressed='true'] {
   border: 3px solid var(--highlight) !important;
-  box-shadow: 0 0 0 2px var(--highlight-dim),
-              0 0 12px var(--highlight-glow);
+  box-shadow:
+    0 0 0 2px var(--highlight-dim),
+    0 0 12px var(--highlight-glow);
   background-color: var(--highlight-dim);
+
+  --tool-border-color: var(--highlight);
 }
 
 .toolButton[aria-pressed='true']:hover {
-  box-shadow: 0 0 0 2px var(--highlight-dim),
-              0 0 16px var(--highlight-glow);
+  box-shadow:
+    0 0 0 2px var(--highlight-dim),
+    0 0 16px var(--highlight-glow);
 }
 
 .icon {
@@ -44,4 +53,21 @@
 
 .toolButton:hover .icon {
   transform: scale(1.05);
+}
+
+.hasContextMenu::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+
+  width: 10px;
+  height: 10px;
+
+  background: var(--tool-border-color);
+
+  /* blocky “corner arrow” */
+  clip-path: polygon(100% 0%, 100% 100%, 0% 100%, 0% 75%, 55% 75%, 55% 55%, 75% 55%, 75% 0%);
+
+  pointer-events: none;
 }

@@ -1,3 +1,4 @@
+import { AiActionsContextProvider } from '@/context/AiActionsContext';
 import { AutoSaveProvider } from '@/context/AutoSaveContext';
 import { CanvasProvider } from '@/context/CanvasContext';
 import { ContextMenuProvider } from '@/context/ContextMenuContext/ContextMenuContext';
@@ -16,9 +17,11 @@ const ContextProviderWrapper = ({ children }: { children: React.ReactNode }) => 
           <LayerProvider>
             <UndoRedoContextProvider>
               <ToolProvider>
-                <ModalProvider>
-                  <ContextMenuProvider>{children}</ContextMenuProvider>
-                </ModalProvider>
+                <AiActionsContextProvider>
+                  <ModalProvider>
+                    <ContextMenuProvider>{children}</ContextMenuProvider>
+                  </ModalProvider>
+                </AiActionsContextProvider>
               </ToolProvider>
             </UndoRedoContextProvider>
           </LayerProvider>

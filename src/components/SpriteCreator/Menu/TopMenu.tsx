@@ -7,6 +7,7 @@ import TopMenuFile from './TopMenuComponents/TopMenuFile/TopMenuFile';
 import TopMenuLayer from './TopMenuComponents/TopMenuLayer/TopMenuLayer';
 import TopMenuLogin from './TopMenuComponents/TopMenuLogin/TopMenuLogin';
 import TopMenuSelection from './TopMenuComponents/TopMenuSelection/TopMenuSelection';
+import TopMenuAi from './TopMenuComponents/TopMenuAi/TopMenuAi';
 
 const TopMenu = () => {
   return (
@@ -18,6 +19,7 @@ const TopMenu = () => {
           <TopMenuButtonItem label={'Canvas'} contextMenu={<TopMenuCanvas />} />
           <TopMenuButtonItem label={'Layer'} contextMenu={<TopMenuLayer />} />
           <TopMenuButtonItem label={'Selection'} contextMenu={<TopMenuSelection />} />
+          {/*<TopMenuButtonItem label={'Ai'} contextMenu={<TopMenuAi />} /> TO BE RELEASED AT A LATER POINT*/}
           <SyncToCloudStatus />
         </div>
         <div className={styles.rightSide}>

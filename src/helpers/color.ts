@@ -1,7 +1,8 @@
+import { Rectangle } from '@/models/Layer';
 import { Hsb100, Hsv, RGBAobj } from '@/models/Tools/Color';
 
 export const rgbaToInt = (r: number, g: number, b: number, a = 255): number =>
-  ((r & 0xff) << 24) | ((g & 0xff) << 16) | ((b & 0xff) << 8) | (a & 0xff);
+  (((r & 0xff) << 24) | ((g & 0xff) << 16) | ((b & 0xff) << 8) | (a & 0xff)) >>> 0;
 
 export const intToRGB = (rgba: number): RGBAobj => {
   const n = rgba >>> 0;
@@ -22,6 +23,17 @@ export const intToCssRgba = (v: number) => {
 };
 
 export const getPixelIndex = (y: number, w: number, x: number): number => y * w + x;
+
+export const getLocalPixelIndex = (globalX: number, globalY: number, rect: Rectangle): number => {
+  const localX = globalX - rect.x;
+  const localY = globalY - rect.y;
+
+  if (localX < 0 || localY < 0 || localX >= rect.width || localY >= rect.height) {
+    return -1;
+  }
+
+  return localY * rect.width + localX;
+};
 
 export function hsvToRgb(h: number, s: number, v: number): RGBAobj {
   const hh = ((h % 360) + 360) % 360; // normalize
