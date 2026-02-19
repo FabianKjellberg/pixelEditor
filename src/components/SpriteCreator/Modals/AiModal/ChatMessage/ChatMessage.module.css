@@ -1,0 +1,53 @@
+.messageRow {
+  display: flex;
+  margin: 6px 12px;
+}
+
+.leftMessage {
+  justify-content: flex-start;
+}
+
+.rightMessage {
+  justify-content: flex-end;
+}
+
+.bubbleContainer {
+  position: relative;
+  display: inline-block;
+  max-width: 80%;
+}
+
+.bubble {
+  position: relative;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: large;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  border: none;
+  border-radius: 16px;
+  z-index: 1;
+}
+
+.leftMessage .bubble {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.rightMessage .bubble {
+  background-color: var(--input-bg);
+  color: var(--input-fg);
+}
+
+.bubble p {
+  margin: 0;
+  line-height: 1.2;
+}
+
+.svgBorder {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  shape-rendering: crispEdges;
+}

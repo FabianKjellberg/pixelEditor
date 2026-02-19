@@ -184,6 +184,35 @@ input:focus {
               0 0 8px var(--highlight-glow);
 }
 
+/* Textarea: same as input, gray bg + white text */
+textarea {
+  font-size: large;
+  border: 2px solid var(--border) !important;
+  padding: 6px 8px;
+  background-color: var(--input-bg);
+  color: var(--input-fg);
+  resize: vertical;
+  min-height: 4em;
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast);
+  font-family: inherit;
+}
+
+textarea:hover {
+  border-color: var(--highlight) !important;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--highlight) !important;
+  box-shadow: 0 0 0 2px var(--highlight-dim),
+              0 0 8px var(--highlight-glow);
+}
+
+textarea::placeholder {
+  color: color-mix(in srgb, var(--input-fg) 70%, transparent);
+}
+
 canvas:focus:not(:focus-visible) {
   outline: none;
 }
@@ -225,6 +254,7 @@ a:hover {
 }
 
 input,
+textarea,
 button,
 html,
 body {

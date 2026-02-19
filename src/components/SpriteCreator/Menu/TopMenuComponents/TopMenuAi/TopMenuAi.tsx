@@ -11,7 +11,7 @@ const TopMenuAi = () => {
   const aiModal = <AiModal />;
 
   const openAiModalClick = useCallback(() => {
-    onShow('ai-modal', aiModal, 'Testing please work');
+    onShow('ai-modal', aiModal, 'AI-Promt tool');
   }, []);
 
   return (
