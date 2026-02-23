@@ -1,5 +1,7 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import styles from './ChatMessage.module.css';
+import { MessageItem } from '@/models/AiModels';
+import Loading from '@/components/Loading/Loading';
 
 export type ChatMessageItem = {
   message: string;
@@ -8,10 +10,11 @@ export type ChatMessageItem = {
 };
 
 type ChatMessageProps = {
-  message: ChatMessageItem;
+  message: MessageItem;
+  loading?: boolean;
 };
 
-const ChatMessage = ({ message }: ChatMessageProps) => {
+const ChatMessage = ({ message, loading = false }: ChatMessageProps) => {
   const divRef = useRef<HTMLDivElement | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
 
@@ -27,6 +30,10 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
 
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    console.log(loading);
+  }, [loading]);
 
   const generateRectangles = useCallback((width: number, height: number) => {
     const pw = 2;
@@ -53,11 +60,11 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
     );
   }, []);
 
-  const wrapperClass = message.receieved ? styles.leftMessage : styles.rightMessage;
-
   return (
     <div
-      className={`${styles.messageRow} ${message.receieved ? styles.leftMessage : styles.rightMessage}`}
+      className={`${styles.messageRow} ${
+        !message.fromUser ? styles.leftMessage : styles.rightMessage
+      }`}
     >
       <div className={styles.bubbleContainer}>
         {rect && (
@@ -72,7 +79,14 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
         )}
 
         <div ref={divRef} className={styles.bubble}>
-          <p>{message.message}</p>
+          {loading ? (
+            <div className={styles.loading}>
+              <p>Generating response </p>
+              <Loading withText={false} size={16} />
+            </div>
+          ) : (
+            <p>{message.message}</p>
+          )}
         </div>
       </div>
     </div>

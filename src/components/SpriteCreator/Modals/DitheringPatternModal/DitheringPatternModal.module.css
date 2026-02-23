@@ -1,0 +1,140 @@
+.wrapper {
+  --grid-width: 134px; /* fallback; overridden by inline style */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 24px;
+  min-width: 0;
+}
+
+.header {
+  text-align: center;
+  width: 100%;
+  min-width: 0;
+  max-width: 280px;
+}
+
+.title {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.description {
+  margin: 0 auto;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #999);
+  line-height: 1.3;
+  width: 100%;
+  max-width: 280px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 24px;
+  justify-content: center;
+  width: 100%;
+}
+
+.previewSection {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.gridSection {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 4px 0;
+}
+
+.preview {
+  display: grid;
+  gap: 2px;
+  width: var(--grid-width);
+  aspect-ratio: 1;
+  border: 2px solid var(--border);
+  padding: 4px;
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast);
+}
+
+.preview:hover {
+  border-color: var(--highlight);
+}
+
+.previewFilled {
+  background: var(--highlight, #888);
+  min-width: 0;
+  min-height: 0;
+}
+
+.previewEmpty {
+  background: var(--bg-secondary, #222);
+  min-width: 0;
+  min-height: 0;
+}
+
+.previewLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #999);
+  margin: 0;
+  line-height: 1.3;
+  min-width: 220px;
+  text-align: center;
+}
+
+.sliderSection {
+  width: 100%;
+  padding: 4px 0;
+}
+
+.grid {
+  display: grid;
+  gap: 6px;
+  width: var(--grid-width);
+  justify-content: center;
+}
+
+.cell {
+  display: flex;
+}
+
+.valueButton {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  font-size: 0.9rem;
+}
+
+.wrapper[data-size='2'] .valueButton {
+  width: 47px;
+  height: 47px;
+}
+
+.valueInput {
+  width: 32px;
+  height: 32px;
+  text-align: center;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.wrapper[data-size='2'] .valueInput {
+  width: 47px;
+  height: 47px;
+}

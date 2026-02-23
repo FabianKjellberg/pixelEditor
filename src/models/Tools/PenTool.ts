@@ -51,8 +51,8 @@ export class PenTool implements ITool {
     //get color and opacity
     const color: number =
       mouseButton == 0
-        ? (this.toolDeps.getPrimaryColor?.() ?? config.defaultColor)
-        : (this.toolDeps.getSecondaryColor?.() ?? config.defaultColor);
+        ? this.toolDeps.getPrimaryColor?.() ?? config.defaultColor
+        : this.toolDeps.getSecondaryColor?.() ?? config.defaultColor;
     const properties: IProperty[] = this.toolDeps.getProperties?.('pencil') ?? [];
     const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
 
@@ -179,6 +179,10 @@ export class PenTool implements ITool {
 
     this.strokeNr = 1;
     this.strokeMatrix = createLayer(canvasRect, 0);
+  }
+
+  onCommit(): void {
+    console.log('commited stroke');
   }
 }
 

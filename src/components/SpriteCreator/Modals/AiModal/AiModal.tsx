@@ -15,12 +15,11 @@ const AiModal = () => {
   const { excecuteActions } = useAiActionContext();
   const { width, height } = useCanvasContext();
 
-  const [chatMessages, setChatMessages] = useState<ChatMessageItem[]>([
+  const [chatMessages, setChatMessages] = useState<MessageItem[]>([
     {
       message:
         'Hello, I am an AI here to help you create your pixel art. You can either ask me a question about the program or you can tell me what you want drawn and i will do my best to draw it',
-      receieved: true,
-      loading: false,
+      fromUser: false,
     },
   ]);
 
@@ -34,22 +33,18 @@ const AiModal = () => {
   const onClickButton = useCallback(async () => {
     setLoading(true);
     try {
-      const newMessages: ChatMessageItem[] = [
-        { message: text, receieved: false, loading: false },
-        ...chatMessages,
-      ];
+      const newMessages: MessageItem[] = [{ message: text, fromUser: true }, ...chatMessages];
 
       setChatMessages(newMessages);
       setText('');
 
-      const promt: MessageItem[] = newMessages.map((m) => ({
-        message: m.message,
-        fromUser: !m.receieved,
-      }));
+      const promt: MessageItem[] = newMessages.toReversed();
 
-      const actions = await api.ai.testAi(promt, width, height);
+      const aiResponse = await api.ai.testAi(promt, width, height);
 
-      excecuteActions(actions);
+      setChatMessages((prev) => [{ fromUser: false, message: aiResponse.message }, ...prev]);
+
+      if (aiResponse.shouldCallTools) excecuteActions(aiResponse.actions);
     } finally {
       setLoading(false);
     }
@@ -59,6 +54,7 @@ const AiModal = () => {
     <>
       <div className={styles.wrapper}>
         <div className={styles.chatBox}>
+          {loading && <ChatMessage loading message={{ message: '', fromUser: false }} />}
           {chatMessages.map((message, index) => (
             <ChatMessage message={message} key={index} />
           ))}

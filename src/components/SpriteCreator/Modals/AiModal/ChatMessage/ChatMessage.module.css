@@ -51,3 +51,8 @@
   z-index: 2;
   shape-rendering: crispEdges;
 }
+
+.loading {
+  display: flex;
+  flex-direction: row;
+}

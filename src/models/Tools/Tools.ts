@@ -26,4 +26,7 @@ export interface ITool {
   onDown(x: number, y: number, pixelSize: number, mouseButton: number): void;
   onMove(x: number, y: number, pixelSize: number): void;
   onUp(x: number, y: number, pixelSize: number, mouseButton: number): void;
+
+  onCommit?(): void;
+  onCancel?(): void;
 }

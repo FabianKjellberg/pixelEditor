@@ -75,13 +75,10 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   const consumeDirty = useCallback((): Rectangle[] => {
-    //fetch queue
     const queue = dirtyQueueRef.current;
 
-    //reset queue
     dirtyQueueRef.current = [];
 
-    //return queue
     return queue;
   }, [dirtyQueueRef]);
 

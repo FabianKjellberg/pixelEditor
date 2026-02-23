@@ -1,19 +1,27 @@
 'use client';
 
-import { IProperty, upsertProperty } from '@/models/Tools/Properties';
-import { IMultiChoice, ISlider, IToggle } from '@/models/Tools/PropertySpecs';
+import {
+  DitheringProperty,
+  DitheringValue,
+  IProperty,
+  PropertyType,
+  upsertProperty,
+} from '@/models/Tools/Properties';
+import { IDithering, IMultiChoice, ISlider, IToggle } from '@/models/Tools/PropertySpecs';
 import Slider from './Slider/Slider';
 import Toggle from './Toggle/Toggle';
 import { useToolContext } from '@/context/ToolContext';
 import { useMemo } from 'react';
 import styles from './Properties.module.css';
 import MultiChoice from './MultiChoice/MultiChoice';
+import Dithering from './DitheringProperty/Dithering';
 
 const PropertyControls = () => {
   const { properties, setProperties, activeTool } = useToolContext();
 
   const propertyRenders = useMemo(() => {
     if (!properties) return <></>;
+
     return properties.map((property, index) => {
       const { spec } = property;
 
@@ -60,6 +68,31 @@ const PropertyControls = () => {
               multiChoiceProperties={p.spec}
               value={p.value}
               onChange={(choice: string | null) => {
+                const next = Object.create(Object.getPrototypeOf(p)) as typeof p;
+                Object.assign(next, p);
+                next.value = choice;
+                setProperties?.(activeTool.name, upsertProperty(properties, next));
+              }}
+            />
+          );
+        }
+
+        case 'dithering': {
+          const gradientType = properties.find(
+            (p) => p.propertyType === PropertyType.GradientType,
+          ) as IProperty<string | null, IMultiChoice>;
+
+          if (gradientType.value !== 'Dithering')
+            return <div key={`${activeTool.name}-default-${index}`}> </div>;
+
+          const p = property as IProperty<DitheringValue, IDithering>;
+
+          return (
+            <Dithering
+              key={`${activeTool.name}-${p.propertyType}-${index}`}
+              ditheringProperties={p.spec}
+              value={p.value}
+              onChange={(choice: DitheringValue) => {
                 const next = Object.create(Object.getPrototypeOf(p)) as typeof p;
                 Object.assign(next, p);
                 next.value = choice;

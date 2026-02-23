@@ -1,91 +1,66 @@
-import { RGBAobj } from './Tools/Color';
-
 export type Point = {
   x: number;
   y: number;
 };
 
-export enum AiActionEnum {
-  penStroke = 'penStroke',
-  lineTool = 'lineTool',
-  rectangleTool = 'rectangleTool',
-  ellipseTool = 'ellipseTool',
-  fillBucket = 'fillBucket',
-  changeCanvasSize = 'changeCanvasSize',
-}
-
-export type AiPenStroke = {
-  action: AiActionEnum.penStroke;
-  layerId: string;
-  color: RGBAobj;
-  size: number;
-  points: Point[];
-  opacity: number;
-};
-
-export type AiLineTool = {
-  action: AiActionEnum.lineTool;
-  layerId: string;
-  color: RGBAobj;
-  strokeWidth: number;
-  opacity: number;
-  from: Point;
-  to: Point;
-};
-
-export type AiRectangleTool = {
-  action: AiActionEnum.rectangleTool;
-  layerId: string;
-  color: RGBAobj;
-  fill: boolean;
-  fillColor: RGBAobj;
-  strokeWidth: number;
-  opacity: number;
-  from: Point;
-  to: Point;
-};
-
-export type AiEllipseTool = {
-  action: AiActionEnum.ellipseTool;
-  layerId: string;
-  color: RGBAobj;
-  fill: boolean;
-  fillColor: RGBAobj;
-  strokeWidth: number;
-  opacity: number;
-  from: Point;
-  to: Point;
-};
-
-export type AiFillBucket = {
-  action: AiActionEnum.fillBucket;
-  layerId: string;
-  color: RGBAobj;
-  opacity: number;
-  x: number;
-  y: number;
-};
-
-export type AiChangeCanvasSize = {
-  action: AiActionEnum.changeCanvasSize;
-  width: number;
-  height: number;
-};
-
-export type AiAction =
-  | AiPenStroke
-  | AiLineTool
-  | AiRectangleTool
-  | AiEllipseTool
-  | AiFillBucket
-  | AiChangeCanvasSize;
-
 export type AiResponse = {
-  actions: AiAction[];
-  planText: string;
+  actions: AiToolCall[];
+  intent: 'DRAW' | 'CHAT' | 'CLARIFY';
+  shouldCallTools: boolean;
+  message: string;
 };
 
 export type MessageItem = {
   message: string;
   fromUser: boolean;
 };
+
+export type RGBobj = { r: number; g: number; b: number };
+
+export type AiToolCall =
+  | {
+      tool: 'penStroke';
+      args: { layerId: string; color: RGBobj; size: number; points: Point[]; opacity: number };
+    }
+  | {
+      tool: 'lineTool';
+      args: {
+        layerId: string;
+        color: RGBobj;
+        strokeWidth: number;
+        opacity: number;
+        from: Point;
+        to: Point;
+      };
+    }
+  | {
+      tool: 'rectangleTool';
+      args: {
+        layerId: string;
+        color: RGBobj;
+        fill: boolean;
+        fillColor: RGBobj;
+        strokeWidth: number;
+        opacity: number;
+        from: Point;
+        to: Point;
+      };
+    }
+  | {
+      tool: 'ellipseTool';
+      args: {
+        layerId: string;
+        color: RGBobj;
+        fill: boolean;
+        fillColor: RGBobj;
+        strokeWidth: number;
+        opacity: number;
+        from: Point;
+        to: Point;
+      };
+    }
+  | {
+      tool: 'fillBucket';
+      args: { layerId: string; color: RGBobj; opacity: number; x: number; y: number };
+    }
+  | { tool: 'changeCanvasSize'; args: { width: number; height: number } };

@@ -6,6 +6,7 @@ import {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from 'react';
@@ -52,35 +53,75 @@ export type ScrollEvent = {
 
 const MouseEventContext = createContext<MouseEventContextValue | undefined>(undefined);
 
+function isTypingTarget(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  if (!el) return false;
+
+  const tag = el.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  if (el.isContentEditable) return true;
+
+  // In case the event target is inside an input wrapper etc.
+  const closest = el.closest('input, textarea, select, [contenteditable="true"]');
+  return !!closest;
+}
+
 export const MouseEventContextProvider = ({ children }: { children: ReactNode }) => {
   const { pan } = useCanvasContext();
 
   const [cursorType, setCursorType] = useState<CSSProperties>({ cursor: 'pointer' });
 
   const [onKeyDownEvent, setOnKeyDownEvent] = useState<KeyEvent | null>(null);
-  const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = useCallback((e) => {
-    setOnKeyDownEvent((prev) => ({
-      ctrlDown: e.ctrlKey,
-      shiftDown: e.shiftKey,
-      key: e.key.toLowerCase(),
-      trigger: prev ? prev.trigger + 1 : 0,
-    }));
-  }, []);
-
   const [onKeyUpEvent, setOnKeyUpEvent] = useState<KeyEvent | null>(null);
-  const onKeyUp: React.KeyboardEventHandler<HTMLDivElement> = useCallback((e) => {
-    setOnKeyUpEvent((prev) => ({
-      ctrlDown: e.ctrlKey,
-      shiftDown: e.shiftKey,
-      key: e.key.toLowerCase(),
-      trigger: prev ? prev.trigger + 1 : 0,
-    }));
-  }, []);
 
   const [onPointerDownEvent, setOnPointerDownEvent] = useState<PointerEventPayload | null>(null);
+  const [onPointerMoveEvent, setOnPointerMoveEvent] = useState<PointerEventPayload | null>(null);
+  const [onPointerUpEvent, setOnPointerUpEvent] = useState<PointerEventPayload | null>(null);
+  const [onPointerLeaveEvent, setOnPointerLeaveEvent] = useState<PointerEventPayload | null>(null);
+  const [onPointerCancelEvent, setOnPointerCancelEvent] = useState<PointerEventPayload | null>(
+    null,
+  );
+
+  const [onScrollEvent, setOnScrollEvent] = useState<ScrollEvent | null>(null);
+
+  // ✅ Global keyboard listeners (Option A)
+  useEffect(() => {
+    const opts: AddEventListenerOptions = { capture: true };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don’t steal normal text editing undo/typing behavior
+      if (isTypingTarget(e.target)) return;
+
+      setOnKeyDownEvent((prev) => ({
+        ctrlDown: e.ctrlKey || e.metaKey, // include Cmd on mac
+        shiftDown: e.shiftKey,
+        key: e.key.toLowerCase(),
+        trigger: prev ? prev.trigger + 1 : 0,
+      }));
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (isTypingTarget(e.target)) return;
+
+      setOnKeyUpEvent((prev) => ({
+        ctrlDown: e.ctrlKey || e.metaKey,
+        shiftDown: e.shiftKey,
+        key: e.key.toLowerCase(),
+        trigger: prev ? prev.trigger + 1 : 0,
+      }));
+    };
+
+    window.addEventListener('keydown', handleKeyDown, opts);
+    window.addEventListener('keyup', handleKeyUp, opts);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, opts);
+      window.removeEventListener('keyup', handleKeyUp, opts);
+    };
+  }, []);
+
   const onPointerDown: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
-      e.currentTarget.focus();
       e.currentTarget.setPointerCapture(e.pointerId);
 
       const c = getCanvasPosition(e, pan);
@@ -93,7 +134,6 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
     [pan],
   );
 
-  const [onPointerMoveEvent, setOnPointerMoveEvent] = useState<PointerEventPayload | null>(null);
   const onPointerMove: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       const c = getCanvasPosition(e, pan);
@@ -106,7 +146,6 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
     [pan],
   );
 
-  const [onPointerUpEvent, setOnPointerUpEvent] = useState<PointerEventPayload | null>(null);
   const onPointerUp: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       const c = getCanvasPosition(e, pan);
@@ -124,7 +163,6 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
     [pan],
   );
 
-  const [onPointerLeaveEvent, setOnPointerLeaveEvent] = useState<PointerEventPayload | null>(null);
   const onPointerLeave: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       const c = getCanvasPosition(e, pan);
@@ -137,9 +175,6 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
     [pan],
   );
 
-  const [onPointerCancelEvent, setOnPointerCancelEvent] = useState<PointerEventPayload | null>(
-    null,
-  );
   const onPointerCancel: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       const c = getCanvasPosition(e, pan);
@@ -153,6 +188,8 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
         trigger: prev ? prev.trigger + 1 : 0,
         mouseButton: 0,
       }));
+
+      // You were also emitting pointerUp on cancel – keeping that behavior
       setOnPointerUpEvent((prev) => ({
         pos: c,
         trigger: prev ? prev.trigger + 1 : 0,
@@ -162,7 +199,6 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
     [pan],
   );
 
-  const [onScrollEvent, setOnScrollEvent] = useState<ScrollEvent | null>(null);
   const onScroll: React.WheelEventHandler<HTMLDivElement> = useCallback((e) => {
     e.stopPropagation();
 
@@ -195,7 +231,6 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
     }),
     [
       cursorType,
-      setCursorType,
       onKeyDownEvent,
       onKeyUpEvent,
       onPointerDownEvent,
@@ -212,10 +247,7 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
       {children}
       <div
         className={styles.mouseEvents}
-        tabIndex={0}
         style={cursorType}
-        onKeyDown={onKeyDown}
-        onKeyUp={onKeyUp}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -230,10 +262,8 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
 
 export const useMouseEventContext = () => {
   const ctx = useContext(MouseEventContext);
-
   if (!ctx) {
     throw new Error('have to be inside MouseEventProvider to retrieve context');
   }
-
   return ctx;
 };

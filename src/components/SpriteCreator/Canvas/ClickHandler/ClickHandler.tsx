@@ -2,7 +2,7 @@
 
 import { useToolContext } from '@/context/ToolContext';
 import { useCanvasContext } from '@/context/CanvasContext';
-import { CSSProperties, useEffect, useMemo, useState } from 'react';
+import { act, CSSProperties, useEffect, useMemo, useState } from 'react';
 import { Cordinate } from '@/models/Layer';
 import { PanTool } from '@/models/Tools/PanTool';
 import { useMouseEventContext } from '@/context/MouseEventContext/MouseEventContext';
@@ -80,6 +80,8 @@ const ClickHandler = () => {
   useEffect(() => {
     if (!onKeyDownEvent) return;
 
+    console.log(onKeyDownEvent.key);
+
     if (
       onKeyDownEvent.ctrlDown &&
       onKeyDownEvent.shiftDown &&
@@ -89,6 +91,10 @@ const ClickHandler = () => {
       redo();
     } else if (onKeyDownEvent.ctrlDown && onKeyDownEvent.key == 'z' && !mouseDown) {
       undo();
+    } else if (onKeyDownEvent.key === 'enter') {
+      activeTool.onCommit?.();
+    } else if (onKeyDownEvent.key === 'escape') {
+      activeTool.onCancel?.();
     }
     setCtrlDown(onKeyDownEvent.ctrlDown);
   }, [onKeyDownEvent?.trigger]);

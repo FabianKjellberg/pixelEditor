@@ -1,4 +1,4 @@
-import { AiAction, AiResponse, MessageItem } from '@/models/AiModels';
+import { AiResponse, MessageItem } from '@/models/AiModels';
 import { apiClient } from './client';
 
 export async function testAi(promts: MessageItem[], width: number, height: number) {
@@ -10,5 +10,7 @@ export async function testAi(promts: MessageItem[], width: number, height: numbe
 
   const data = (await response.json()) as AiResponse;
 
-  return data.actions;
+  console.log(data);
+
+  return data;
 }

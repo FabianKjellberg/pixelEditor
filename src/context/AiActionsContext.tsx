@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  AiAction,
-  AiActionEnum,
-  AiEllipseTool,
-  AiFillBucket,
-  AiLineTool,
-  AiPenStroke,
-  AiRectangleTool,
-} from '@/models/AiModels';
+import { AiToolCall } from '@/models/AiModels';
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useCanvasContext } from './CanvasContext';
 import { PenTool } from '@/models/Tools/PenTool';
@@ -24,12 +16,14 @@ import {
 } from '@/models/Tools/Properties';
 import { rgbaToInt } from '@/helpers/color';
 import { OvalTool } from '@/models/Tools/ShapeTools/OvalTool';
-import { FillBucket } from '@/models/Tools/FillBucket';
+import { FillBucket } from '@/models/Tools/AreaTools/FillBucket';
 import { LineTool } from '@/models/Tools/ShapeTools/LineTool';
 import { RectangleTool } from '@/models/Tools/ShapeTools/RectangleTool';
+import { LayerEntity } from '@/models/Layer';
+import { createLayerEntity } from '@/util/LayerUtil';
 
 type AiActionsContextValue = {
-  excecuteActions: (actions: AiAction[]) => void | Promise<void>;
+  excecuteActions: (actions: AiToolCall[]) => void | Promise<void>;
   getAiPrimaryColor: () => number;
   setAiPrimaryColor: (color: number) => void;
   getAiProperties: (toolKey: string) => IProperty[];
@@ -41,12 +35,12 @@ const AiActionContext = createContext<AiActionsContextValue | undefined>(undefin
 const DEFAULT_AI_COLOR = 0x000000ff;
 
 /** Delay between each AI action (ms) so the canvas/undo can keep up */
-const AI_ACTION_DELAY_MS = 150;
+const AI_ACTION_DELAY_MS = 75;
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const AiActionsContextProvider = ({ children }: { children: React.ReactNode }) => {
-  const { setActiveLayer, getActiveLayer } = useLayerContext();
+  const { setActiveLayer, getActiveLayer, addLayer, setActiveLayerIndex } = useLayerContext();
   const { getSelectionLayer, getCanvasRect, setDimensions, pixelSize } = useCanvasContext();
   const { checkPoint, hasBaseline } = useUndoRedoContext();
 
@@ -81,20 +75,19 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
   }, []);
 
   const aiPenStroke = useCallback(
-    (penStroke: AiPenStroke) => {
-      if (penStroke.points.length < 1) console.log('no points to draw');
+    (penStroke: AiToolCall) => {
+      if (penStroke.tool != 'penStroke') return;
 
-      setAiProperties('pencil', [new SizeProperty(penStroke.size)]);
-      const color = rgbaToInt(
-        penStroke.color.r,
-        penStroke.color.g,
-        penStroke.color.b,
-        penStroke.opacity,
-      );
+      const args = penStroke.args;
+
+      if (args.points.length < 1) console.log('no points to draw');
+
+      setAiProperties('pencil', [new SizeProperty(args.size)]);
+      const color = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
 
       setAiPrimaryColor(color);
 
-      const strokeSize = new SizeProperty(penStroke.size);
+      const strokeSize = new SizeProperty(args.size);
       const strokePen = new PenTool({
         setLayer: setActiveLayer,
         getLayer: getActiveLayer,
@@ -106,19 +99,10 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
         hasBaseline,
       });
 
-      strokePen.onDown(
-        penStroke.points[0].x * pixelSize,
-        penStroke.points[0].y * pixelSize,
-        pixelSize,
-        0,
-      );
+      strokePen.onDown(args.points[0].x * pixelSize, args.points[0].y * pixelSize, pixelSize, 0);
 
-      for (let i = 1; i < penStroke.points.length; i++) {
-        strokePen.onMove(
-          penStroke.points[i].x * pixelSize,
-          penStroke.points[i].y * pixelSize,
-          pixelSize,
-        );
+      for (let i = 1; i < args.points.length; i++) {
+        strokePen.onMove(args.points[i].x * pixelSize, args.points[i].y * pixelSize, pixelSize);
       }
 
       strokePen.onUp();
@@ -137,24 +121,23 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     ],
   );
 
-  const aiEllipseTool = useCallback((ellpiseTool: AiEllipseTool) => {
-    const strokeWidthProp = new StrokeWidthProperty(ellpiseTool.strokeWidth);
-    const opacityProp = new OpacityProperty(ellpiseTool.opacity);
-    const fillProp = new FillProperty(ellpiseTool.fill);
+  const aiEllipseTool = useCallback((ellpiseTool: AiToolCall) => {
+    if (ellpiseTool.tool != 'ellipseTool') return;
+
+    const args = ellpiseTool.args;
+
+    const strokeWidthProp = new StrokeWidthProperty(args.strokeWidth);
+    const opacityProp = new OpacityProperty(args.opacity);
+    const fillProp = new FillProperty(args.fill);
     const strokeAlignProp = new StrokeAlignProperty('Centered');
 
-    const primaryColor = rgbaToInt(
-      ellpiseTool.color.r,
-      ellpiseTool.color.g,
-      ellpiseTool.color.b,
-      ellpiseTool.opacity,
-    );
+    const primaryColor = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
 
     const secondaryColor = rgbaToInt(
-      ellpiseTool.fillColor.r,
-      ellpiseTool.fillColor.g,
-      ellpiseTool.fillColor.b,
-      ellpiseTool.opacity,
+      args.fillColor.r,
+      args.fillColor.g,
+      args.fillColor.b,
+      args.opacity,
     );
 
     const tool = new OvalTool({
@@ -169,22 +152,21 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
       hasBaseline,
     });
 
-    tool.onDown(ellpiseTool.from.x * pixelSize, ellpiseTool.from.y * pixelSize, pixelSize, 0);
+    tool.onDown(args.from.x * pixelSize, args.from.y * pixelSize, pixelSize, 0);
 
-    tool.onMove(ellpiseTool.to.x * pixelSize, ellpiseTool.to.y * pixelSize, pixelSize);
+    tool.onMove(args.to.x * pixelSize, args.to.y * pixelSize, pixelSize);
 
-    tool.onUp(ellpiseTool.to.x * pixelSize, ellpiseTool.to.y * pixelSize, pixelSize);
+    tool.onUp(args.to.x * pixelSize, args.to.y * pixelSize, pixelSize);
   }, []);
 
-  const aiFillBucket = useCallback((fillBucket: AiFillBucket) => {
-    const opacityProp = new OpacityProperty(fillBucket.opacity);
+  const aiFillBucket = useCallback((fillBucket: AiToolCall) => {
+    if (fillBucket.tool != 'fillBucket') return;
 
-    const color = rgbaToInt(
-      fillBucket.color.r,
-      fillBucket.color.g,
-      fillBucket.color.b,
-      fillBucket.opacity,
-    );
+    const args = fillBucket.args;
+
+    const opacityProp = new OpacityProperty(args.opacity);
+
+    const color = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
 
     const tool = new FillBucket({
       setLayer: setActiveLayer,
@@ -197,16 +179,20 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
       hasBaseline,
     });
 
-    tool.onDown(fillBucket.x * pixelSize, fillBucket.y * pixelSize, pixelSize, 0);
+    tool.onDown(args.x * pixelSize, args.y * pixelSize, pixelSize, 0);
 
-    tool.onUp(fillBucket.x * pixelSize, fillBucket.y * pixelSize, pixelSize);
+    tool.onUp(args.x * pixelSize, args.y * pixelSize, pixelSize);
   }, []);
 
-  const aiLineTool = useCallback((lineTool: AiLineTool) => {
-    const strokeWidthProp = new StrokeWidthProperty(lineTool.strokeWidth);
-    const opacityProp = new OpacityProperty(lineTool.opacity);
+  const aiLineTool = useCallback((lineTool: AiToolCall) => {
+    if (lineTool.tool != 'lineTool') return;
 
-    const color = rgbaToInt(lineTool.color.r, lineTool.color.g, lineTool.color.b, lineTool.opacity);
+    const args = lineTool.args;
+
+    const strokeWidthProp = new StrokeWidthProperty(args.strokeWidth);
+    const opacityProp = new OpacityProperty(args.opacity);
+
+    const color = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
 
     const tool = new LineTool({
       setLayer: setActiveLayer,
@@ -219,31 +205,30 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
       hasBaseline,
     });
 
-    tool.onDown(lineTool.from.x * pixelSize, lineTool.from.y * pixelSize, pixelSize, 0);
+    tool.onDown(args.from.x * pixelSize, args.from.y * pixelSize, pixelSize, 0);
 
-    tool.onMove(lineTool.to.x * pixelSize, lineTool.to.y * pixelSize, pixelSize);
+    tool.onMove(args.to.x * pixelSize, args.to.y * pixelSize, pixelSize);
 
-    tool.onUp(lineTool.to.x * pixelSize, lineTool.to.y * pixelSize, pixelSize);
+    tool.onUp(args.to.x * pixelSize, args.to.y * pixelSize, pixelSize);
   }, []);
 
-  const aiRectangleTool = useCallback((rectangle: AiRectangleTool) => {
-    const strokeWidthProp = new StrokeWidthProperty(rectangle.strokeWidth);
-    const opacityProp = new OpacityProperty(rectangle.opacity);
-    const fillProp = new FillProperty(rectangle.fill);
+  const aiRectangleTool = useCallback((rectangle: AiToolCall) => {
+    if (rectangle.tool != 'rectangleTool') return;
+
+    const args = rectangle.args;
+
+    const strokeWidthProp = new StrokeWidthProperty(args.strokeWidth);
+    const opacityProp = new OpacityProperty(args.opacity);
+    const fillProp = new FillProperty(args.fill);
     const strokeAlignProp = new StrokeAlignProperty('Centered');
 
-    const primaryColor = rgbaToInt(
-      rectangle.color.r,
-      rectangle.color.g,
-      rectangle.color.b,
-      rectangle.opacity,
-    );
+    const primaryColor = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
 
     const secondaryColor = rgbaToInt(
-      rectangle.fillColor.r,
-      rectangle.fillColor.g,
-      rectangle.fillColor.b,
-      rectangle.opacity,
+      args.fillColor.r,
+      args.fillColor.g,
+      args.fillColor.b,
+      args.opacity,
     );
 
     const tool = new RectangleTool({
@@ -258,41 +243,47 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
       hasBaseline,
     });
 
-    tool.onDown(rectangle.from.x * pixelSize, rectangle.from.y * pixelSize, pixelSize, 0);
+    tool.onDown(args.from.x * pixelSize, args.from.y * pixelSize, pixelSize, 0);
 
-    tool.onMove(rectangle.to.x * pixelSize, rectangle.to.y * pixelSize, pixelSize);
+    tool.onMove(args.to.x * pixelSize, args.to.y * pixelSize, pixelSize);
 
-    tool.onUp(rectangle.to.x * pixelSize, rectangle.to.y * pixelSize, pixelSize);
+    tool.onUp(args.to.x * pixelSize, args.to.y * pixelSize, pixelSize);
   }, []);
 
   const excecuteActions = useCallback(
-    async (actions: AiAction[]) => {
-      console.log(actions);
+    async (actions: AiToolCall[]) => {
+      const layers: string[] = [];
 
       for (let i = 0; i < actions.length; i++) {
         const action = actions[i];
-        switch (action.action) {
-          case AiActionEnum.changeCanvasSize:
-            setDimensions(action.width, action.height);
+
+        switch (action.tool) {
+          case 'changeCanvasSize':
+            setDimensions(action.args.width, action.args.height);
             break;
 
-          case AiActionEnum.penStroke:
+          case 'penStroke':
+            await selectLayer(action.args.layerId, layers);
             aiPenStroke(action);
             break;
 
-          case AiActionEnum.ellipseTool:
+          case 'ellipseTool':
+            await selectLayer(action.args.layerId, layers);
             aiEllipseTool(action);
             break;
 
-          case AiActionEnum.fillBucket:
+          case 'fillBucket':
+            await selectLayer(action.args.layerId, layers);
             aiFillBucket(action);
             break;
 
-          case AiActionEnum.lineTool:
+          case 'lineTool':
+            await selectLayer(action.args.layerId, layers);
             aiLineTool(action);
             break;
 
-          case AiActionEnum.rectangleTool:
+          case 'rectangleTool':
+            await selectLayer(action.args.layerId, layers);
             aiRectangleTool(action);
             break;
 
@@ -306,6 +297,17 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     },
     [setDimensions, aiPenStroke, aiEllipseTool, aiFillBucket, aiLineTool, aiRectangleTool],
   );
+
+  const selectLayer = async (layerId: string, layers: string[]) => {
+    if (layers.some((layer) => layer === layerId)) {
+      setActiveLayerIndex(layers.findIndex((layer) => layerId === layer));
+    } else {
+      addLayer(createLayerEntity(layerId, crypto.randomUUID()), 0);
+      layers.unshift(layerId);
+    }
+
+    await delay(AI_ACTION_DELAY_MS);
+  };
 
   const value = useMemo(
     () => ({

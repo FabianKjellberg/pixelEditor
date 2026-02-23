@@ -1112,3 +1112,106 @@ function outOfBounds(cor: Cordinate, rect: Rectangle): boolean {
     cor.y >= rect.y + rect.height
   );
 }
+
+export function drawGradient(
+  rect: Rectangle,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  toColor: number,
+  fromColor: number,
+  gradientType: string,
+  ditheringPattern: Uint32Array,
+  ditheringSize: number,
+  selectedLayer?: SelectionLayer,
+): Layer {
+  //debugger;
+
+  const layer = createLayer(selectedLayer ? selectedLayer.rect : rect);
+
+  const v1: Cordinate = { x: x2 - x1, y: y2 - y1 };
+  const denom: number = v1.x * v1.x + v1.y * v1.y;
+
+  for (let y3 = layer.rect.y; y3 < layer.rect.height + layer.rect.y; y3++) {
+    for (let x3 = layer.rect.x; x3 < layer.rect.width + layer.rect.x; x3++) {
+      const v2: Cordinate = { x: x3 - x1, y: y3 - y1 };
+
+      const dProd = v1.x * v2.x + v1.y * v2.y;
+
+      const t = dProd / denom;
+
+      const index = getPixelIndex(y3 - layer.rect.y, layer.rect.width, x3 - layer.rect.x);
+
+      if (selectedLayer && !selectedLayer.pixels[index]) continue;
+
+      let color: number;
+
+      if (t < 0) {
+        color = fromColor;
+      } else if (t > 1) {
+        color = toColor;
+      } else {
+        switch (gradientType) {
+          case 'Dithering':
+            color = ditherGradient(fromColor, toColor, t, x3, y3, ditheringPattern, ditheringSize);
+            break;
+          case 'Random':
+            color = randomGradient(fromColor, toColor, t);
+            break;
+          case 'Linear':
+            color = linearGradient(fromColor, toColor, t);
+            break;
+          default:
+            color = 0;
+            break;
+        }
+      }
+
+      layer.pixels[index] = color;
+    }
+  }
+
+  return layer;
+}
+
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
+
+function ditherGradient(
+  fromColor: number,
+  toColor: number,
+  t: number,
+  x: number,
+  y: number,
+  dp: Uint32Array,
+  l: number,
+): number {
+  const ditherValue = dp[getPixelIndex(y % l, l, x % l)];
+
+  return t * l * l < ditherValue ? fromColor : toColor;
+}
+
+function linearGradient(fromColor: number, toColor: number, t: number): number {
+  const from = intToRGB(fromColor); // must include .a (0..255)
+  const to = toColor !== 0 ? intToRGB(toColor) : { r: 0, g: 0, b: 0, a: 0 };
+
+  if (toColor === 0) {
+    const a = Math.round(lerp(from.a, 0, t));
+    return rgbaToInt(from.r, from.g, from.b, a);
+  }
+
+  const r = Math.round(lerp(from.r, to.r, t));
+  const g = Math.round(lerp(from.g, to.g, t));
+  const b = Math.round(lerp(from.b, to.b, t));
+  const a = Math.round(lerp(from.a, to.a, t));
+
+  return rgbaToInt(r, g, b, a);
+}
+
+function randomGradient(fromColor: number, toColor: number, t: number): number {
+  const random = Math.random();
+
+  return random - t > 0 ? fromColor : toColor;
+}

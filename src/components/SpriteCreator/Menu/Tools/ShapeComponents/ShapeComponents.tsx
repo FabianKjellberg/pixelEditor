@@ -154,6 +154,22 @@ const ShapeComponents = () => {
     [getActiveLayer, setActiveLayer, getPrimaryColor, getProperties],
   );
 
+  const freeFormTool: OvalTool = useMemo(
+    () =>
+      new OvalTool({
+        setLayer: setActiveLayer,
+        getLayer: getActiveLayer,
+        getPrimaryColor,
+        getSecondaryColor,
+        getProperties,
+        getSelectionLayer,
+        getCanvasRect,
+        checkPoint,
+        hasBaseline,
+      }),
+    [getActiveLayer, setActiveLayer, getPrimaryColor, getProperties],
+  );
+
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   const onClickCallbackItem = useCallback(
@@ -167,6 +183,9 @@ const ShapeComponents = () => {
           break;
         case 2:
           setActiveTool(ovalTool);
+          break;
+        case 3:
+          setActiveTool(freeFormTool);
           break;
       }
 
@@ -198,6 +217,12 @@ const ShapeComponents = () => {
             onClickCallback={onClickCallbackItem}
             selectedIndex={selectedIndex}
           />
+          <ToolButtonMimic
+            icon="icons/freeForm.png"
+            index={3}
+            onClickCallback={onClickCallbackItem}
+            selectedIndex={selectedIndex}
+          />
         </div>
       );
 
@@ -225,6 +250,11 @@ const ShapeComponents = () => {
         return {
           icon: 'icons/oval.png',
           tool: ovalTool,
+        };
+      case 3:
+        return {
+          icon: 'icons/freeForm.png',
+          tool: freeFormTool,
         };
     }
   }, [selectedIndex]);
