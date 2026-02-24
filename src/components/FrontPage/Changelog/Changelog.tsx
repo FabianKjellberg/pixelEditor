@@ -10,6 +10,57 @@ const Changelog = () => {
         Version history and what I&apos;ve been up to. Point form, but I&apos;ll keep it readable.
       </p>
       <br />
+      <ChangelogEntry date="2026-02-24" title="Freeform tool, gradient tool & AI support">
+        <li>
+          <p>
+            <b>Freeform shape tool.</b> Draw your own polygons and irregular shapes by clicking to
+            place points on the canvas. Each click adds a corner, and you see the outline as you
+            go. To finish the shape, click near the first point (within the stroke width). If{' '}
+            <b>Fill shape</b> is on, the inside gets filled with your secondary color. You get the
+            same options as the other shape tools: <b>Stroke width</b> (1 to 64), <b>Opacity</b> (1
+            to 255), and <b>Fill shape</b>. Left click uses your primary color for the outline (and
+            secondary for fill), or right click to swap. If you have a selection, the tool only
+            draws inside it. Find the freeform tool in the shape tools menu (right click the shape
+            button), next to Line, Rectangle, and Ellipse. Undo and redo work as usual.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Gradient tool.</b> Click and drag on the canvas to fill an area with a gradient.
+            Where you start is the first color, where you let go is the second, and everything in
+            between blends along that line. Your <b>primary color</b> is at the start and{' '}
+            <b>secondary</b> at the end, or right click to swap. <b>Opacity</b> (1 to 255) controls
+            how see-through it is. <b>Gradient type</b> can be <b>Linear</b> (smooth blend),{' '}
+            <b>Random</b> (noisy, speckly look), or <b>Dithering</b> (pattern-based, with sizes 1×1,
+            2×2, 4×4, or 8×8). <b>Single color</b> fades from your chosen color to transparent instead
+            of a second color. You see the gradient update as you drag, and when you release the
+            mouse it&apos;s saved so you can undo if you want. With a selection active, only the
+            selected area is filled.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>AI support.</b> The editor now has an AI assistant. You can ask it questions about
+            how the program works, or tell it what you want drawn and it will try to draw it for
+            you. Open it from the top menu: <b>Ai</b>, then <b>Create drawing with AI</b>. A chat
+            window opens. Type what you want in the box and hit Send. The AI gets your message and
+            the conversation so far, plus the current canvas size. It can reply with text, or it can
+            decide to use the drawing tools (pen, shapes, fill, gradient, and so on). When it draws,
+            it runs those actions one after another on your canvas so you see the result appear.
+          </p>
+        </li>
+        <li>
+          <p>
+            The AI can use the same tools you do: pen strokes, lines, rectangles, ellipses, fill
+            bucket, gradient, and freeform. It can draw on a specific layer so your other layers
+            stay untouched. It keeps its own colors and settings when it draws, so your current tool
+            and colors don&apos;t change. There&apos;s a short pause between each action so the canvas
+            and undo history stay in sync. The system is set up so new tools can be hooked in later,
+            and the AI can also suggest or apply a change to the canvas size if needed.
+          </p>
+        </li>
+      </ChangelogEntry>
+
       <ChangelogEntry date="2026-02-18" title="Shape tools, bucket fill & multi-tool selection">
         <li>
           <p>

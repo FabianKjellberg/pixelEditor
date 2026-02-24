@@ -19,7 +19,7 @@ const TopMenu = () => {
           <TopMenuButtonItem label={'Canvas'} contextMenu={<TopMenuCanvas />} />
           <TopMenuButtonItem label={'Layer'} contextMenu={<TopMenuLayer />} />
           <TopMenuButtonItem label={'Selection'} contextMenu={<TopMenuSelection />} />
-          {/*<TopMenuButtonItem label={'Ai'} contextMenu={<TopMenuAi />} /> TO BE RELEASED AT A LATER POINT*/}
+          <TopMenuButtonItem label={'Ai'} contextMenu={<TopMenuAi />} />
           <SyncToCloudStatus />
         </div>
         <div className={styles.rightSide}>

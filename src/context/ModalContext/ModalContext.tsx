@@ -12,18 +12,21 @@ import {
 } from 'react';
 import styles from './ModalContext.module.css';
 
+export type ModalContent = React.ReactNode | (() => React.ReactNode);
+
 export type ModalData = {
   id: string;
   headerText: string;
-  content: React.ReactNode;
+  content: ModalContent;
   position: CSSProperties;
   ref: React.RefObject<HTMLDivElement>;
 };
 
 type ModalContextValue = {
-  onShow: (id: string, content: React.ReactNode, header: string) => void;
+  onShow: (id: string, content: ModalContent, header: string) => void;
   onHide: (id: string) => void;
   onHideAll: () => void;
+  updateContent: (id: string, content: ModalContent) => void;
 };
 
 const ModalContext = createContext<ModalContextValue | undefined>(undefined);
@@ -31,8 +34,7 @@ const ModalContext = createContext<ModalContextValue | undefined>(undefined);
 export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
   const [modals, setModals] = useState<ModalData[]>([]);
 
-  // --- Open a modal ---
-  const onShow = useCallback((id: string, content: React.ReactNode, header: string) => {
+  const onShow = useCallback((id: string, content: ModalContent, header: string) => {
     setModals((prev) => {
       const alreadyExist = prev.some((modal) => modal.id === id);
       if (alreadyExist) return prev;
@@ -57,7 +59,16 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
     setModals([]);
   }, []);
 
-  const value = useMemo(() => ({ onShow, onHide, onHideAll }), [onShow, onHide, onHideAll]);
+  const updateContent = useCallback((id: string, content: ModalContent) => {
+    setModals((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, content } : m)),
+    );
+  }, []);
+
+  const value = useMemo(
+    () => ({ onShow, onHide, onHideAll, updateContent }),
+    [onShow, onHide, onHideAll, updateContent],
+  );
 
   return (
     <ModalContext.Provider value={value}>
@@ -92,7 +103,7 @@ function DraggableModal({ modal, onClose }: { modal: ModalData; onClose: () => v
       const r = el.getBoundingClientRect();
       const left = Math.max(16, (window.innerWidth - r.width) / 2);
       const top = Math.max(16, (window.innerHeight - r.height) / 2);
-      setPosition({ left, top, zIndex: 10000 });
+      setPosition({ left, top, zIndex: 10000, visibility: 'visible' });
     });
     return () => cancelAnimationFrame(id);
   }, [modal.ref, position.left, position.top]);
@@ -140,7 +151,9 @@ function DraggableModal({ modal, onClose }: { modal: ModalData; onClose: () => v
             <p>x</p>
           </button>
         </div>
-        {modal.content}
+        {typeof modal.content === 'function'
+          ? (modal.content as () => React.ReactNode)()
+          : modal.content}
       </div>
     </div>
   );

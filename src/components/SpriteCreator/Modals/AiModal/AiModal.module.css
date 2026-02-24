@@ -1,0 +1,25 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+}
+.chatBox {
+  height: 300px;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column-reverse;
+  max-width: 525px;
+}
+.userInput {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  border-top: 2px solid var(--border);
+}
+
+.userInput button {
+  width: 80px;
+}
+
+.userInput button p {
+  font-size: 24px;
+}

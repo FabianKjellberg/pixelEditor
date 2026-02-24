@@ -56,9 +56,7 @@ const LayerSelector = () => {
       <div className={styles.breakLine}></div>
       <button
         className={styles.layerItem}
-        onClick={() =>
-          addLayer(createLayerEntity('Layer ' + (allLayers.length + 1)), allLayers.length)
-        }
+        onClick={() => addLayer(createLayerEntity('Layer ' + (allLayers.length + 1)), 0)}
       >
         +
       </button>

@@ -114,3 +114,9 @@ export function rgbToHex({ r, g, b, a }: RGBAobj): string {
   const to2 = (n: number) => n.toString(16).padStart(2, '0');
   return `#${to2(r)}${to2(g)}${to2(b)}`.toUpperCase();
 }
+
+export function setAlpha(color: number, newAlpha: number): number {
+  const a = newAlpha & 0xff;
+  const rgb = color & 0xffffff00;
+  return (rgb | a) >>> 0;
+}

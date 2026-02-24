@@ -2,11 +2,9 @@
 
 import { useToolContext } from '@/context/ToolContext';
 import { useCanvasContext } from '@/context/CanvasContext';
-import { CSSProperties, useEffect, useMemo, useState } from 'react';
-import { Cordinate } from '@/models/Layer';
+import { useEffect, useState } from 'react';
 import { PanTool } from '@/models/Tools/PanTool';
 import { useMouseEventContext } from '@/context/MouseEventContext/MouseEventContext';
-import { useLayerContext } from '@/context/LayerContext';
 import { useUndoRedoContext } from '@/context/UndoRedoContext';
 
 const ClickHandler = () => {
@@ -48,7 +46,7 @@ const ClickHandler = () => {
     if (ctrlDown) {
       panTool.onDown(c.x, c.y);
     } else {
-      activeTool.onDown(c.x, c.y, pixelSize, onPointerDownEvent.mouseButton);
+      activeTool.onDown?.(c.x, c.y, pixelSize, onPointerDownEvent.mouseButton);
     }
   }, [onPointerDownEvent?.trigger]);
 
@@ -60,7 +58,7 @@ const ClickHandler = () => {
     if (ctrlDown) {
       panTool.onMove(c.x, c.y);
     } else {
-      activeTool.onMove(c.x, c.y, pixelSize);
+      activeTool.onMove?.(c.x, c.y, pixelSize);
     }
   }, [onPointerMoveEvent?.trigger]);
 
@@ -73,7 +71,7 @@ const ClickHandler = () => {
     setMouseDown(false);
 
     panTool.onUp(c.x, c.y);
-    activeTool.onUp(c.x, c.y, pixelSize, onPointerUpEvent.mouseButton);
+    activeTool.onUp?.(c.x, c.y, pixelSize, onPointerUpEvent.mouseButton);
   }, [onPointerUpEvent?.trigger]);
 
   //Key down event
@@ -86,9 +84,15 @@ const ClickHandler = () => {
       onKeyDownEvent.key == 'z' &&
       !mouseDown
     ) {
+      activeTool.onCancel?.();
       redo();
     } else if (onKeyDownEvent.ctrlDown && onKeyDownEvent.key == 'z' && !mouseDown) {
+      activeTool.onCancel?.();
       undo();
+    } else if (onKeyDownEvent.key === 'enter') {
+      activeTool.onCommit?.();
+    } else if (onKeyDownEvent.key === 'escape') {
+      activeTool.onCancel?.();
     }
     setCtrlDown(onKeyDownEvent.ctrlDown);
   }, [onKeyDownEvent?.trigger]);

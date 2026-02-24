@@ -6,7 +6,7 @@ import {
   stampLayer,
   stampToCanvasLayer,
 } from '@/util/LayerUtil';
-import { ITool, IToolDeps } from './Tools';
+import { ITool, IToolDeps } from '../Tools';
 import { config } from '@/config/env';
 import {
   getProperty,
@@ -14,10 +14,10 @@ import {
   OpacityProperty,
   PropertyType,
   ToleranceProperty,
-} from './Properties';
+} from '../Properties';
 import { intToRGB, rgbaToInt } from '@/helpers/color';
-import { RGBAobj } from './Color';
-import { LayerEntity } from '../Layer';
+import { RGBAobj } from '../Color';
+import { LayerEntity } from '../../Layer';
 
 export class FillBucket implements ITool {
   deps: IToolDeps;
@@ -51,8 +51,8 @@ export class FillBucket implements ITool {
 
     const color: number =
       mouseButton == 0
-        ? (this.deps.getPrimaryColor?.() ?? config.defaultColor)
-        : (this.deps.getSecondaryColor?.() ?? config.defaultColor);
+        ? this.deps.getPrimaryColor?.() ?? config.defaultColor
+        : this.deps.getSecondaryColor?.() ?? config.defaultColor;
 
     const properties: IProperty[] = this.deps.getProperties?.('fillBucket') ?? [];
     const toleranceProp = getProperty<ToleranceProperty>(properties, PropertyType.Tolerance);

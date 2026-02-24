@@ -19,4 +19,11 @@ export interface IMultiChoice {
   allowEmpty: boolean;
 }
 
-export type UIControlSpec = ISlider | IToggle | IMultiChoice;
+export interface IDithering {
+  type: 'dithering';
+  requiredChoice: 'Dithering';
+  firstLabel: string;
+  choices: string[];
+}
+
+export type UIControlSpec = ISlider | IToggle | IMultiChoice | IDithering;

@@ -8,6 +8,7 @@ import RectangleSelectorComponent from './Tools/RectangleSelectorComponent/Recta
 import EyedropperComponent from './Tools/EyedropperComponent/EyedropperComponent';
 import ShapeComponents from './Tools/ShapeComponents/ShapeComponents';
 import BucketFillComponent from './Tools/BucketFillComponent';
+import AreaComponents from './Tools/AreaComponents/AreaComponents';
 
 const LeftMenu = () => {
   return (
@@ -30,7 +31,8 @@ const LeftMenu = () => {
             </div>
             <div className={menuStyles.toolIconRow}>
               <ShapeComponents />
-              <BucketFillComponent />
+              <AreaComponents />
+              {/*<BucketFillComponent />*/}
             </div>
           </div>
         </div>

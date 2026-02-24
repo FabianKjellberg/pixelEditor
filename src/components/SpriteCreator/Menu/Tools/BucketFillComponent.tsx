@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from 'react';
 import ToolButton from './ToolButton/ToolButton';
-import { FillBucket } from '@/models/Tools/FillBucket';
+import { FillBucket } from '@/models/Tools/AreaTools/FillBucket';
 import { useUndoRedoContext } from '@/context/UndoRedoContext';
 import { useCanvasContext } from '@/context/CanvasContext';
 import { useToolContext } from '@/context/ToolContext';

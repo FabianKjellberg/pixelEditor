@@ -21,6 +21,7 @@ import {
   StrokeAlignProperty,
   StrokeWidthProperty,
 } from '@/models/Tools/Properties';
+import { FreeformTool } from '@/models/Tools/ShapeTools/Freeform';
 
 type toolWithImage = {
   icon: string;
@@ -104,6 +105,29 @@ const ShapeComponents = () => {
         new StrokeAlignProperty('Centered'),
       ]);
     }
+
+    /* FREEFORM COMPONENT */
+    const freeformExisting = getProperties('ovalTool');
+
+    const freeformHasStrokeWidth = freeformExisting.some(
+      (p) => p.propertyType === PropertyType.StrokeWidth,
+    );
+
+    const freeformHasOpacity = freeformExisting.some(
+      (p) => p.propertyType === PropertyType.Opacity,
+    );
+
+    const freeformHasFill = freeformExisting.some(
+      (p) => p.propertyType === PropertyType.FillProperty,
+    );
+
+    if (!freeformHasStrokeWidth || !freeformHasOpacity || !freeformHasFill) {
+      ensureProperties('freeformTool', [
+        new StrokeWidthProperty(2),
+        new OpacityProperty(255),
+        new FillProperty(false),
+      ]);
+    }
   }, [ensureProperties, getProperties]);
 
   const lineTool: LineTool = useMemo(
@@ -154,6 +178,22 @@ const ShapeComponents = () => {
     [getActiveLayer, setActiveLayer, getPrimaryColor, getProperties],
   );
 
+  const freeFormTool: FreeformTool = useMemo(
+    () =>
+      new FreeformTool({
+        setLayer: setActiveLayer,
+        getLayer: getActiveLayer,
+        getPrimaryColor,
+        getSecondaryColor,
+        getProperties,
+        getSelectionLayer,
+        getCanvasRect,
+        checkPoint,
+        hasBaseline,
+      }),
+    [getActiveLayer, setActiveLayer, getPrimaryColor, getProperties],
+  );
+
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   const onClickCallbackItem = useCallback(
@@ -167,6 +207,9 @@ const ShapeComponents = () => {
           break;
         case 2:
           setActiveTool(ovalTool);
+          break;
+        case 3:
+          setActiveTool(freeFormTool);
           break;
       }
 
@@ -198,6 +241,12 @@ const ShapeComponents = () => {
             onClickCallback={onClickCallbackItem}
             selectedIndex={selectedIndex}
           />
+          <ToolButtonMimic
+            icon="icons/freeForm.png"
+            index={3}
+            onClickCallback={onClickCallbackItem}
+            selectedIndex={selectedIndex}
+          />
         </div>
       );
 
@@ -225,6 +274,11 @@ const ShapeComponents = () => {
         return {
           icon: 'icons/oval.png',
           tool: ovalTool,
+        };
+      case 3:
+        return {
+          icon: 'icons/freeForm.png',
+          tool: freeFormTool,
         };
     }
   }, [selectedIndex]);

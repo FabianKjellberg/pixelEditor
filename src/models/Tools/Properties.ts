@@ -1,4 +1,4 @@
-import { IMultiChoice, ISlider, IToggle, UIControlSpec } from './PropertySpecs';
+import { IDithering, IMultiChoice, ISlider, IToggle, UIControlSpec } from './PropertySpecs';
 
 export enum PropertyType {
   Size = 0,
@@ -9,6 +9,9 @@ export enum PropertyType {
   FillProperty = 5,
   StrokeAlignProperty = 6,
   Tolerance = 7,
+  SingleColor = 8,
+  GradientType = 9,
+  Dithering = 10,
 }
 
 export interface IProperty<T = unknown, S extends UIControlSpec = UIControlSpec> {
@@ -158,6 +161,69 @@ export class ToleranceProperty implements IProperty {
   }
 }
 
+export class SingleColor implements IProperty {
+  propertyType: PropertyType = PropertyType.SingleColor;
+  spec: IToggle = {
+    type: 'toggle',
+    label: 'Single color',
+  };
+  constructor(private _value: boolean = true) {}
+  get value() {
+    return this._value;
+  }
+  set value(v: boolean) {
+    this._value = !!v;
+  }
+}
+
+export class GradientTypeProperty implements IProperty {
+  propertyType: PropertyType = PropertyType.GradientType;
+  spec: IMultiChoice = {
+    allowEmpty: false,
+    label: 'Gradient type',
+    choices: ['Dithering', 'Random', 'Linear'],
+    type: 'multiChoice',
+  };
+  constructor(private _value: string | null = 'Dithering') {}
+  get value() {
+    return this._value;
+  }
+  set value(v: string | null) {
+    if (!this.spec.choices.some((c) => c === v)) {
+      if (this.spec.allowEmpty) this._value = null;
+      else this.value = this.spec.choices[0] ?? null;
+    } else this._value = v;
+  }
+}
+
+export class DitheringProperty implements IProperty {
+  propertyType: PropertyType = PropertyType.Dithering;
+  spec: IDithering = {
+    type: 'dithering',
+    requiredChoice: 'Dithering',
+    firstLabel: 'Size',
+    choices: ['1x1', '2x2', '4x4', '8x8'],
+  };
+  constructor(private _value: DitheringValue = default2x2DitheringValue) {}
+  get value() {
+    return this._value;
+  }
+  set value(v: { default: boolean; size: number; pattern: number[][] }) {
+    if (v.default) {
+      this._value =
+        v.size === 1
+          ? default1x1DitheringValue
+          : v.size === 2
+          ? default2x2DitheringValue
+          : v.size === 4
+          ? default4x4DitheringValue
+          : default8x8DitheringValue;
+    } else {
+      this._value = v;
+    }
+  }
+}
+
 export type AnyProperty = IProperty<unknown, UIControlSpec>;
 
 export function getProperty<P extends AnyProperty>(
@@ -174,3 +240,50 @@ export function upsertProperty(props: AnyProperty[], next: AnyProperty): AnyProp
   copy[i] = next;
   return copy;
 }
+
+export type DitheringValue = {
+  default: boolean;
+  size: number;
+  pattern: number[][];
+};
+
+export const default1x1DitheringValue: DitheringValue = {
+  default: true,
+  size: 1,
+  pattern: [],
+};
+
+export const default2x2DitheringValue: DitheringValue = {
+  default: true,
+  size: 2,
+  pattern: [
+    [0, 2],
+    [3, 1],
+  ],
+};
+
+export const default4x4DitheringValue: DitheringValue = {
+  default: true,
+  size: 4,
+  pattern: [
+    [0, 8, 2, 10],
+    [12, 4, 14, 6],
+    [3, 11, 1, 9],
+    [15, 7, 13, 5],
+  ],
+};
+
+export const default8x8DitheringValue: DitheringValue = {
+  default: true,
+  size: 8,
+  pattern: [
+    [0, 48, 12, 60, 3, 51, 15, 63],
+    [32, 16, 44, 28, 35, 19, 47, 31],
+    [8, 56, 4, 52, 11, 59, 7, 55],
+    [40, 24, 36, 20, 43, 27, 39, 23],
+    [2, 50, 14, 62, 1, 49, 13, 61],
+    [34, 18, 46, 30, 33, 17, 45, 29],
+    [10, 58, 6, 54, 9, 57, 5, 53],
+    [42, 26, 38, 22, 41, 25, 37, 21],
+  ],
+};

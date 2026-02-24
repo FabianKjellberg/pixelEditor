@@ -1,8 +1,8 @@
-import { AiAction, AiResponse } from '@/models/AiModels';
+import { AiResponse, MessageItem } from '@/models/AiModels';
 import { apiClient } from './client';
 
-export async function testAi(promt: string, width: number, height: number) {
-  const response = await apiClient('POST', '/ai/test', { promt, width, height });
+export async function testAi(promts: MessageItem[], width: number, height: number) {
+  const response = await apiClient('POST', '/ai/test', { promts, width, height });
 
   if (!response.ok) {
     throw new Error('AI request failed');
@@ -10,7 +10,7 @@ export async function testAi(promt: string, width: number, height: number) {
 
   const data = (await response.json()) as AiResponse;
 
-  console.log('plan', data.planText);
+  console.log(data);
 
-  return data.actions;
+  return data;
 }
