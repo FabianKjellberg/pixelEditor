@@ -48,7 +48,7 @@ const ClickHandler = () => {
     if (ctrlDown) {
       panTool.onDown(c.x, c.y);
     } else {
-      activeTool.onDown(c.x, c.y, pixelSize, onPointerDownEvent.mouseButton);
+      activeTool.onDown?.(c.x, c.y, pixelSize, onPointerDownEvent.mouseButton);
     }
   }, [onPointerDownEvent?.trigger]);
 
@@ -60,7 +60,7 @@ const ClickHandler = () => {
     if (ctrlDown) {
       panTool.onMove(c.x, c.y);
     } else {
-      activeTool.onMove(c.x, c.y, pixelSize);
+      activeTool.onMove?.(c.x, c.y, pixelSize);
     }
   }, [onPointerMoveEvent?.trigger]);
 
@@ -73,7 +73,7 @@ const ClickHandler = () => {
     setMouseDown(false);
 
     panTool.onUp(c.x, c.y);
-    activeTool.onUp(c.x, c.y, pixelSize, onPointerUpEvent.mouseButton);
+    activeTool.onUp?.(c.x, c.y, pixelSize, onPointerUpEvent.mouseButton);
   }, [onPointerUpEvent?.trigger]);
 
   //Key down event
@@ -88,8 +88,10 @@ const ClickHandler = () => {
       onKeyDownEvent.key == 'z' &&
       !mouseDown
     ) {
+      activeTool.onCancel?.();
       redo();
     } else if (onKeyDownEvent.ctrlDown && onKeyDownEvent.key == 'z' && !mouseDown) {
+      activeTool.onCancel?.();
       undo();
     } else if (onKeyDownEvent.key === 'enter') {
       activeTool.onCommit?.();

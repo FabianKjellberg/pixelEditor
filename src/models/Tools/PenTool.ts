@@ -180,10 +180,6 @@ export class PenTool implements ITool {
     this.strokeNr = 1;
     this.strokeMatrix = createLayer(canvasRect, 0);
   }
-
-  onCommit(): void {
-    console.log('commited stroke');
-  }
 }
 
 /* water COLOR BRUSH?????

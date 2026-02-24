@@ -566,11 +566,14 @@ export function replacePixels(to: Layer, from: Layer) {
 
       const srcIndex = getPixelIndex(y, from.rect.width, x);
 
+      const fromPixel = from.pixels[srcIndex];
+      if (fromPixel === 0) continue;
+
       const destY = globalY - to.rect.y;
       const destX = globalX - to.rect.x;
       const dstIndex = getPixelIndex(destY, to.rect.width, destX);
 
-      to.pixels[dstIndex] = from.pixels[srcIndex];
+      to.pixels[dstIndex] = fromPixel;
     }
   }
 }
@@ -1214,4 +1217,58 @@ function randomGradient(fromColor: number, toColor: number, t: number): number {
   const random = Math.random();
 
   return random - t > 0 ? fromColor : toColor;
+}
+
+export type Edge = {
+  c0: Cordinate;
+  c1: Cordinate;
+};
+
+export function fillPolygon(points: Cordinate[], out: Layer, c: number): void {
+  const edges: Edge[] = [];
+
+  for (let i = 0; i < points.length; i++) {
+    const p1 = points[i];
+    const p2 = points[(i + 1) % points.length];
+
+    const edge = {
+      c0: { x: p1.x - out.rect.x, y: p1.y - out.rect.y },
+      c1: { x: p2.x - out.rect.x, y: p2.y - out.rect.y },
+    };
+
+    edges.push(edge);
+  }
+
+  for (let y = 0.1; y < out.rect.height; y++) {
+    const intersectX: number[] = [];
+
+    for (const edge of edges) {
+      const outVer: boolean =
+        Math.min(edge.c0.y, edge.c1.y) > y || Math.max(edge.c0.y, edge.c1.y) < y;
+
+      const horizontal = edge.c0.y - edge.c1.y === 0;
+
+      if (outVer || horizontal) continue;
+
+      const x0 = edge.c0.x;
+      const y0 = edge.c0.y;
+      const x1 = edge.c1.x;
+      const y1 = edge.c1.y;
+
+      const x = x0 + ((y - y0) * (x1 - x0)) / (y1 - y0);
+
+      intersectX.push(x);
+    }
+
+    intersectX.sort((a, b) => a - b);
+
+    for (let i = 1; i < intersectX.length; i += 2) {
+      const row = Math.floor(y) * out.rect.width;
+
+      const start = row + intersectX[i - 1];
+      const end = row + intersectX[i];
+
+      out.pixels.fill(c, start + 1, end + 1);
+    }
+  }
 }

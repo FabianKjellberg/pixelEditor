@@ -1,6 +1,7 @@
 import { getPixelIndex } from '@/helpers/color';
-import { Rectangle, SelectionLayer } from '@/models/Layer';
+import { Layer, Rectangle, SelectionLayer } from '@/models/Layer';
 import { edge, point } from '@/models/Selection';
+import { createLayer } from './LayerUtil';
 
 function pointKey(p: point): string {
   return `${p.x},${p.y}`;
@@ -218,4 +219,20 @@ export function createSelectionLayer(
     rect,
     pixels,
   };
+}
+
+export function updateStrokeMatrixIfChanged(
+  strokeNr: number,
+  strokeMatrix: Layer,
+  canvasRect: Rectangle,
+) {
+  if (
+    canvasRect.height == strokeMatrix.rect.height &&
+    canvasRect.width == strokeMatrix.rect.width
+  ) {
+    return;
+  }
+
+  strokeNr = 1;
+  strokeMatrix = createLayer(canvasRect, 0);
 }
