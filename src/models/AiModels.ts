@@ -63,4 +63,29 @@ export type AiToolCall =
       tool: 'fillBucket';
       args: { layerId: string; color: RGBobj; opacity: number; x: number; y: number };
     }
-  | { tool: 'changeCanvasSize'; args: { width: number; height: number } };
+  | { tool: 'changeCanvasSize'; args: { width: number; height: number } }
+  | {
+      tool: 'gradientTool';
+      args: {
+        layerId: string;
+        color: RGBobj;
+        toColor: RGBobj;
+        opacity: number;
+        singleColor: boolean;
+        gradientType: string;
+        from: Point;
+        to: Point;
+      };
+    }
+  | {
+      tool: 'freeformTool';
+      args: {
+        layerId: string;
+        color: RGBobj;
+        fillColor: RGBobj;
+        fill: boolean;
+        strokeWidth: number;
+        opacity: number;
+        points: Point[];
+      };
+    };

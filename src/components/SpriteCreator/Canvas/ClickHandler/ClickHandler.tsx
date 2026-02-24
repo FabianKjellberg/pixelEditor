@@ -2,11 +2,9 @@
 
 import { useToolContext } from '@/context/ToolContext';
 import { useCanvasContext } from '@/context/CanvasContext';
-import { act, CSSProperties, useEffect, useMemo, useState } from 'react';
-import { Cordinate } from '@/models/Layer';
+import { useEffect, useState } from 'react';
 import { PanTool } from '@/models/Tools/PanTool';
 import { useMouseEventContext } from '@/context/MouseEventContext/MouseEventContext';
-import { useLayerContext } from '@/context/LayerContext';
 import { useUndoRedoContext } from '@/context/UndoRedoContext';
 
 const ClickHandler = () => {
@@ -79,8 +77,6 @@ const ClickHandler = () => {
   //Key down event
   useEffect(() => {
     if (!onKeyDownEvent) return;
-
-    console.log(onKeyDownEvent.key);
 
     if (
       onKeyDownEvent.ctrlDown &&

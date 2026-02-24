@@ -31,10 +31,6 @@ const ChatMessage = ({ message, loading = false }: ChatMessageProps) => {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    console.log(loading);
-  }, [loading]);
-
   const generateRectangles = useCallback((width: number, height: number) => {
     const pw = 2;
 

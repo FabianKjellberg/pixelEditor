@@ -8,8 +8,10 @@ import { useLayerContext } from './LayerContext';
 import { useUndoRedoContext } from './UndoRedoContext';
 import {
   FillProperty,
+  GradientTypeProperty,
   IProperty,
   OpacityProperty,
+  SingleColor,
   SizeProperty,
   StrokeAlignProperty,
   StrokeWidthProperty,
@@ -17,8 +19,10 @@ import {
 import { rgbaToInt } from '@/helpers/color';
 import { OvalTool } from '@/models/Tools/ShapeTools/OvalTool';
 import { FillBucket } from '@/models/Tools/AreaTools/FillBucket';
+import { GradientTool } from '@/models/Tools/AreaTools/GradientTool';
 import { LineTool } from '@/models/Tools/ShapeTools/LineTool';
 import { RectangleTool } from '@/models/Tools/ShapeTools/RectangleTool';
+import { FreeformTool } from '@/models/Tools/ShapeTools/Freeform';
 import { LayerEntity } from '@/models/Layer';
 import { createLayerEntity } from '@/util/LayerUtil';
 
@@ -250,6 +254,72 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     tool.onUp(args.to.x * pixelSize, args.to.y * pixelSize, pixelSize);
   }, []);
 
+  const aiGradientTool = useCallback((gradient: AiToolCall) => {
+    if (gradient.tool != 'gradientTool') return;
+
+    const args = gradient.args;
+
+    const opacityProp = new OpacityProperty(args.opacity);
+    const singleColorProp = new SingleColor(args.singleColor);
+    const gradientTypeProp = new GradientTypeProperty(args.gradientType);
+
+    const primaryColor = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
+    const secondaryColor = rgbaToInt(args.toColor.r, args.toColor.g, args.toColor.b, args.opacity);
+
+    const tool = new GradientTool({
+      setLayer: setActiveLayer,
+      getLayer: getActiveLayer,
+      getPrimaryColor: () => primaryColor,
+      getSecondaryColor: () => secondaryColor,
+      getProperties: () => [opacityProp, singleColorProp, gradientTypeProp],
+      getSelectionLayer,
+      getCanvasRect,
+      checkPoint,
+      hasBaseline,
+    });
+
+    tool.onDown(args.from.x * pixelSize, args.from.y * pixelSize, pixelSize, 0);
+    tool.onMove(args.to.x * pixelSize, args.to.y * pixelSize, pixelSize);
+    tool.onUp(args.to.x * pixelSize, args.to.y * pixelSize, pixelSize, 0);
+  }, []);
+
+  const aiFreeformTool = useCallback((freeform: AiToolCall) => {
+    if (freeform.tool != 'freeformTool') return;
+
+    const args = freeform.args;
+    if (args.points.length < 3) return;
+
+    const strokeWidthProp = new StrokeWidthProperty(args.strokeWidth);
+    const opacityProp = new OpacityProperty(args.opacity);
+    const fillProp = new FillProperty(args.fill);
+
+    const primaryColor = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
+    const secondaryColor = rgbaToInt(
+      args.fillColor.r,
+      args.fillColor.g,
+      args.fillColor.b,
+      args.opacity,
+    );
+
+    const tool = new FreeformTool({
+      setLayer: setActiveLayer,
+      getLayer: getActiveLayer,
+      getPrimaryColor: () => primaryColor,
+      getSecondaryColor: () => secondaryColor,
+      getProperties: () => [strokeWidthProp, opacityProp, fillProp],
+      getSelectionLayer,
+      getCanvasRect,
+      checkPoint,
+      hasBaseline,
+    });
+
+    for (const point of args.points) {
+      tool.onDown(point.x * pixelSize, point.y * pixelSize, pixelSize, 0);
+    }
+
+    tool.onCommit?.();
+  }, []);
+
   const excecuteActions = useCallback(
     async (actions: AiToolCall[]) => {
       const layers: string[] = [];
@@ -287,6 +357,16 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
             aiRectangleTool(action);
             break;
 
+          case 'gradientTool':
+            await selectLayer(action.args.layerId, layers);
+            aiGradientTool(action);
+            break;
+
+          case 'freeformTool':
+            await selectLayer(action.args.layerId, layers);
+            aiFreeformTool(action);
+            break;
+
           default:
             break;
         }
@@ -295,12 +375,22 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
         }
       }
     },
-    [setDimensions, aiPenStroke, aiEllipseTool, aiFillBucket, aiLineTool, aiRectangleTool],
+    [
+      setDimensions,
+      aiPenStroke,
+      aiEllipseTool,
+      aiFillBucket,
+      aiLineTool,
+      aiRectangleTool,
+      aiGradientTool,
+      aiFreeformTool,
+    ],
   );
 
   const selectLayer = async (layerId: string, layers: string[]) => {
-    if (layers.some((layer) => layer === layerId)) {
-      setActiveLayerIndex(layers.findIndex((layer) => layerId === layer));
+    const existingIndex = layers.indexOf(layerId);
+    if (existingIndex !== -1) {
+      setActiveLayerIndex(existingIndex);
     } else {
       addLayer(createLayerEntity(layerId, crypto.randomUUID()), 0);
       layers.unshift(layerId);
