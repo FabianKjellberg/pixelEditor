@@ -28,40 +28,36 @@ const DitheringEditContext = createContext<DitheringEditContextValue | undefined
 
 export const DitheringEditProvider = ({ children }: { children: ReactNode }) => {
   const [ditheringEdit, setDitheringEditState] = useState<DitheringEditState>(null);
-  const ref = useRef<DitheringEditState>(null);
+
+  const onChangeRef = useRef<((next: DitheringValue) => void) | null>(null);
 
   const setDitheringEdit = useCallback(
     (value: DitheringValue | null, onChange?: (next: DitheringValue) => void) => {
       if (value === null) {
-        ref.current = null;
+        onChangeRef.current = null;
         setDitheringEditState(null);
         return;
       }
       if (!onChange) return;
-      const state: DitheringEditState = {
-        value,
-        onChange: (next) => {
-          onChange(next);
-          const nextState = { value: next, onChange: state.onChange };
-          ref.current = nextState;
-          setDitheringEditState(nextState);
-        },
+
+      onChangeRef.current = onChange;
+
+      const handler = (next: DitheringValue) => {
+        onChangeRef.current?.(next);
+        setDitheringEditState((prev) => (prev ? { ...prev, value: next } : prev));
       };
-      ref.current = state;
-      setDitheringEditState(state);
+
+      setDitheringEditState({ value, onChange: handler });
     },
     [],
   );
 
-  const ditheringEditOrRef = ditheringEdit ?? ref.current;
   const value = useMemo(
-    () => ({ ditheringEdit: ditheringEditOrRef, setDitheringEdit }),
-    [ditheringEditOrRef, setDitheringEdit],
+    () => ({ ditheringEdit, setDitheringEdit }),
+    [ditheringEdit, setDitheringEdit],
   );
 
-  return (
-    <DitheringEditContext.Provider value={value}>{children}</DitheringEditContext.Provider>
-  );
+  return <DitheringEditContext.Provider value={value}>{children}</DitheringEditContext.Provider>;
 };
 
 export const useDitheringEdit = () => {
