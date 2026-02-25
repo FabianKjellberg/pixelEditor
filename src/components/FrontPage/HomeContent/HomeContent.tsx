@@ -18,15 +18,16 @@ const HomeContent = () => {
       <div>
         <h3>Hello</h3>
         <p>
-          I&apos;m Fabian. I recently graduated in system development and I&apos;m at my best when I&apos;m
-          building things and figuring them out as I go. I enjoy digging into how systems work,
-          solving small problems, and slowly turning ideas into something real.
+          I&apos;m Fabian. I recently graduated in system development and I&apos;m at my best when
+          I&apos;m building things and figuring them out as I go. I enjoy digging into how systems
+          work, solving small problems, and slowly turning ideas into something real.
         </p>
         <br />
         <p>
-          This page is my space to experiment and share a couple of projects I&apos;m currently working
-          on, one small and one a bit more ambitious. It&apos;s not a portfolio of perfection, but a
-          place where I document progress, test ideas, and see how far I can take them.
+          This page is my space to experiment and share a couple of projects I&apos;m currently
+          working on, one small and one a bit more ambitious. It&apos;s not a portfolio of
+          perfection, but a place where I document progress, test ideas, and see how far I can take
+          them.
         </p>
         <br />
         <p>
@@ -40,28 +41,39 @@ const HomeContent = () => {
       <div className={style.breakRowLine} />
 
       <div>
-        <h2>Pixel Art Creation Tool</h2>
-        <div className={style.createPixelButtonContainer} style={{ marginTop: '16px', marginBottom: '24px' }}>
+        <h2>Pixel Art Creation Tool - With Ai support</h2>
+        <div className={style.videoContainer}>
+          <iframe
+            src="https://www.youtube.com/embed/3GUG_09OSc0?vq=hd1080"
+            title="Pixel Art AI – Robot Generation"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+        <div
+          className={style.createPixelButtonContainer}
+          style={{ marginTop: '16px', marginBottom: '24px' }}
+        >
           <button className={style.createPixelButton} onClick={handleButtonClick}>
             Try it out
           </button>
         </div>
         <p>
-          This is my main project and where I spend most of my development time. It&apos;s a 
-          browser-based pixel art editor built from scratch with React and HTML Canvas. The goal 
-          is to create something that feels intuitive for beginners but has the depth and 
-          performance that more experienced artists would appreciate.
+          This is my main project and where I spend most of my development time. It&apos;s a
+          browser-based pixel art editor built from scratch with React and HTML Canvas. The goal is
+          to create something that feels intuitive for beginners but has the depth and performance
+          that more experienced artists would appreciate.
         </p>
         <br />
         <p>
-          Under the hood, it uses direct pixel manipulation with typed arrays for performance, 
-          a custom layer system with blend modes, and optimized rendering that only redraws 
-          what&apos;s changed. I&apos;ve put a lot of work into making tools like the pen and 
-          eraser feel responsive even on larger canvases.
+          Under the hood, it uses direct pixel manipulation with typed arrays for performance, a
+          custom layer system with blend modes, and optimized rendering that only redraws
+          what&apos;s changed. I&apos;ve put a lot of work into making tools like the pen and eraser
+          feel responsive even on larger canvases.
         </p>
         <br />
         <p>
-          The project also includes a full authentication system with JWT tokens and rotating 
+          The project also includes a full authentication system with JWT tokens and rotating
           refresh tokens. Coming soon: cloud saving so you can access your projects from anywhere.
         </p>
         <br />
@@ -94,8 +106,8 @@ const HomeContent = () => {
         <h2>Drag and Drop FileTree</h2>
         <br />
         <p>
-          A smaller weekend project I built to explore recursive data structures and drag-and-drop 
-          interactions. The tree supports dragging branches to any level, with visual indicators 
+          A smaller weekend project I built to explore recursive data structures and drag-and-drop
+          interactions. The tree supports dragging branches to any level, with visual indicators
           showing valid drop zones as you drag.
         </p>
         <br />
@@ -126,7 +138,8 @@ const HomeContent = () => {
       <div className={style.breakRowLine} />
       <div className={style.footer}>
         <p>
-          Over time, I&apos;ll keep adding demos, write-ups, and short visual examples of my work here.
+          Over time, I&apos;ll keep adding demos, write-ups, and short visual examples of my work
+          here.
         </p>
         <br />
         <p>Thank you for visiting my page, Hope you liked it.</p>
