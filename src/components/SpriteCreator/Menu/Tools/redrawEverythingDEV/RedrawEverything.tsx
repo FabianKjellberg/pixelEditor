@@ -19,7 +19,7 @@ const RedrawEverything = () => {
   };
 
   const makeSelection = () => {
-    const selectionLayer = createSelectionLayer(3, 3, 10, 10, true);
+    const selectionLayer = createSelectionLayer({ x: 3, y: 3, width: 10, height: 10 }, true);
 
     setSelectionLayer(selectionLayer);
   };

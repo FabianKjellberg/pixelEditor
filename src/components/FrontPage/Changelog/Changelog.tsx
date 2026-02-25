@@ -10,6 +10,19 @@ const Changelog = () => {
         Version history and what I&apos;ve been up to. Point form, but I&apos;ll keep it readable.
       </p>
       <br />
+      <ChangelogEntry date="2026-02-25" title="Selection menu">
+        <li>
+          <p>
+            <b>Three new options in the selection top menu.</b> When you have the selection tool or
+            a selection active, the top menu now has three extra actions. <b>Invert selection</b>{' '}
+            flips the selection so everything that was selected is unselected, and everything that
+            wasn&apos;t is now selected. <b>Select from active layer(s)</b> builds a selection from
+            the non-transparent pixels on your current layer (or layers), so you can quickly select
+            only what you&apos;ve drawn. <b>Select all</b> selects the whole canvas in one go.
+          </p>
+        </li>
+      </ChangelogEntry>
+
       <ChangelogEntry date="2026-02-24" title="Freeform tool, gradient tool & AI support">
         <li>
           <p>

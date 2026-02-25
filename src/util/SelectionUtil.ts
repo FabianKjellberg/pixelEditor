@@ -1,4 +1,4 @@
-import { getPixelIndex } from '@/helpers/color';
+import { getLocalPixelIndex, getPixelIndex } from '@/helpers/color';
 import { Layer, Rectangle, SelectionLayer } from '@/models/Layer';
 import { edge, point } from '@/models/Selection';
 import { createLayer } from './LayerUtil';
@@ -145,7 +145,7 @@ export function createSelectionRectangleLayer(
   const width = Math.max(x1, x2) - x + 1;
   const height = Math.max(y1, y2) - y + 1;
 
-  return createSelectionLayer(x, y, width, height, true);
+  return createSelectionLayer({ x, y, width, height }, true);
 }
 
 /**
@@ -165,7 +165,10 @@ export function combinedSelections(sl1: SelectionLayer, sl2: SelectionLayer): Se
   const width = maxX - minX;
   const height = maxY - minY;
 
-  const combinedLayers: SelectionLayer = createSelectionLayer(minX, minY, width, height, false);
+  const combinedLayers: SelectionLayer = createSelectionLayer(
+    { x: minX, y: minY, width, height },
+    false,
+  );
 
   //copy over first layer
   for (let y: number = 0; y < sl1.rect.height; y++) {
@@ -199,21 +202,9 @@ export function combinedSelections(sl1: SelectionLayer, sl2: SelectionLayer): Se
  * @param active
  * @returns
  */
-export function createSelectionLayer(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  fillWith: boolean,
-): SelectionLayer {
-  const pixels = new Uint8Array(Math.max(width * height, 0));
+export function createSelectionLayer(rect: Rectangle, fillWith: boolean): SelectionLayer {
+  const pixels = new Uint8Array(Math.max(rect.width * rect.height, 0));
   pixels.fill(fillWith ? 1 : 0);
-  const rect: Rectangle = {
-    x,
-    y,
-    width,
-    height,
-  };
 
   return {
     rect,
@@ -221,18 +212,45 @@ export function createSelectionLayer(
   };
 }
 
-export function updateStrokeMatrixIfChanged(
-  strokeNr: number,
-  strokeMatrix: Layer,
-  canvasRect: Rectangle,
-) {
-  if (
-    canvasRect.height == strokeMatrix.rect.height &&
-    canvasRect.width == strokeMatrix.rect.width
-  ) {
-    return;
+export function selectLayer(layer: Layer): SelectionLayer {
+  const rect: Rectangle = layer.rect;
+
+  const out = createSelectionLayer(rect, false);
+
+  for (let y = 0; y < rect.height; y++) {
+    for (let x = 0; x < rect.width; x++) {
+      const i = getPixelIndex(y, rect.width, x);
+
+      if (layer.pixels[i] !== 0) {
+        out.pixels[i] = 1;
+      }
+    }
   }
 
-  strokeNr = 1;
-  strokeMatrix = createLayer(canvasRect, 0);
+  return out;
+}
+
+export function inverseSelection(
+  layer: SelectionLayer | undefined,
+  rect: Rectangle,
+): SelectionLayer {
+  const out = createSelectionLayer(rect, true);
+
+  if (!layer) {
+    return createSelectionLayer(rect, true);
+  }
+
+  for (let y = layer.rect.y; y < rect.height; y++) {
+    if (layer.rect.y + layer.rect.height <= y) continue;
+    for (let x = layer.rect.x; x < rect.width; x++) {
+      if (layer.rect.x + layer.rect.width <= x) continue;
+
+      const localI = getLocalPixelIndex(x, y, layer.rect);
+      const i = getPixelIndex(y, rect.width, x);
+
+      out.pixels[i] = layer.pixels[localI] === 0 ? 1 : 0;
+    }
+  }
+
+  return out;
 }

@@ -20,7 +20,6 @@ import {
   stampToCanvasLayer,
 } from '@/util/LayerUtil';
 import { setAlpha } from '@/helpers/color';
-import { updateStrokeMatrixIfChanged } from '@/util/SelectionUtil';
 
 export class FreeformTool implements ITool {
   deps: IToolDeps;
