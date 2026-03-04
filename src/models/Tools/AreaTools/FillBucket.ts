@@ -87,9 +87,8 @@ export class FillBucket implements ITool {
     setLayer((prevLayer: LayerEntity) => {
       const newLayer = stampToCanvasLayer(filledLayer, prevLayer.layer);
       const layer = {
+        ...prevLayer,
         layer: newLayer,
-        name: prevLayer.name,
-        id: prevLayer.id,
       };
 
       this.layerLastDrawn = layer;

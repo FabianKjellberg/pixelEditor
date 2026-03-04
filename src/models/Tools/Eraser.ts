@@ -139,9 +139,8 @@ export class Eraser implements ITool {
     setLayer((prevLayer: LayerEntity) => {
       const newLayer = eraseFromCanvasLayer(filterCanvas, prevLayer.layer);
       const layer = {
+        ...prevLayer,
         layer: newLayer,
-        name: prevLayer.name,
-        id: prevLayer.id,
       };
 
       this.layerLastErased = layer;

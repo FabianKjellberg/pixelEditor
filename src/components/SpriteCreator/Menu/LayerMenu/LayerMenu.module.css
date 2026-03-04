@@ -1,0 +1,124 @@
+.groupContent {
+  padding-left: 2px;
+  margin-left: 2px;
+  margin-bottom: 4px;
+  border-left: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
+  border-right: 2px solid var(--border);
+  margin-right: 4px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+
+  overflow: hidden;
+  transition: max-height 400ms ease-in-out, opacity 400ms ease;
+}
+
+.collapsed {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.expanded {
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.breakLine {
+  width: 100%;
+  height: 2px;
+  border: 1px solid var(--border);
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.buttonIcon {
+  image-rendering: pixelated;
+  filter: var(--invert-icon-color);
+  transition: transform var(--transition-fast);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  padding-left: 4px;
+  padding-bottom: 4px;
+}
+
+.buttons button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.layerGroupItem {
+  border: 2px solid var(--border);
+  margin-left: 2px;
+  padding: 2px;
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.layerGroupItem:hover {
+  background-color: var(--highlight-dim);
+}
+
+.iconAndName {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chevronButton {
+  border: none;
+}
+
+.rotatedChevron {
+  transform: rotate(-90deg);
+}
+
+.layerItem {
+  padding-left: 4px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+.layerItem:hover {
+  background-color: var(--highlight-dim);
+}
+
+.row {
+  position: relative;
+}
+
+.on {
+  background-color: var(--highlight-glow);
+}
+
+.over::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 2px;
+  background: var(--highlight);
+  z-index: 1;
+}
+
+.below::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--highlight);
+  z-index: 1;
+}

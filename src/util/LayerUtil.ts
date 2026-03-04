@@ -9,7 +9,6 @@ import {
   SelectionLayer,
 } from '@/models/Layer';
 import { blendColor } from './ColorUtil';
-import { buffer } from 'stream/consumers';
 /**
  *
  * @param width
@@ -31,6 +30,7 @@ export function createLayerEntity(name: string, id?: string, layer?: Layer): Lay
   const layerForEntity = layer ? layer : createLayer({ x: 0, y: 0, width: 0, height: 0 });
 
   return {
+    type: 'layer',
     name: name,
     layer: layerForEntity,
     id: id ? id : crypto.randomUUID(),

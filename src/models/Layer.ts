@@ -1,4 +1,19 @@
+export type LayerTreeItem = LayerEntity | LayerGroupStart | LayerGroupEnd;
+
+export type LayerGroupStart = {
+  type: 'group-start';
+  id: string;
+  name: string;
+  collapsed: boolean;
+};
+
+export type LayerGroupEnd = {
+  type: 'group-end';
+  id: string;
+};
+
 export type LayerEntity = {
+  type: 'layer';
   name: string;
   id: string;
   layer: Layer;

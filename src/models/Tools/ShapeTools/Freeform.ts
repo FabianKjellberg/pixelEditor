@@ -179,9 +179,8 @@ export class FreeformTool implements ITool {
     setLayer((prevLayer: LayerEntity) => {
       const newLayer = stampToCanvasLayer(selectionFilteredLayer, originalLayer.layer);
       const layer = {
+        ...prevLayer,
         layer: newLayer,
-        name: prevLayer.name,
-        id: prevLayer.id,
       };
 
       this.layerLastDrawn = layer;
@@ -208,9 +207,8 @@ export class FreeformTool implements ITool {
 
       setLayer((prevLayer: LayerEntity) => {
         const layer = {
+          ...prevLayer,
           layer: originalLayer.layer,
-          name: prevLayer.name,
-          id: prevLayer.id,
         };
 
         return { layer: layer, dirtyRect };

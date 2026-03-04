@@ -115,8 +115,7 @@ export class MoveTool implements ITool {
       const current = this.toolDeps.getLayer?.();
       if (current) {
         const finalLayerEntity: LayerEntity = {
-          id: current.id,
-          name: current.name,
+          ...current,
           layer: reducedLayer,
         };
 
@@ -185,8 +184,7 @@ export class MoveTool implements ITool {
 
     this.toolDeps.setLayer?.((prevLayer: LayerEntity) => {
       const layerEntity: LayerEntity = {
-        id: prevLayer.id,
-        name: prevLayer.name,
+        ...prevLayer,
         layer: displayLayer,
       };
 

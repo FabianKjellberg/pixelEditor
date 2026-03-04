@@ -158,9 +158,8 @@ export class PenTool implements ITool {
     setLayer((prevLayer: LayerEntity) => {
       const newLayer = stampToCanvasLayer(filterCanvas, prevLayer.layer);
       const layer = {
+        ...prevLayer,
         layer: newLayer,
-        name: prevLayer.name,
-        id: prevLayer.id,
       };
 
       this.layerLastDrawn = layer;

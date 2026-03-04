@@ -65,8 +65,8 @@ export class LineTool implements ITool {
     //get color and opacity
     const color: number =
       mouseButton == 0
-        ? (this.deps.getPrimaryColor?.() ?? config.defaultColor)
-        : (this.deps.getSecondaryColor?.() ?? config.defaultColor);
+        ? this.deps.getPrimaryColor?.() ?? config.defaultColor
+        : this.deps.getSecondaryColor?.() ?? config.defaultColor;
     const properties: IProperty[] = this.deps.getProperties?.('lineTool') ?? [];
     const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
 
@@ -124,9 +124,8 @@ export class LineTool implements ITool {
     setLayer((prevLayer: LayerEntity) => {
       const newLayer = stampToCanvasLayer(filterCanvas, originalLayer);
       const layer = {
+        ...prevLayer,
         layer: newLayer,
-        name: prevLayer.name,
-        id: prevLayer.id,
       };
 
       this.layerLastDrawn = layer;

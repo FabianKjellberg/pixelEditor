@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { Layer, LayerEntity, Rectangle } from '@/models/Layer';
+import type { LayerEntity, LayerTreeItem, Rectangle } from '@/models/Layer';
 import { createLayer, createLayerEntity } from '@/util/LayerUtil';
 import { FetchedLayer } from '@/models/apiModels/projectModels';
 import { getLayerFromBlob } from '@/util/BlobUtil';
@@ -20,6 +20,8 @@ import { api } from '@/api/client';
 const defaultLayer: LayerEntity[] = [createLayerEntity('Layer 1')];
 
 type LayerContextValue = {
+  layerTreeItems: LayerTreeItem[];
+  setLayerTreeItems: React.Dispatch<React.SetStateAction<LayerTreeItem[]>>;
   allLayers: LayerEntity[];
   activeLayerIndex: number;
   setActiveLayerIndex: (index: number) => void;
@@ -52,6 +54,8 @@ type LayerContextValue = {
 const LayerContext = createContext<LayerContextValue | undefined>(undefined);
 
 export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
+  const [layerTreeItems, setLayerTreeItems] = useState<LayerTreeItem[]>([]);
+
   const [redrawVersion, setRedrawVersion] = useState(0);
   const dirtyQueueRef = useRef<Rectangle[]>([]);
 
@@ -68,7 +72,6 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
     (dirtyRect: Rectangle): void => {
       dirtyQueueRef.current.push(dirtyRect);
 
-      //push change
       setRedrawVersion((v) => v + 1);
     },
     [dirtyQueueRef],
@@ -328,6 +331,10 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
 
   const value = useMemo(
     () => ({
+      //layerTreeItems
+      layerTreeItems,
+      setLayerTreeItems,
+
       //layers
       allLayers,
       activeLayerIndex,
@@ -355,6 +362,8 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       resetToBlankProject,
     }),
     [
+      layerTreeItems,
+      setLayerTreeItems,
       allLayers,
       activeLayerIndex,
       setActiveLayerIndex,

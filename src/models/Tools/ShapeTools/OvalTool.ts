@@ -181,9 +181,8 @@ export class OvalTool implements ITool {
     setLayer((prevLayer: LayerEntity) => {
       const newLayer = stampToCanvasLayer(filterCanvas, originalLayer);
       const layer = {
+        ...prevLayer,
         layer: newLayer,
-        name: prevLayer.name,
-        id: prevLayer.id,
       };
 
       this.layerLastDrawn = layer;
