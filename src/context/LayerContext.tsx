@@ -16,20 +16,22 @@ import { getLayerFromBlob } from '@/util/BlobUtil';
 import { useCanvasContext } from './CanvasContext';
 import { useAutoSaveContext } from './AutoSaveContext';
 import { api } from '@/api/client';
+import { useToastContext } from './ToastContext/ToastContext';
 
 const defaultLayer: LayerEntity[] = [createLayerEntity('Layer 1')];
 
 type LayerContextValue = {
   layerTreeItems: LayerTreeItem[];
   setLayerTreeItems: React.Dispatch<React.SetStateAction<LayerTreeItem[]>>;
-  allLayers: LayerEntity[];
-  activeLayerIndex: number;
-  setActiveLayerIndex: (index: number) => void;
 
-  activeLayer: LayerEntity;
-  getActiveLayer: () => LayerEntity | undefined;
-  setActiveLayer: (
-    updater: (prevLayer: LayerEntity) => { layer: LayerEntity; dirtyRect: Rectangle },
+  activeLayerIds: string[];
+  setActiveLayerIds: React.Dispatch<React.SetStateAction<string[]>>;
+
+  allLayers: LayerEntity[];
+
+  getActiveLayers: () => LayerEntity[] | undefined;
+  setActiveLayers: (
+    updater: (prevLayers: LayerEntity[]) => { layers: LayerEntity[]; dirtyRect: Rectangle },
   ) => void;
   setLayerById: (
     layerId: string,
@@ -37,11 +39,6 @@ type LayerContextValue = {
     rect: Rectangle,
     dirtyRect: Rectangle,
   ) => void;
-  deleteLayer: (index: number) => void;
-  moveLayer: (from: number, to: number) => void;
-
-  addLayer: (layer: LayerEntity, index: number) => void;
-  renameLayer: (name: string, layerIndex: number) => void;
 
   redrawVersion: number;
   consumeDirty: () => Rectangle[];
@@ -54,13 +51,15 @@ type LayerContextValue = {
 const LayerContext = createContext<LayerContextValue | undefined>(undefined);
 
 export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
-  const [layerTreeItems, setLayerTreeItems] = useState<LayerTreeItem[]>([]);
+  const [layerTreeItems, setLayerTreeItems] = useState<LayerTreeItem[]>(defaultLayer);
+  const [activeLayerIds, setActiveLayerIds] = useState<string[]>([defaultLayer[0].id]);
 
   const [redrawVersion, setRedrawVersion] = useState(0);
   const dirtyQueueRef = useRef<Rectangle[]>([]);
 
-  const { getCanvasRect, isLoadedFromCloud, projectId, requestPreview } = useCanvasContext();
+  const { getCanvasRect, isLoadedFromCloud, requestPreview } = useCanvasContext();
   const { debounceSave, beginSaving, endSaving } = useAutoSaveContext();
+  const { onToast } = useToastContext();
 
   const isLoadedFromCloudRef = useRef(isLoadedFromCloud);
 
@@ -85,22 +84,25 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
     return queue;
   }, [dirtyQueueRef]);
 
-  const [allLayers, setAllLayers] = useState<LayerEntity[]>(defaultLayer);
-  const [activeLayerIndex, setActiveLayerIndex] = useState<number>(0);
+  const allLayers = useMemo((): LayerEntity[] => {
+    const layers = layerTreeItems.filter((item) => item.type === 'layer');
+
+    return layers;
+  }, [layerTreeItems]);
 
   const allLayersRef = useRef(allLayers);
-  const activeLayerIndexRef = useRef(activeLayerIndex);
+  const activeLayerIdsRef = useRef(activeLayerIds);
 
   useEffect(() => {
     allLayersRef.current = allLayers;
   }, [allLayers]);
   useEffect(() => {
-    activeLayerIndexRef.current = activeLayerIndex;
-  }, [activeLayerIndex]);
+    activeLayerIdsRef.current = activeLayerIds;
+  }, [activeLayerIds]);
 
-  const getActiveLayer = useCallback(() => {
-    const idx = activeLayerIndexRef.current;
-    return allLayersRef.current[idx];
+  const getActiveLayers = useCallback(() => {
+    const ids = activeLayerIdsRef.current;
+    return allLayersRef.current.filter((layer) => ids.some((id) => id === layer.id));
   }, []);
 
   const saveFunction = (layerId: string) => {
@@ -125,35 +127,43 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       });
   };
 
-  const trySave = (layer: LayerEntity) => {
+  const trySave = (layers: LayerEntity[]) => {
     if (isLoadedFromCloudRef.current) {
-      debounceSave(layer.id, saveFunction);
+      layers.forEach((layer) => {
+        debounceSave(layer.id, saveFunction);
+      });
     }
   };
 
-  const setActiveLayer = useCallback(
-    (updater: (prevLayer: LayerEntity) => { layer: LayerEntity; dirtyRect: Rectangle }) => {
+  const setActiveLayers = useCallback(
+    (updater: (prevLayer: LayerEntity[]) => { layers: LayerEntity[]; dirtyRect: Rectangle }) => {
       let dirtyToPush: Rectangle | null = null;
 
-      setAllLayers((prev) => {
-        const idx = activeLayerIndexRef.current;
-        if (idx < 0 || idx >= prev.length) return prev;
+      setLayerTreeItems((prev) => {
+        const ids = activeLayerIdsRef.current;
+        if (ids.length <= 0) {
+          onToast('A layer needs to be selected for you to use this tool');
+          return prev;
+        }
 
-        const prevLayer = prev[idx];
-        const { layer: nextLayer, dirtyRect } = updater(prevLayer);
+        const prevLayers = prev.filter(
+          (item): item is LayerEntity => item.type === 'layer' && ids.some((id) => id === item.id),
+        );
+
+        const { layers: nextLayers, dirtyRect } = updater(prevLayers);
 
         // store dirty to push after state update is scheduled
         dirtyToPush = dirtyRect;
 
-        if (nextLayer === prevLayer) return prev;
+        if (nextLayers === prevLayers) return prev;
 
         pushDirty(dirtyToPush);
 
-        trySave(prevLayer);
+        trySave(prevLayers);
 
-        const next = prev.slice();
-        next[idx] = nextLayer;
-        return next;
+        const layerMap = new Map(nextLayers.map((layer) => [layer.id, layer]));
+
+        return prev.map((item) => layerMap.get(item.id) ?? item);
       });
     },
     [pushDirty, debounceSave, trySave],
@@ -161,14 +171,16 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
 
   const setLayerById = useCallback(
     (layerId: string, pixels: Uint32Array, rect: Rectangle, dirtyRect: Rectangle) => {
-      setAllLayers((prev) => {
+      setLayerTreeItems((prev) => {
         const idx = prev.findIndex((l) => l.id === layerId);
         if (idx === -1) return prev;
 
         const prevEntry = prev[idx];
 
+        if (prevEntry.type !== 'layer') return prev;
+
         pushDirty(dirtyRect);
-        trySave(prevEntry);
+        trySave([prevEntry]);
 
         const next = prev.slice();
         next[idx] = {
@@ -178,120 +190,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
         return next;
       });
     },
-    [setAllLayers, pushDirty, trySave],
-  );
-
-  const deleteLayer = useCallback(
-    (index: number) => {
-      if (allLayers.length <= 1) return;
-
-      const dirtyRect = allLayers[index].layer.rect;
-
-      if (index >= allLayers.length - 1) {
-        setActiveLayerIndex(index - 1);
-      }
-
-      if (index <= activeLayerIndex)
-        setActiveLayerIndex(activeLayerIndex - 1 < 0 ? 0 : activeLayerIndex - 1);
-
-      if (activeLayerIndex >= allLayers.length - 1) {
-        setActiveLayerIndex(activeLayerIndex - 1);
-      }
-
-      if (isLoadedFromCloud) {
-        const rect = allLayers[index].layer.rect;
-        const shouldPreview = rect.width > 0 && rect.height > 0;
-        const layerId = allLayers[index].id;
-
-        api.layer.deleteLayer(layerId, shouldPreview, requestPreview);
-      }
-
-      setAllLayers((prev) => {
-        const i = index == null ? prev.length : Math.max(0, Math.min(index, prev.length));
-        return [...prev.slice(0, i), ...prev.slice(i + 1)];
-      });
-
-      pushDirty(dirtyRect);
-    },
-    [pushDirty, setAllLayers, activeLayerIndex, setActiveLayerIndex, allLayers],
-  );
-
-  const activeLayer = useMemo(() => allLayers[activeLayerIndex], [allLayers, activeLayerIndex]);
-
-  const addLayer = useCallback(
-    (layer: LayerEntity, index?: number) => {
-      setAllLayers((prev) => {
-        const i = index == null ? prev.length : Math.max(0, Math.min(index, prev.length));
-        return [...prev.slice(0, i), layer, ...prev.slice(i)];
-      });
-
-      setActiveLayerIndex(index ?? allLayers.length - 1);
-
-      if (isLoadedFromCloud) {
-        api.layer.addLayer(layer, projectId, requestPreview, index);
-      }
-    },
-    [isLoadedFromCloud, requestPreview, projectId, setActiveLayerIndex],
-  );
-
-  const renameLayer = useCallback(
-    (name: string, layerIndex: number) => {
-      setAllLayers((prev) =>
-        prev.map((layer, index) => (index === layerIndex ? { ...layer, name } : layer)),
-      );
-
-      if (isLoadedFromCloud) {
-        api.layer.renameLayer(allLayers[layerIndex].id, name);
-      }
-    },
-    [setAllLayers, isLoadedFromCloud, allLayers],
-  );
-
-  const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max));
-
-  const moveLayer = useCallback(
-    (from: number, to: number) => {
-      const activeLayerName = allLayers[activeLayerIndex].name;
-
-      const newLayers = (): LayerEntity[] => {
-        if (allLayers.length === 0) return allLayers;
-
-        const fromIdx = clamp(from, 0, allLayers.length - 1);
-        let toIdx = clamp(to, 0, allLayers.length);
-
-        if (fromIdx === toIdx) return allLayers;
-
-        const item = allLayers[fromIdx];
-        const without = [...allLayers.slice(0, fromIdx), ...allLayers.slice(fromIdx + 1)];
-
-        if (toIdx > fromIdx) toIdx -= 1;
-
-        toIdx = clamp(toIdx, 0, without.length);
-
-        return [...without.slice(0, toIdx), item, ...without.slice(toIdx)];
-      };
-
-      let newIndex: number = 0;
-      for (let i: number = 0; i < allLayers.length; i++) {
-        if (newLayers()[i].name === activeLayerName) {
-          newIndex = i;
-          i = allLayers.length;
-          continue;
-        }
-      }
-
-      const indexedLayers = newLayers();
-
-      if (isLoadedFromCloud) {
-        api.layer.moveLayers(indexedLayers, requestPreview);
-      }
-
-      pushDirty(allLayers[from].layer.rect);
-
-      setAllLayers(indexedLayers);
-      setActiveLayerIndex(newIndex);
-    },
-    [pushDirty, allLayers, setAllLayers, setActiveLayerIndex, activeLayerIndex],
+    [setLayerTreeItems, pushDirty, trySave],
   );
 
   const resetToBlankProject = useCallback(
@@ -303,11 +202,11 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
           createLayer({ x: 0, y: 0, width, height }),
         ),
       ];
-      setAllLayers(entities);
-      setActiveLayerIndex(0);
+      setLayerTreeItems(entities);
+      setActiveLayerIds([entities[0].id]);
       pushDirty({ x: 0, y: 0, width, height });
     },
-    [pushDirty, setAllLayers, setActiveLayerIndex],
+    [pushDirty, setLayerTreeItems, setActiveLayerIds],
   );
 
   //Load layers
@@ -323,10 +222,10 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
         )
       ).filter((layer): layer is LayerEntity => layer !== null);
 
-      setAllLayers(layerEntities);
+      setLayerTreeItems(layerEntities);
       pushDirty(getCanvasRect());
     },
-    [getCanvasRect, setAllLayers],
+    [getCanvasRect, setLayerTreeItems],
   );
 
   const value = useMemo(
@@ -335,22 +234,16 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       layerTreeItems,
       setLayerTreeItems,
 
+      activeLayerIds,
+      setActiveLayerIds,
+
       //layers
       allLayers,
-      activeLayerIndex,
-      setActiveLayerIndex,
 
       //selected layer
-      activeLayer,
-      getActiveLayer,
-      setActiveLayer,
+      getActiveLayers,
+      setActiveLayers,
       setLayerById,
-
-      //built in functions
-      deleteLayer,
-      moveLayer,
-      addLayer,
-      renameLayer,
 
       //dirt rectangles
       redrawVersion,
@@ -365,15 +258,8 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       layerTreeItems,
       setLayerTreeItems,
       allLayers,
-      activeLayerIndex,
-      setActiveLayerIndex,
-      activeLayer,
-      getActiveLayer,
-      setActiveLayer,
-      deleteLayer,
-      moveLayer,
-      addLayer,
-      renameLayer,
+      getActiveLayers,
+      setActiveLayers,
       redrawVersion,
       consumeDirty,
       pushDirty,

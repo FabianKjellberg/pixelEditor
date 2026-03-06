@@ -7,6 +7,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLayerSelectorContext } from '@/context/LayerSelectorContext';
 import { DropAtEnum } from './LayerItem';
 import LayerGroup from './LayerGroup';
+import GeneralLayerContext from './LayerContextMenu.tsx/GeneralLayerContext';
+import { useContextMenuContext } from '@/context/ContextMenuContext/ContextMenuContext';
+import { useLayerContext } from '@/context/LayerContext';
+import ConfirmationModal from '../../Modals/ConfirmationModal/ConfirmationModal';
+import { useModalContext } from '@/context/ModalContext/ModalContext';
 
 type LayerGroupItemProps = {
   group: LayerGroupStart;
@@ -14,8 +19,21 @@ type LayerGroupItemProps = {
 };
 
 const LayerGroupItem = ({ group, groupItems }: LayerGroupItemProps) => {
-  const { collapseGroup, changeLayerName, setDragId, dragId, checkDropAvailability, dropItem } =
-    useLayerSelectorContext();
+  const {
+    collapseGroup,
+    changeLayerName,
+    setDragId,
+    dragId,
+    checkDropAvailability,
+    dropItem,
+    deleteItem,
+    addLayer,
+    addGroup,
+    onSelectItem,
+  } = useLayerSelectorContext();
+  const { onShow, onHide } = useContextMenuContext();
+  const { onShow: onShowModal } = useModalContext();
+  const { layerTreeItems } = useLayerContext();
 
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(group.name);
@@ -70,8 +88,8 @@ const LayerGroupItem = ({ group, groupItems }: LayerGroupItemProps) => {
         e.clientY < rect.top + middle
           ? DropAtEnum.over
           : e.clientY < rect.top + middle * 2
-          ? DropAtEnum.on
-          : DropAtEnum.below;
+            ? DropAtEnum.on
+            : DropAtEnum.below;
 
       const canDrop = checkDropAvailability(position, group.id);
 
@@ -100,6 +118,88 @@ const LayerGroupItem = ({ group, groupItems }: LayerGroupItemProps) => {
     [dropAt, dragId, dropItem, setDropAt, group.id],
   );
 
+  const deleteLayer = useCallback(() => {
+    deleteItem(group.id);
+  }, [deleteItem, group.id]);
+
+  const deleteCallback = useCallback(() => {
+    const deleteLayerId = 'delete-layer';
+
+    const startIndex = layerTreeItems.findIndex(
+      (i) => i.type === 'group-start' && i.id === group.id,
+    );
+    const endIndex = layerTreeItems.findIndex((i) => i.type === 'group-end' && i.id === group.id);
+
+    if (startIndex === -1 || endIndex === -1 || endIndex <= startIndex) {
+      return;
+    }
+
+    const layerCount = layerTreeItems
+      .slice(startIndex + 1, endIndex)
+      .filter((i) => i.type === 'layer').length;
+
+    const layerWord = layerCount === 1 ? 'layer' : 'layers';
+
+    const deleteModal = (
+      <ConfirmationModal
+        id={deleteLayerId}
+        text={`Are you sure you want to delete ${group.name} and ${layerCount} ${layerWord}.`}
+        callbackFunction={deleteLayer}
+      />
+    );
+
+    onShowModal(deleteLayerId, deleteModal, 'Warning');
+    onHide();
+  }, [layerTreeItems, group.id, group.name, deleteLayer, onShowModal, onHide]);
+
+  const addLayerBelowCallback = useCallback(() => {
+    const index = layerTreeItems.findIndex(
+      (item) => item.id === group.id && item.type === 'group-end',
+    );
+    if (index === -1) return;
+
+    addLayer(index + 1);
+  }, [layerTreeItems, addLayer, group.id]);
+
+  const addGroupBelowCallback = useCallback(() => {
+    const index = layerTreeItems.findIndex(
+      (item) => item.id === group.id && item.type === 'group-end',
+    );
+    if (index === -1) return;
+
+    addGroup(index + 1);
+  }, [layerTreeItems, addGroup, group.id]);
+
+  const contextMenuCallback = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      e.preventDefault();
+
+      const contextMenu = (
+        <>
+          <GeneralLayerContext
+            editNameTrigger={() => setIsEditing(true)}
+            addLayerBelowTrigger={addLayerBelowCallback}
+            addGroupBelowTrigger={addGroupBelowCallback}
+            deleteTrigger={deleteCallback}
+            deleteDisabled={layerTreeItems.length <= 1}
+          />
+        </>
+      );
+
+      onShow(contextMenu, e.clientX, e.clientY);
+    },
+    [onShow, layerTreeItems, setIsEditing],
+  );
+
+  const onGroupClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (e.button !== 0) return;
+
+      onSelectItem(group.id, e.shiftKey, e.ctrlKey);
+    },
+    [onSelectItem],
+  );
+
   return (
     <div
       className={`${styles.row} ${
@@ -114,6 +214,8 @@ const LayerGroupItem = ({ group, groupItems }: LayerGroupItemProps) => {
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
+        onContextMenu={contextMenuCallback}
+        onClick={onGroupClick}
       >
         <div className={styles.iconAndName} ref={dragPreviewRef}>
           <img

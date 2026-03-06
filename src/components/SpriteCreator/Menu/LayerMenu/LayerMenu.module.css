@@ -1,22 +1,29 @@
+.menuWrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 250px;
+  width: 250px;
+}
+
 .groupContent {
-  padding-left: 2px;
   margin-left: 2px;
   margin-bottom: 4px;
   border-left: 2px solid var(--border);
   border-bottom: 2px solid var(--border);
-  border-right: 2px solid var(--border);
-  margin-right: 4px;
-  padding-top: 1px;
+
+  padding-top: 4px;
   padding-bottom: 1px;
 
   overflow: hidden;
-  transition: max-height 400ms ease-in-out, opacity 400ms ease;
 }
 
 .collapsed {
   max-height: 0;
   opacity: 0;
   pointer-events: none;
+
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 .expanded {
@@ -56,13 +63,12 @@
 
 .layerGroupItem {
   border: 2px solid var(--border);
+  border-right: none;
   margin-left: 2px;
   padding: 2px;
-  margin-right: 4px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
 }
 
 .layerGroupItem:hover {
@@ -121,4 +127,9 @@
   height: 2px;
   background: var(--highlight);
   z-index: 1;
+}
+
+.selected {
+  color: var(--highlight);
+  background-color: var(--highlight-dim);
 }

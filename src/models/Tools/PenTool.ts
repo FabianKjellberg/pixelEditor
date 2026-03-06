@@ -39,20 +39,29 @@ export class PenTool implements ITool {
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
 
     //add a baseline entry if none exists
-    const layer = this.deps.getLayer?.();
-    if (!layer) return;
+    const layers = this.deps.getLayers?.();
+    if (!layers) return;
 
-    const hasBaseLine = this.deps.hasBaseline?.(layer.id);
+    if (layers.length === 0) {
+      this.deps.onToast?.('You need to select a layer before using the pen tool', 'warning');
+      return;
+    }
+
+    if (layers.length > 1) {
+      this.deps.onToast?.('You can only have 1 layer selected when using the pen tool', 'warning');
+      return;
+    }
+    const hasBaseLine = this.deps.hasBaseline?.(layers[0].id);
 
     if (hasBaseLine === false) {
-      this.deps.checkPoint?.(layer);
+      this.deps.checkPoint?.(layers[0]);
     }
 
     //get color and opacity
     const color: number =
       mouseButton == 0
-        ? this.toolDeps.getPrimaryColor?.() ?? config.defaultColor
-        : this.toolDeps.getSecondaryColor?.() ?? config.defaultColor;
+        ? (this.toolDeps.getPrimaryColor?.() ?? config.defaultColor)
+        : (this.toolDeps.getSecondaryColor?.() ?? config.defaultColor);
     const properties: IProperty[] = this.toolDeps.getProperties?.('pencil') ?? [];
     const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
 
@@ -96,8 +105,8 @@ export class PenTool implements ITool {
 
   //Other Methods
   private draw = (x: number, y: number): void => {
-    const setLayer = this.toolDeps.setLayer;
-    if (setLayer == undefined) return;
+    const setLayers = this.toolDeps.setLayers;
+    if (setLayers == undefined) return;
 
     //get properties
     const properties: IProperty[] = this.toolDeps.getProperties?.('pencil') ?? [];
@@ -155,16 +164,18 @@ export class PenTool implements ITool {
 
     const dirtyRectangle: Rectangle = filterCanvas.rect;
 
-    setLayer((prevLayer: LayerEntity) => {
-      const newLayer = stampToCanvasLayer(filterCanvas, prevLayer.layer);
+    console.log('hej');
+
+    setLayers((prevLayers: LayerEntity[]) => {
+      const newLayer = stampToCanvasLayer(filterCanvas, prevLayers[0].layer);
       const layer = {
-        ...prevLayer,
+        ...prevLayers[0],
         layer: newLayer,
       };
 
       this.layerLastDrawn = layer;
 
-      return { layer: layer, dirtyRect: dirtyRectangle };
+      return { layers: [layer], dirtyRect: dirtyRectangle };
     });
   };
 

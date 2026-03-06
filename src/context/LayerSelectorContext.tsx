@@ -10,19 +10,21 @@ import { removeRange } from '@/util/LayerSelectorUtil';
 type LayerSelectorContextValue = {
   collapseGroup: (groupId: string) => void;
   changeLayerName: (id: string, name: string) => void;
-  addLayer: () => void;
-  addGroup: () => void;
-  deleteLayer: () => void;
+  addLayer: (index?: number) => void;
+  addGroup: (index?: number) => void;
+  deleteItem: (id: string) => void;
   dragId: string;
   setDragId: (id: string) => void;
   checkDropAvailability: (position: DropAtEnum, id: string) => boolean;
   dropItem: (position: DropAtEnum, fromId: string, toId: string) => void;
+  onSelectItem: (id: string, shiftClick: boolean, ctrlClick: boolean) => void;
 };
 
 const LayerSelectorContext = createContext<LayerSelectorContextValue | undefined>(undefined);
 
 export const LayerSelectorProvider = ({ children }: { children: React.ReactNode }) => {
-  const { setLayerTreeItems, layerTreeItems } = useLayerContext();
+  const { setLayerTreeItems, layerTreeItems, activeLayerIds, setActiveLayerIds } =
+    useLayerContext();
 
   const [dragId, setDragId] = useState<string>('');
 
@@ -56,29 +58,79 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
     [setLayerTreeItems],
   );
 
-  const addLayer = useCallback(() => {
-    const newLayer = createLayerEntity('New layer');
+  const addLayer = useCallback(
+    (index?: number) => {
+      const newLayer = createLayerEntity('New layer');
 
-    setLayerTreeItems((prev) => [newLayer, ...prev]);
-  }, [setLayerTreeItems]);
+      setLayerTreeItems((prev) => {
+        const insertIndex = index ?? 0;
+        const next = [...prev];
 
-  const addGroup = useCallback(() => {
-    const groupId = crypto.randomUUID();
+        next.splice(insertIndex, 0, newLayer);
 
-    const newGroupStart: LayerGroupStart = {
-      type: 'group-start',
-      id: groupId,
-      collapsed: false,
-      name: 'New group',
-    };
-    const newGroupEnd: LayerGroupEnd = {
-      type: 'group-end',
-      id: groupId,
-    };
+        return next;
+      });
+    },
+    [setLayerTreeItems],
+  );
 
-    setLayerTreeItems((prev) => [newGroupStart, newGroupEnd, ...prev]);
-  }, [setLayerTreeItems]);
-  const deleteLayer = useCallback(() => {}, []);
+  const addGroup = useCallback(
+    (index?: number) => {
+      const groupId = crypto.randomUUID();
+
+      const newGroupStart: LayerGroupStart = {
+        type: 'group-start',
+        id: groupId,
+        collapsed: false,
+        name: 'New group',
+      };
+
+      const newGroupEnd: LayerGroupEnd = {
+        type: 'group-end',
+        id: groupId,
+      };
+
+      setLayerTreeItems((prev) => {
+        const insertIndex = index ?? 0;
+        const next = [...prev];
+
+        next.splice(insertIndex, 0, newGroupStart, newGroupEnd);
+
+        return next;
+      });
+    },
+    [setLayerTreeItems],
+  );
+
+  const deleteItem = useCallback((id: string) => {
+    setLayerTreeItems((prev) => {
+      const next = [...prev];
+
+      const item = next.find(
+        (i) => i.id === id && (i.type === 'group-start' || i.type === 'layer'),
+      );
+
+      if (!item) return next;
+
+      switch (item.type) {
+        case 'layer':
+          return next.filter((item) => item.id !== id);
+        case 'group-start':
+          const startIndex = next.findIndex((i) => i.type === 'group-start' && i.id === id);
+          const endIndex = next.findIndex((i) => i.type === 'group-end' && i.id === id);
+
+          if (startIndex === -1 || endIndex === -1) return next;
+
+          next.splice(startIndex, endIndex - startIndex + 1);
+
+          return next;
+        default:
+          break;
+      }
+
+      return next;
+    });
+  }, []);
 
   const checkDropAvailability = useCallback(
     (position: DropAtEnum, id: string): boolean => {
@@ -187,28 +239,124 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
     [setLayerTreeItems],
   );
 
+  const onSelectItem = useCallback(
+    (id: string, shiftClick: boolean, ctrlClick: boolean) => {
+      if (shiftClick && ctrlClick) return;
+
+      const index = layerTreeItems.findIndex(
+        (i) => i.id === id && (i.type === 'group-start' || i.type === 'layer'),
+      );
+
+      if (index === -1) throw new Error('unable to find layer to select');
+
+      switch (layerTreeItems[index].type) {
+        case 'layer':
+          if (shiftClick) {
+            setActiveLayerIds((prev) => {
+              const next: string[] = [];
+
+              if (prev.some((prevId) => id === prevId)) {
+                return prev;
+              }
+
+              if (prev.length === 0) {
+                return [id];
+              }
+
+              const startPrevIndex = layerTreeItems.findIndex((i) => i.id === prev[0]);
+              const endPrevIndex = layerTreeItems.findIndex((i) => i.id === prev[prev.length - 1]);
+
+              const from = Math.min(index, startPrevIndex, endPrevIndex);
+              const to = Math.max(index, startPrevIndex, endPrevIndex);
+
+              if (from === -1 || to === -1)
+                throw new Error('from or to is -1, from: ' + from + ' to: ' + to);
+
+              for (let i = from; i <= to; i++) {
+                if (layerTreeItems[i].type === 'layer') {
+                  next.push(layerTreeItems[i].id);
+                }
+              }
+
+              return next;
+            });
+            break;
+          }
+
+          if (ctrlClick) {
+            setActiveLayerIds((prev) => {
+              const exist = prev.some((i) => i === id);
+
+              if (exist) {
+                return prev.filter((i) => i !== id);
+              }
+
+              return [...prev, id];
+            });
+
+            break;
+          }
+
+          setActiveLayerIds([id]);
+          break;
+
+        case 'group-start':
+          if (shiftClick) {
+            break;
+          }
+
+          const next: string[] = [];
+
+          const startPrevIndex = layerTreeItems.findIndex(
+            (i) => i.id === id && i.type === 'group-start',
+          );
+          const endPrevIndex = layerTreeItems.findIndex(
+            (i) => i.id === id && i.type === 'group-end',
+          );
+
+          const from = Math.min(index, startPrevIndex, endPrevIndex);
+          const to = Math.max(index, startPrevIndex, endPrevIndex);
+
+          if (from === -1 || to === -1)
+            throw new Error('from or to is -1, from: ' + from + ' to: ' + to);
+
+          for (let i = from; i <= to; i++) {
+            if (layerTreeItems[i].type === 'layer') {
+              next.push(layerTreeItems[i].id);
+            }
+          }
+          setActiveLayerIds(next);
+        default:
+          break;
+      }
+    },
+    [layerTreeItems, activeLayerIds, setActiveLayerIds],
+  );
+
   const value = useMemo(
     () => ({
       collapseGroup,
       changeLayerName,
       addLayer,
       addGroup,
-      deleteLayer,
+      deleteItem,
       dragId,
       setDragId,
       checkDropAvailability,
       dropItem,
+      onSelectItem,
     }),
     [
       collapseGroup,
       changeLayerName,
       addLayer,
       addGroup,
-      deleteLayer,
+      deleteItem,
       dragId,
       setDragId,
       checkDropAvailability,
       dropItem,
+      onSelectItem,
     ],
   );
 

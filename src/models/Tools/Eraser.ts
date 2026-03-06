@@ -35,13 +35,23 @@ export class Eraser implements ITool {
   onDown(x: number, y: number, pixelSize: number): void {
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
 
-    const layer = this.deps.getLayer?.();
-    if (!layer) return;
+    const layers = this.deps.getLayers?.();
+    if (!layers) return;
 
-    const hasBaseLine = this.deps.hasBaseline?.(layer.id);
+    if (layers.length === 0) {
+      this.deps.onToast?.('You need to select a layer to erase', 'warning');
+      return;
+    }
+
+    if (layers.length > 1) {
+      this.deps.onToast?.('You need to only have 1 layer selected to erase', 'warning');
+      return;
+    }
+
+    const hasBaseLine = this.deps.hasBaseline?.(layers[0].id);
 
     if (hasBaseLine === false) {
-      this.deps.checkPoint?.(layer);
+      this.deps.checkPoint?.(layers[0]);
     }
 
     this.erase(pixelPos.x, pixelPos.y);
@@ -73,8 +83,8 @@ export class Eraser implements ITool {
 
   /** -- OTHER METHODS -- **/
   private erase = (x: number, y: number): void => {
-    const setLayer = this.toolDeps.setLayer;
-    if (setLayer == undefined) return;
+    const setLayers = this.toolDeps.setLayers;
+    if (setLayers == undefined) return;
 
     // Get properties (same pattern as PenTool)
     const properties: IProperty[] = this.toolDeps.getProperties?.('eraser') ?? [];
@@ -136,16 +146,16 @@ export class Eraser implements ITool {
     const dirtyRectangle: Rectangle = filterCanvas.rect;
 
     // Update layer using eraseFromCanvasLayer
-    setLayer((prevLayer: LayerEntity) => {
-      const newLayer = eraseFromCanvasLayer(filterCanvas, prevLayer.layer);
+    setLayers((prevLayers: LayerEntity[]) => {
+      const newLayer = eraseFromCanvasLayer(filterCanvas, prevLayers[0].layer);
       const layer = {
-        ...prevLayer,
+        ...prevLayers[0],
         layer: newLayer,
       };
 
       this.layerLastErased = layer;
 
-      return { layer: layer, dirtyRect: dirtyRectangle };
+      return { layers: [layer], dirtyRect: dirtyRectangle };
     });
   };
 

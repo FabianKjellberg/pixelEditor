@@ -6,23 +6,26 @@ import ToolButton from '../ToolButton/ToolButton';
 import { MoveTool } from '@/models/Tools/MoveTool';
 import { useMemo } from 'react';
 import { useUndoRedoContext } from '@/context/UndoRedoContext';
+import { useToastContext } from '@/context/ToastContext/ToastContext';
 
 const MoveComponent = () => {
-  const { getActiveLayer, setActiveLayer } = useLayerContext();
+  const { getActiveLayers, setActiveLayers } = useLayerContext();
   const { getSelectionLayer, setSelectionLayer } = useCanvasContext();
   const { checkPoint, hasBaseline } = useUndoRedoContext();
+  const { onToast } = useToastContext();
 
   const tool = useMemo(
     () =>
       new MoveTool({
-        setLayer: setActiveLayer,
-        getLayer: getActiveLayer,
+        setLayers: setActiveLayers,
+        getLayers: getActiveLayers,
         getSelectionLayer,
         setSelectionLayer,
         checkPoint,
         hasBaseline,
+        onToast,
       }),
-    [getActiveLayer, setActiveLayer, getSelectionLayer, setSelectionLayer],
+    [getActiveLayers, setActiveLayers, getSelectionLayer, setSelectionLayer],
   );
 
   return (
