@@ -28,4 +28,10 @@
   padding-left: 4px;
   color: var(--highlight);
   text-decoration: underline;
+  padding-bottom: 4px;
+}
+
+.opacitySlider {
+  padding: 6px;
+  width: 150px;
 }

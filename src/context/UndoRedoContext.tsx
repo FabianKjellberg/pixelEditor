@@ -1,6 +1,6 @@
 'use client';
 
-import { LayerEntity, Rectangle } from '@/models/Layer';
+import { Layer, LayerEntity, Rectangle } from '@/models/Layer';
 import {
   createContext,
   ReactNode,
@@ -12,35 +12,37 @@ import {
   useState,
 } from 'react';
 import { useLayerContext } from './LayerContext';
-import { combineRectangles } from '@/util/LayerUtil';
+import { combineManyRectangles, combineRectangles } from '@/util/LayerUtil';
 
 type UndoRedoValue = {
   undo: () => void;
   canUndo: boolean;
   redo: () => void;
   canRedo: boolean;
-  checkPoint: (layer: LayerEntity) => void;
-  hasBaseline: (layerId: string) => boolean;
+  checkPoint: (action: HistoryAction) => void;
+};
+
+export type HistoryAction = {
+  up: LayerEntity[];
+  down: LayerEntity[];
 };
 
 type historyState = {
-  undo: LayerEntity[];
-  redo: LayerEntity[];
+  undo: HistoryAction[];
+  redo: HistoryAction[];
 };
+
+type PendingLayerUpdate = {
+  layers: LayerEntity[];
+  dirtyRect: Rectangle;
+} | null;
 
 const MAX_HISTORY = 50;
 
 const UndoRedoContext = createContext<UndoRedoValue | undefined>(undefined);
 
 export const UndoRedoContextProvider = ({ children }: { children: ReactNode }) => {
-  const { setLayerById } = useLayerContext();
-
-  type PendingLayerUpdate = {
-    id: string;
-    pixels: Uint32Array;
-    rect: Rectangle;
-    dirtyRect: Rectangle;
-  } | null;
+  const { setLayerTreeItems, markDirty } = useLayerContext();
 
   const pendingUpdateRef = useRef<PendingLayerUpdate>(null);
 
@@ -48,45 +50,45 @@ export const UndoRedoContextProvider = ({ children }: { children: ReactNode }) =
     const u = pendingUpdateRef.current;
     if (!u) return;
     pendingUpdateRef.current = null;
-    setLayerById(u.id, u.pixels, u.rect, u.dirtyRect);
-  }, [setLayerById, pendingUpdateRef.current]);
+
+    setLayerTreeItems((prev) => {
+      const next = prev.map((item) => {
+        const newLayer = u.layers.find((layer) => layer.id === item.id);
+
+        if (!newLayer) return item;
+
+        return newLayer;
+      });
+
+      return next;
+    });
+
+    markDirty(u.dirtyRect);
+  }, [setLayerTreeItems, markDirty, pendingUpdateRef.current]);
 
   const [history, setHistory] = useState<historyState>({
     undo: [],
     redo: [],
   });
 
-  const canUndo = useMemo((): boolean => history.undo.length > 1, [history.undo]);
+  const canUndo = useMemo((): boolean => history.undo.length > 0, [history.undo]);
 
   const undo = useCallback(() => {
     if (!canUndo) return;
     setHistory((prev) => {
-      const u = prev.undo;
-      const len = u.length;
+      const action = prev.undo[prev.undo.length - 1];
 
-      // is baseline means that there is a layer in the beggining that was created to make a reference for a
-      // new layer being changed ex 1, 1, 2, 2 the first 2 will not represent a change but rather just a
-      // "this is how layer 2 originally looked".
-      const isBaseLine: boolean = len >= 4 && u[len - 3].id !== u[len - 2].id;
-
-      // the new layer is the layer that will be shown after the undo is performed.
-      const newLayer: LayerEntity = u[len - 2];
-
-      //only need to get the prev layers rect to update the canvas
-      const prevLayerRect: Rectangle = u[len - 1].layer.rect;
-
-      // im getting both rectangles from the new layer and the old layer to make sure that every possible
-      // pixel that can have been changed will update
-      const dirtyRect: Rectangle = combineRectangles(newLayer.layer.rect, prevLayerRect);
+      const dirtyRect = combineManyRectangles([
+        ...action.down.map((layer) => layer.layer.rect),
+        ...action.up.map((layer) => layer.layer.rect),
+      ]);
 
       pendingUpdateRef.current = {
-        id: newLayer.id,
-        pixels: newLayer.layer.pixels,
-        rect: newLayer.layer.rect,
-        dirtyRect,
+        layers: action.up,
+        dirtyRect: dirtyRect,
       };
 
-      const { from, to } = popPushN(prev.undo, prev.redo, isBaseLine ? 2 : 1);
+      const { from, to } = popPushN(prev.undo, prev.redo, 1);
 
       return {
         undo: from,
@@ -101,27 +103,19 @@ export const UndoRedoContextProvider = ({ children }: { children: ReactNode }) =
     if (!canRedo) return;
 
     setHistory((prev) => {
-      const u = prev.undo;
-      const r = prev.redo;
-      const uLen = u.length;
-      const rLen = r.length;
+      const action = prev.redo[prev.redo.length - 1];
 
-      // here the only important thing to look at is that there is a different layer at the top of each stack.
-      // which would mean that the last undo was has a baseline
-      const isBaseLine: boolean = u[uLen - 1].id !== r[rLen - 1].id;
-
-      const newLayer: LayerEntity = r[rLen - (isBaseLine ? 2 : 1)];
-      const prevRect: Rectangle = isBaseLine ? r[rLen - 1].layer.rect : u[uLen - 1].layer.rect;
-      const dirtyRect: Rectangle = combineRectangles(newLayer.layer.rect, prevRect);
+      const dirtyRect = combineManyRectangles([
+        ...action.down.map((layer) => layer.layer.rect),
+        ...action.up.map((layer) => layer.layer.rect),
+      ]);
 
       pendingUpdateRef.current = {
-        id: newLayer.id,
-        pixels: newLayer.layer.pixels,
-        rect: newLayer.layer.rect,
-        dirtyRect,
+        layers: action.down,
+        dirtyRect: dirtyRect,
       };
 
-      const { from, to } = popPushN(prev.redo, prev.undo, isBaseLine ? 2 : 1);
+      const { from, to } = popPushN(prev.redo, prev.undo, 1);
 
       return {
         undo: to,
@@ -131,9 +125,9 @@ export const UndoRedoContextProvider = ({ children }: { children: ReactNode }) =
   }, [canRedo, history, setHistory]);
 
   const checkPoint = useCallback(
-    (layer: LayerEntity) => {
+    (action: HistoryAction) => {
       setHistory((prev) => {
-        const updated = [...prev.undo, layer];
+        const updated = [...prev.undo, action];
 
         return {
           redo: [],
@@ -149,14 +143,6 @@ export const UndoRedoContextProvider = ({ children }: { children: ReactNode }) =
     historyRef.current = history;
   }, [history]);
 
-  const hasBaseline = useCallback((layerId: string) => {
-    const l = historyRef.current.undo.length;
-
-    if (l === 0) return false;
-
-    return historyRef.current.undo[historyRef.current.undo.length - 1].id === layerId;
-  }, []);
-
   const value = useMemo(
     () => ({
       undo,
@@ -164,9 +150,8 @@ export const UndoRedoContextProvider = ({ children }: { children: ReactNode }) =
       redo,
       canRedo,
       checkPoint,
-      hasBaseline,
     }),
-    [undo, canUndo, redo, canRedo, checkPoint, hasBaseline],
+    [undo, canUndo, redo, canRedo, checkPoint],
   );
 
   return <UndoRedoContext.Provider value={value}>{children}</UndoRedoContext.Provider>;

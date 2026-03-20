@@ -9,9 +9,15 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { LayerEntity, LayerTreeItem, Rectangle } from '@/models/Layer';
+import type {
+  LayerEntity,
+  LayerGroupEnd,
+  LayerGroupStart,
+  LayerTreeItem,
+  Rectangle,
+} from '@/models/Layer';
 import { createLayer, createLayerEntity } from '@/util/LayerUtil';
-import { FetchedLayer } from '@/models/apiModels/projectModels';
+import { FetchedLayer, FetchedLayerTreeItem } from '@/models/apiModels/projectModels';
 import { getLayerFromBlob } from '@/util/BlobUtil';
 import { useCanvasContext } from './CanvasContext';
 import { useAutoSaveContext } from './AutoSaveContext';
@@ -33,18 +39,14 @@ type LayerContextValue = {
   setActiveLayers: (
     updater: (prevLayers: LayerEntity[]) => { layers: LayerEntity[]; dirtyRect: Rectangle },
   ) => void;
-  setLayerById: (
-    layerId: string,
-    pixels: Uint32Array,
-    rect: Rectangle,
-    dirtyRect: Rectangle,
-  ) => void;
+
+  setLayerById: (newLayer: LayerEntity, dirtyRect: Rectangle) => void;
 
   redrawVersion: number;
   consumeDirty: () => Rectangle[];
   markDirty: (dirty: Rectangle) => void;
 
-  loadLayers: (layers: FetchedLayer[]) => Promise<void>;
+  loadLayers: (layers: FetchedLayerTreeItem[]) => Promise<void>;
   resetToBlankProject: (width: number, height: number, layers?: LayerEntity[]) => void;
 };
 
@@ -166,31 +168,22 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
         return prev.map((item) => layerMap.get(item.id) ?? item);
       });
     },
-    [pushDirty, debounceSave, trySave],
+    [pushDirty, trySave],
   );
 
   const setLayerById = useCallback(
-    (layerId: string, pixels: Uint32Array, rect: Rectangle, dirtyRect: Rectangle) => {
+    (newLayer: LayerEntity, dirtyRect: Rectangle) => {
       setLayerTreeItems((prev) => {
-        const idx = prev.findIndex((l) => l.id === layerId);
-        if (idx === -1) return prev;
-
-        const prevEntry = prev[idx];
-
-        if (prevEntry.type !== 'layer') return prev;
-
-        pushDirty(dirtyRect);
-        trySave([prevEntry]);
-
-        const next = prev.slice();
-        next[idx] = {
-          ...prevEntry,
-          layer: { ...prevEntry.layer, pixels, rect },
-        };
-        return next;
+        return prev.map((item) =>
+          item.id === newLayer.id ? { ...item, layer: newLayer.layer } : item,
+        );
       });
+
+      trySave([newLayer]);
+
+      pushDirty(dirtyRect);
     },
-    [setLayerTreeItems, pushDirty, trySave],
+    [pushDirty, trySave],
   );
 
   const resetToBlankProject = useCallback(
@@ -211,17 +204,26 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
 
   //Load layers
   const loadLayers = useCallback(
-    async (layers: FetchedLayer[]): Promise<void> => {
-      console.log(layers);
+    async (fetchedItems: FetchedLayerTreeItem[]): Promise<void> => {
+      const layerEntities: LayerTreeItem[] = await Promise.all(
+        fetchedItems.map(async (layer) => {
+          switch (layer.type) {
+            case 'layer':
+              return getLayerFromBlob(layer);
 
-      const layerEntities: LayerEntity[] = (
-        await Promise.all(
-          layers.map(async (layer: FetchedLayer) => {
-            return getLayerFromBlob(layer);
-          }),
-        )
-      ).filter((layer): layer is LayerEntity => layer !== null);
+            case 'group-start':
+              return layer as LayerGroupStart;
 
+            case 'group-end':
+              return layer as LayerGroupEnd;
+
+            default:
+              const _exhaustiveCheck: never = layer;
+              throw new Error(`Unhandled layer type: ${_exhaustiveCheck}`);
+          }
+        }),
+      );
+      setActiveLayerIds([]);
       setLayerTreeItems(layerEntities);
       pushDirty(getCanvasRect());
     },
@@ -260,6 +262,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       allLayers,
       getActiveLayers,
       setActiveLayers,
+      setLayerById,
       redrawVersion,
       consumeDirty,
       pushDirty,

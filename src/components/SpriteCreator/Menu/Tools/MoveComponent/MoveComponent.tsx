@@ -11,7 +11,7 @@ import { useToastContext } from '@/context/ToastContext/ToastContext';
 const MoveComponent = () => {
   const { getActiveLayers, setActiveLayers } = useLayerContext();
   const { getSelectionLayer, setSelectionLayer } = useCanvasContext();
-  const { checkPoint, hasBaseline } = useUndoRedoContext();
+  const { checkPoint } = useUndoRedoContext();
   const { onToast } = useToastContext();
 
   const tool = useMemo(
@@ -22,7 +22,6 @@ const MoveComponent = () => {
         getSelectionLayer,
         setSelectionLayer,
         checkPoint,
-        hasBaseline,
         onToast,
       }),
     [getActiveLayers, setActiveLayers, getSelectionLayer, setSelectionLayer],

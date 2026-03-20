@@ -32,9 +32,7 @@
 
   /* default: head at (0,0), next 2 dots to the right */
   transform: translate(0, 0);
-  box-shadow:
-    calc(var(--cell) * 1) 0 0 0 currentColor,
-    calc(var(--cell) * 2) 0 0 0 currentColor;
+  box-shadow: calc(var(--cell) * 1) 0 0 0 currentColor, calc(var(--cell) * 2) 0 0 0 currentColor;
 
   animation: chase 900ms steps(1) infinite;
 }
@@ -42,56 +40,50 @@
 @keyframes chase {
   0% {
     transform: translate(0, 0);
-    box-shadow:
-      calc(var(--cell) * 1) 0 0 0 currentColor,
-      calc(var(--cell) * 2) 0 0 0 currentColor;
+    box-shadow: calc(var(--cell) * 1) 0 0 0 currentColor, calc(var(--cell) * 2) 0 0 0 currentColor;
   }
   12.5% {
     transform: translate(calc(var(--cell) * 1), 0);
-    box-shadow:
-      calc(var(--cell) * 1) 0 0 0 currentColor,
+    box-shadow: calc(var(--cell) * 1) 0 0 0 currentColor,
       /* (2,0) */ calc(var(--cell) * 1) calc(var(--cell) * 1) 0 0 currentColor; /* (2,1) */
   }
   25% {
     transform: translate(calc(var(--cell) * 2), 0);
-    box-shadow:
-      0 calc(var(--cell) * 1) 0 0 currentColor,
+    box-shadow: 0 calc(var(--cell) * 1) 0 0 currentColor,
       /* (2,1) */ 0 calc(var(--cell) * 2) 0 0 currentColor; /* (2,2) */
   }
   37.5% {
     transform: translate(calc(var(--cell) * 2), calc(var(--cell) * 1));
-    box-shadow:
-      0 calc(var(--cell) * 1) 0 0 currentColor,
+    box-shadow: 0 calc(var(--cell) * 1) 0 0 currentColor,
       /* (2,2) */ calc(var(--cell) * -1) calc(var(--cell) * 1) 0 0 currentColor; /* (1,2) */
   }
   50% {
     transform: translate(calc(var(--cell) * 2), calc(var(--cell) * 2));
-    box-shadow:
-      calc(var(--cell) * -1) 0 0 0 currentColor,
+    box-shadow: calc(var(--cell) * -1) 0 0 0 currentColor,
       /* (1,2) */ calc(var(--cell) * -2) 0 0 0 currentColor; /* (0,2) */
   }
   62.5% {
     transform: translate(calc(var(--cell) * 1), calc(var(--cell) * 2));
-    box-shadow:
-      calc(var(--cell) * -1) 0 0 0 currentColor,
+    box-shadow: calc(var(--cell) * -1) 0 0 0 currentColor,
       /* (0,2) */ calc(var(--cell) * -1) calc(var(--cell) * -1) 0 0 currentColor; /* (0,1) */
   }
   75% {
     transform: translate(0, calc(var(--cell) * 2));
-    box-shadow:
-      0 calc(var(--cell) * -1) 0 0 currentColor,
+    box-shadow: 0 calc(var(--cell) * -1) 0 0 currentColor,
       /* (0,1) */ 0 calc(var(--cell) * -2) 0 0 currentColor; /* (0,0) */
   }
   87.5% {
     transform: translate(0, calc(var(--cell) * 1));
-    box-shadow:
-      0 calc(var(--cell) * -1) 0 0 currentColor,
+    box-shadow: 0 calc(var(--cell) * -1) 0 0 currentColor,
       /* (0,0) */ calc(var(--cell) * 1) calc(var(--cell) * -1) 0 0 currentColor; /* (1,0) */
   }
   100% {
     transform: translate(0, 0);
-    box-shadow:
-      calc(var(--cell) * 1) 0 0 0 currentColor,
-      calc(var(--cell) * 2) 0 0 0 currentColor;
+    box-shadow: calc(var(--cell) * 1) 0 0 0 currentColor, calc(var(--cell) * 2) 0 0 0 currentColor;
   }
+}
+
+.icon {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }

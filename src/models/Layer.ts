@@ -17,6 +17,8 @@ export type LayerEntity = {
   name: string;
   id: string;
   layer: Layer;
+  visible: boolean;
+  opacity: number;
 };
 
 export type Layer = {

@@ -1,5 +1,5 @@
-import { getLocalPixelIndex, getPixelIndex } from '@/helpers/color';
-import { Layer, Rectangle, SelectionLayer } from '@/models/Layer';
+import { getLocalPixelIndex, getPixelIndex, intToRGB } from '@/helpers/color';
+import { Layer, LayerEntity, Rectangle, SelectionLayer } from '@/models/Layer';
 import { edge, point } from '@/models/Selection';
 import { createLayer } from './LayerUtil';
 
@@ -253,4 +253,29 @@ export function inverseSelection(
   }
 
   return out;
+}
+
+export function addVisibleLayerToSelection(layer: LayerEntity, sl: SelectionLayer) {
+  for (let y = 0; y < sl.rect.height; y++) {
+    const layerY = sl.rect.y + y - layer.layer.rect.y;
+
+    if (layerY < 0) continue;
+    if (layerY > layer.layer.rect.height) break;
+    for (let x = 0; x < sl.rect.width; x++) {
+      const layerX = sl.rect.x + x - layer.layer.rect.x;
+
+      if (layerX < 0) continue;
+      if (layerX > layer.layer.rect.width - 1) break;
+
+      const fromIndex = getPixelIndex(layerY, layer.layer.rect.width, layerX);
+
+      const layerColor = intToRGB(layer.layer.pixels[fromIndex]);
+
+      if (layerColor.a === 0) continue;
+
+      const toIndex = getPixelIndex(y, sl.rect.width, x);
+
+      sl.pixels[toIndex] = 1;
+    }
+  }
 }

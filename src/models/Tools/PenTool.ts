@@ -24,6 +24,7 @@ export class PenTool implements ITool {
   private strokeMatrix: Layer = createLayer({ x: 0, y: 0, width: 0, height: 0 }, 0);
   private color: number | null = null;
 
+  private originalLayer: LayerEntity | null = null;
   private layerLastDrawn: LayerEntity | null = null;
 
   deps: IToolDeps = {};
@@ -51,17 +52,14 @@ export class PenTool implements ITool {
       this.deps.onToast?.('You can only have 1 layer selected when using the pen tool', 'warning');
       return;
     }
-    const hasBaseLine = this.deps.hasBaseline?.(layers[0].id);
 
-    if (hasBaseLine === false) {
-      this.deps.checkPoint?.(layers[0]);
-    }
+    this.originalLayer = layers[0];
 
     //get color and opacity
     const color: number =
       mouseButton == 0
-        ? (this.toolDeps.getPrimaryColor?.() ?? config.defaultColor)
-        : (this.toolDeps.getSecondaryColor?.() ?? config.defaultColor);
+        ? this.toolDeps.getPrimaryColor?.() ?? config.defaultColor
+        : this.toolDeps.getSecondaryColor?.() ?? config.defaultColor;
     const properties: IProperty[] = this.toolDeps.getProperties?.('pencil') ?? [];
     const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
 
@@ -97,10 +95,14 @@ export class PenTool implements ITool {
     this.strokeNr++;
 
     const checkPoint = this.deps.checkPoint;
-    if (!this.layerLastDrawn || !checkPoint) return;
+    if (!this.layerLastDrawn || !checkPoint || !this.originalLayer) return;
 
-    checkPoint(this.layerLastDrawn);
+    checkPoint({
+      up: [this.originalLayer],
+      down: [this.layerLastDrawn],
+    });
     this.layerLastDrawn = null;
+    this.originalLayer = null;
   }
 
   //Other Methods
@@ -163,8 +165,6 @@ export class PenTool implements ITool {
     const filterCanvas: Layer = clipLayerToRect(selectionFilteredLayer, canvasRect);
 
     const dirtyRectangle: Rectangle = filterCanvas.rect;
-
-    console.log('hej');
 
     setLayers((prevLayers: LayerEntity[]) => {
       const newLayer = stampToCanvasLayer(filterCanvas, prevLayers[0].layer);

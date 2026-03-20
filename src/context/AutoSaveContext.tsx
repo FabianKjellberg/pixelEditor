@@ -26,6 +26,7 @@ const AutoSaveContext = createContext<AutoSaveContextValue | undefined>(undefine
 
 export const AutoSaveProvider = ({ children }: { children: React.ReactNode }) => {
   const saveTimersRef = useRef<Map<LayerId, number>>(new Map());
+  const saveLayerOrder = useRef<number | null>(null);
   const [dirtyCount, setDirtyCount] = useState(0);
 
   const savingRef = useRef<Set<LayerId>>(new Set());
@@ -34,10 +35,6 @@ export const AutoSaveProvider = ({ children }: { children: React.ReactNode }) =>
   const isSaving = useMemo(() => {
     return savingCount > 0;
   }, [savingCount]);
-
-  useEffect(() => {
-    console.log(savingRef);
-  }, [savingRef]);
 
   const beginSaving = useCallback(
     (layerId: LayerId): boolean => {

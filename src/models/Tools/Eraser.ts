@@ -25,6 +25,7 @@ export class Eraser implements ITool {
   private strokeMatrix: Layer = createLayer({ x: 0, y: 0, width: 0, height: 0 }, 0);
 
   private layerLastErased: LayerEntity | null = null;
+  private orignalLayer: LayerEntity | null = null;
 
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {
@@ -48,11 +49,7 @@ export class Eraser implements ITool {
       return;
     }
 
-    const hasBaseLine = this.deps.hasBaseline?.(layers[0].id);
-
-    if (hasBaseLine === false) {
-      this.deps.checkPoint?.(layers[0]);
-    }
+    this.orignalLayer = layers[0];
 
     this.erase(pixelPos.x, pixelPos.y);
 
@@ -76,9 +73,14 @@ export class Eraser implements ITool {
     this.strokeNr++;
 
     const checkPoint = this.deps.checkPoint;
-    if (!this.layerLastErased || !checkPoint) return;
+    if (!this.layerLastErased || !checkPoint || !this.orignalLayer) return;
 
-    checkPoint(this.layerLastErased);
+    checkPoint({
+      up: [this.orignalLayer],
+      down: [this.layerLastErased],
+    });
+    this.layerLastErased = null;
+    this.orignalLayer = null;
   }
 
   /** -- OTHER METHODS -- **/

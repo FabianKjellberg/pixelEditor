@@ -27,6 +27,7 @@ import {
 } from '@/models/Tools/Properties';
 import { FillBucket } from '@/models/Tools/AreaTools/FillBucket';
 import { GradientTool } from '@/models/Tools/AreaTools/GradientTool';
+import { useToastContext } from '@/context/ToastContext/ToastContext';
 
 type toolWithImage = {
   icon: string;
@@ -36,10 +37,11 @@ type toolWithImage = {
 const AreaComponents = () => {
   const { onShow, onHide } = useContextMenuContext();
   const { setActiveTool } = useToolContext();
-  const { setActiveLayer, getActiveLayer } = useLayerContext();
+  const { setActiveLayers, getActiveLayers } = useLayerContext();
   const { getPrimaryColor, ensureProperties, getProperties, getSecondaryColor } = useToolContext();
   const { getSelectionLayer, getCanvasRect } = useCanvasContext();
   const { checkPoint, hasBaseline } = useUndoRedoContext();
+  const { onToast } = useToastContext();
 
   useEffect(() => {
     /* FILL BUCKET COMPONENT */
@@ -94,8 +96,8 @@ const AreaComponents = () => {
   const fillBucket: FillBucket = useMemo(
     () =>
       new FillBucket({
-        setLayer: setActiveLayer,
-        getLayer: getActiveLayer,
+        setLayers: setActiveLayers,
+        getLayers: getActiveLayers,
         getProperties,
         getCanvasRect,
         getSelectionLayer,
@@ -103,15 +105,16 @@ const AreaComponents = () => {
         getSecondaryColor,
         checkPoint,
         hasBaseline,
+        onToast,
       }),
-    [getActiveLayer, setActiveLayer, getPrimaryColor, getProperties],
+    [getActiveLayers, setActiveLayers, getPrimaryColor, getProperties, onToast],
   );
 
   const gradientTool: GradientTool = useMemo(
     () =>
       new GradientTool({
-        setLayer: setActiveLayer,
-        getLayer: getActiveLayer,
+        setLayers: setActiveLayers,
+        getLayers: getActiveLayers,
         getPrimaryColor,
         getSecondaryColor,
         getProperties,
@@ -119,8 +122,9 @@ const AreaComponents = () => {
         getCanvasRect,
         checkPoint,
         hasBaseline,
+        onToast,
       }),
-    [getActiveLayer, setActiveLayer, getPrimaryColor, getProperties],
+    [getActiveLayers, setActiveLayers, getPrimaryColor, getProperties, onToast],
   );
 
   const [selectedIndex, setSelectedIndex] = useState<number>(0);

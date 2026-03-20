@@ -4,6 +4,7 @@ import {
   Direction,
   Layer,
   LayerEntity,
+  LayerTreeItem,
   OutOfBoundItem,
   Rectangle,
   SelectionLayer,
@@ -26,7 +27,13 @@ export function createLayer(rect: Rectangle, colorInt?: number): Layer {
   };
 }
 
-export function createLayerEntity(name: string, id?: string, layer?: Layer): LayerEntity {
+export function createLayerEntity(
+  name: string,
+  id?: string,
+  layer?: Layer,
+  opacity?: number,
+  visible?: boolean,
+): LayerEntity {
   const layerForEntity = layer ? layer : createLayer({ x: 0, y: 0, width: 0, height: 0 });
 
   return {
@@ -34,8 +41,14 @@ export function createLayerEntity(name: string, id?: string, layer?: Layer): Lay
     name: name,
     layer: layerForEntity,
     id: id ? id : crypto.randomUUID(),
+    visible: visible ?? true,
+    opacity: opacity != undefined ? opacity : 255,
   };
 }
+
+export function mapLayerToAPI(item: LayerTreeItem) {}
+
+export function mapLayerFromAPI() {}
 
 export function convertSelectionLayer(
   oldLayer: SelectionLayer,
@@ -244,8 +257,8 @@ export function stampLayer(
   stamp: Layer,
   originalLayer: Layer,
   replace: boolean,
-  strokeLayer: Layer,
-  strokeNr: number,
+  strokeLayer?: Layer,
+  strokeNr?: number,
 ): Layer {
   // Combined bounding rect in *canvas* coordinates
   const combinedRect = combineRectangles(originalLayer.rect, stamp.rect);
@@ -362,6 +375,25 @@ export function combineRectangles(r1: Rectangle, r2: Rectangle): Rectangle {
   const y1 = Math.min(r1.y, r2.y);
   const x2 = Math.max(r1.x + r1.width, r2.x + r2.width);
   const y2 = Math.max(r1.y + r1.height, r2.y + r2.height);
+
+  return {
+    x: x1,
+    y: y1,
+    width: x2 - x1,
+    height: y2 - y1,
+  };
+}
+
+export function combineManyRectangles(rect: Rectangle[]): Rectangle {
+  const x1s = rect.map((r) => r.x);
+  const y1s = rect.map((r) => r.y);
+  const x2s = rect.map((r) => r.x + r.width);
+  const y2s = rect.map((r) => r.y + r.height);
+
+  const x1 = Math.min(...x1s);
+  const y1 = Math.min(...y1s);
+  const x2 = Math.max(...x2s);
+  const y2 = Math.max(...y2s);
 
   return {
     x: x1,

@@ -21,7 +21,7 @@ export class GradientTool implements ITool {
   private downY: number | null = null;
 
   private layerLastDrawn: LayerEntity | null = null;
-  private originalLayer: Layer | null = null;
+  private originalLayer: LayerEntity | null = null;
 
   private fromColor: number | null = null;
   private toColor: number | null = null;
@@ -38,20 +38,20 @@ export class GradientTool implements ITool {
     this.downY = pos.y;
 
     //add a baseline entry if none exists
-    const layer = this.deps.getLayer?.();
-    if (!layer) return;
+    const layers = this.deps.getLayers?.();
+    if (!layers) return;
 
-    const hasBaseLine = this.deps.hasBaseline?.(layer.id);
-
-    if (hasBaseLine === false) {
-      this.deps.checkPoint?.(layer);
+    if (layers.length === 0) {
+      this.deps.onToast?.('You need to have a layer selected to use the Gradient Tool', 'warning');
+      return;
     }
 
-    //set original layer
-    this.originalLayer = layer.layer;
+    if (layers.length > 1) {
+      this.deps.onToast?.('You can only have 1 layer selected to use the Gradient Tool', 'warning');
+      return;
+    }
 
-    const setLayer = this.deps.setLayer;
-    if (setLayer == undefined) return;
+    this.originalLayer = layers[0];
 
     //get color and opacity
     const primaryColor = this.deps.getPrimaryColor?.() ?? config.defaultColor;
@@ -106,8 +106,8 @@ export class GradientTool implements ITool {
 
     const pos = getPixelPositions(x, y, pixelSize);
 
-    const setLayer = this.deps.setLayer;
-    if (setLayer == undefined) return;
+    const setLayers = this.deps.setLayers;
+    if (setLayers == undefined) return;
 
     const getCanvasRect = this.deps.getCanvasRect;
     if (getCanvasRect === undefined) return;
@@ -132,16 +132,16 @@ export class GradientTool implements ITool {
 
     const dirtyRectangle = selectedLayer ? selectedLayer.rect : canvasRect;
 
-    setLayer((prevLayer: LayerEntity) => {
-      const newLayer = stampToCanvasLayer(gradientLayer, originalLayer);
+    setLayers((prevLayers: LayerEntity[]) => {
+      const newLayer = stampToCanvasLayer(gradientLayer, originalLayer.layer);
       const layer = {
-        ...prevLayer,
+        ...prevLayers[0],
         layer: newLayer,
       };
 
       this.layerLastDrawn = layer;
 
-      return { layer: layer, dirtyRect: dirtyRectangle };
+      return { layers: [layer], dirtyRect: dirtyRectangle };
     });
   }
   onUp(x: number, y: number, pixelSize: number, mouseButton: number): void {
@@ -149,8 +149,13 @@ export class GradientTool implements ITool {
     this.downY = null;
 
     const checkPoint = this.deps.checkPoint;
-    if (!this.layerLastDrawn || !checkPoint) return;
+    if (!this.layerLastDrawn || !checkPoint || !this.originalLayer) return;
 
-    checkPoint(this.layerLastDrawn);
+    checkPoint({
+      up: [this.originalLayer],
+      down: [this.layerLastDrawn],
+    });
+    this.layerLastDrawn = null;
+    this.originalLayer = null;
   }
 }

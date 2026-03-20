@@ -15,7 +15,7 @@ const PenToolComponent = () => {
   const { setActiveTool, getPrimaryColor, getProperties, setProperties, getSecondaryColor } =
     useToolContext();
   const { getSelectionLayer, getCanvasRect } = useCanvasContext();
-  const { checkPoint, hasBaseline } = useUndoRedoContext();
+  const { checkPoint } = useUndoRedoContext();
   const { onToast } = useToastContext();
 
   useEffect(() => {
@@ -40,7 +40,6 @@ const PenToolComponent = () => {
         getSelectionLayer,
         getCanvasRect,
         checkPoint,
-        hasBaseline,
         onToast,
       }),
     [getActiveLayers, setActiveLayers, getPrimaryColor, getProperties],

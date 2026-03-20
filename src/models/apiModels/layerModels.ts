@@ -26,6 +26,8 @@ export type AddLayerBody = {
   name: string;
   length: number;
   zIndex?: number;
+  opacity: number;
+  visible: boolean;
 };
 
 export type AddLayerResponseData = {

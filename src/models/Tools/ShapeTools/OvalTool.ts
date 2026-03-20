@@ -30,7 +30,7 @@ export class OvalTool implements ITool {
   private lastY: number | null = null;
 
   private layerLastDrawn: LayerEntity | null = null;
-  private originalLayer: Layer | null = null;
+  private originalLayer: LayerEntity | null = null;
 
   private color: number | null = null;
   private fillColor: number | null = null;
@@ -50,20 +50,21 @@ export class OvalTool implements ITool {
     this.lastY = pos.y;
 
     //add a baseline entry if none exists
-    const layer = this.deps.getLayer?.();
-    if (!layer) return;
+    const layers = this.deps.getLayers?.();
+    if (!layers) return;
 
-    const hasBaseLine = this.deps.hasBaseline?.(layer.id);
+    if (layers.length === 0) {
+      this.deps.onToast?.('You need to have a layer selected to use the Oval Tool', 'warning');
+      return;
+    }
 
-    if (hasBaseLine === false) {
-      this.deps.checkPoint?.(layer);
+    if (layers.length > 1) {
+      this.deps.onToast?.('You can only have 1 layer selected to use the Oval Tool', 'warning');
+      return;
     }
 
     //set original layer
-    this.originalLayer = layer.layer;
-
-    const setLayer = this.deps.setLayer;
-    if (setLayer == undefined) return;
+    this.originalLayer = layers[0];
 
     //get color and opacity
     const primaryColor = this.deps.getPrimaryColor?.() ?? config.defaultColor;
@@ -108,8 +109,8 @@ export class OvalTool implements ITool {
     this.lastX = pos.x;
     this.lastY = pos.y;
 
-    const setLayer = this.deps.setLayer;
-    if (setLayer == undefined) return;
+    const setLayers = this.deps.setLayers;
+    if (setLayers == undefined) return;
 
     // get properties
     const properties: IProperty[] = this.deps.getProperties?.('ovalTool') ?? [];
@@ -178,16 +179,16 @@ export class OvalTool implements ITool {
 
     const filterCanvas: Layer = clipLayerToRect(selectionFilteredLayer, canvasRect);
 
-    setLayer((prevLayer: LayerEntity) => {
-      const newLayer = stampToCanvasLayer(filterCanvas, originalLayer);
+    setLayers((prevLayers: LayerEntity[]) => {
+      const newLayer = stampToCanvasLayer(filterCanvas, originalLayer.layer);
       const layer = {
-        ...prevLayer,
+        ...prevLayers[0],
         layer: newLayer,
       };
 
       this.layerLastDrawn = layer;
 
-      return { layer: layer, dirtyRect: dirtyRectangle };
+      return { layers: [layer], dirtyRect: dirtyRectangle };
     });
   }
   onUp(x: number, y: number, pixelSize: number): void {
@@ -199,6 +200,13 @@ export class OvalTool implements ITool {
     const checkPoint = this.deps.checkPoint;
     if (!this.layerLastDrawn || !checkPoint) return;
 
-    checkPoint(this.layerLastDrawn);
+    if (!this.layerLastDrawn || !checkPoint || !this.originalLayer) return;
+
+    checkPoint({
+      up: [this.originalLayer],
+      down: [this.layerLastDrawn],
+    });
+    this.layerLastDrawn = null;
+    this.originalLayer = null;
   }
 }

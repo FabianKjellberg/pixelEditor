@@ -1,6 +1,7 @@
 import { ToastType } from '@/context/ToastContext/ToastContext';
 import { Cordinate, LayerEntity, Rectangle, SelectionLayer } from '../Layer';
 import { IProperty } from './Properties';
+import { HistoryAction } from '@/context/UndoRedoContext';
 
 export type IToolDeps = {
   getLayers?: () => LayerEntity[] | undefined;
@@ -19,8 +20,7 @@ export type IToolDeps = {
   setPan?: (cord: Cordinate) => void;
   getCanvasRect?: () => Rectangle;
   setCanvasRect?: (rect: Rectangle) => void;
-  checkPoint?: (layer: LayerEntity) => void;
-  hasBaseline?: (layerId: string) => boolean;
+  checkPoint?: (action: HistoryAction) => void;
   onToast?: (message: string, type?: ToastType) => void;
 };
 

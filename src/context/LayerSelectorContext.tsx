@@ -1,18 +1,43 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useLayerContext } from './LayerContext';
-import { createLayerEntity } from '@/util/LayerUtil';
-import { LayerGroupEnd, LayerGroupStart } from '@/models/Layer';
+import { combineManyRectangles, createLayerEntity } from '@/util/LayerUtil';
+import {
+  LayerEntity,
+  LayerGroupEnd,
+  LayerGroupStart,
+  LayerTreeItem,
+  Rectangle,
+} from '@/models/Layer';
 import { DropAtEnum } from '@/components/SpriteCreator/Menu/LayerMenu/LayerItem';
-import { removeRange } from '@/util/LayerSelectorUtil';
+import { useCanvasContext } from './CanvasContext';
+import { api } from '@/api/client';
+import { useMetaDataAutoSaveContext } from './MetaDataAutoSaveContext';
+import { LoadingState } from '@/components/Loading/Loading';
+
+export type Order = {
+  id: string;
+  type: 'layer' | 'group-start' | 'group-end';
+  index: number;
+};
 
 type LayerSelectorContextValue = {
+  orderState: 'saved' | 'not-saved' | 'saving';
   collapseGroup: (groupId: string) => void;
   changeLayerName: (id: string, name: string) => void;
-  addLayer: (index?: number) => void;
+  addLayer: (index?: number, layerEntity?: LayerEntity) => void;
   addGroup: (index?: number) => void;
   deleteItem: (id: string) => void;
+  deleteMultipleItems: (ids: string[]) => void;
   dragId: string;
   setDragId: (id: string) => void;
   checkDropAvailability: (position: DropAtEnum, id: string) => boolean;
@@ -23,14 +48,27 @@ type LayerSelectorContextValue = {
 const LayerSelectorContext = createContext<LayerSelectorContextValue | undefined>(undefined);
 
 export const LayerSelectorProvider = ({ children }: { children: React.ReactNode }) => {
-  const { setLayerTreeItems, layerTreeItems, activeLayerIds, setActiveLayerIds } =
+  const { setLayerTreeItems, layerTreeItems, activeLayerIds, setActiveLayerIds, markDirty } =
     useLayerContext();
+
+  const { getCanvasRect, width, height, isLoadedFromCloud, projectId, requestPreview } =
+    useCanvasContext();
+
+  const { addChange } = useMetaDataAutoSaveContext();
 
   const [dragId, setDragId] = useState<string>('');
 
   const collapseGroup = useCallback(
     (groupId: string) => {
+      let collapsed = true;
+
       setLayerTreeItems((prev) => {
+        const item = prev.find((group) => group.id === groupId && group.type === 'group-start');
+
+        if (item && item.type === 'group-start') {
+          collapsed = !item.collapsed;
+        }
+
         const next = prev.map((group) =>
           group.type === 'group-start' && group.id === groupId
             ? { ...group, collapsed: !group.collapsed }
@@ -39,8 +77,12 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
 
         return next;
       });
+
+      if (isLoadedFromCloud) {
+        addChange({ type: 'collapse', id: groupId, collapsed });
+      }
     },
-    [setLayerTreeItems],
+    [setLayerTreeItems, addChange, isLoadedFromCloud],
   );
 
   const changeLayerName = useCallback(
@@ -54,13 +96,17 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
 
         return next;
       });
+
+      if (isLoadedFromCloud) {
+        addChange({ type: 'name', name, id });
+      }
     },
-    [setLayerTreeItems],
+    [setLayerTreeItems, addChange, isLoadedFromCloud],
   );
 
   const addLayer = useCallback(
-    (index?: number) => {
-      const newLayer = createLayerEntity('New layer');
+    (index?: number, layer?: LayerEntity) => {
+      const newLayer = layer ? layer : createLayerEntity('New layer');
 
       setLayerTreeItems((prev) => {
         const insertIndex = index ?? 0;
@@ -68,10 +114,14 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
 
         next.splice(insertIndex, 0, newLayer);
 
+        if (isLoadedFromCloud) {
+          api.layer.addLayer(newLayer, projectId, requestPreview, index);
+        }
+
         return next;
       });
     },
-    [setLayerTreeItems],
+    [setLayerTreeItems, isLoadedFromCloud],
   );
 
   const addGroup = useCallback(
@@ -90,47 +140,202 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
         id: groupId,
       };
 
-      setLayerTreeItems((prev) => {
-        const insertIndex = index ?? 0;
-        const next = [...prev];
+      if (activeLayerIds.length > 1) {
+        setLayerTreeItems((prev) => {
+          const indexes: { index: number; id: string }[] = activeLayerIds.map((id) => ({
+            index: prev.findIndex((item) => item.id == id),
+            id: id,
+          }));
 
-        next.splice(insertIndex, 0, newGroupStart, newGroupEnd);
+          indexes.sort((a, b) => a.index - b.index);
 
-        return next;
-      });
+          const startIndex = indexes[0].index;
+          const endIndex = indexes[indexes.length - 1].index;
+
+          let groupBetween = false;
+
+          for (let i = startIndex; i <= endIndex; i++) {
+            if (prev[i].type !== 'layer') groupBetween = true;
+          }
+
+          if (groupBetween) {
+            const insertIndex = index ?? 0;
+            const next = [...prev];
+
+            next.splice(insertIndex, 0, newGroupStart, newGroupEnd);
+
+            return next;
+          }
+
+          const insertIndex = startIndex;
+          const next = prev.filter((item) => !indexes.some((idx) => idx.id === item.id));
+
+          const groupItems: LayerTreeItem[] = [];
+
+          indexes.forEach((idx) => {
+            const item = prev.find((i) => i.id === idx.id);
+
+            if (item) groupItems.push(item);
+          });
+
+          const newGroup = [newGroupStart, ...groupItems, newGroupEnd];
+
+          next.splice(insertIndex, 0, ...newGroup);
+
+          if (isLoadedFromCloud) {
+            const startIndex = next.findIndex((g) => g.id === groupId && g.type === 'group-start');
+            const endIndex = next.findIndex((g) => g.id === groupId && g.type === 'group-end');
+
+            if (startIndex === -1 || endIndex === -1)
+              throw new Error('cant find group start or group end');
+
+            api.group.createGroup(projectId, startIndex, endIndex, newGroupStart);
+          }
+
+          return next;
+        });
+
+        const rect = getCanvasRect();
+
+        markDirty(rect);
+      } else {
+        setLayerTreeItems((prev) => {
+          const insertIndex = index ?? 0;
+          const next = [...prev];
+
+          next.splice(insertIndex, 0, newGroupStart, newGroupEnd);
+
+          if (isLoadedFromCloud) {
+            const startIndex = next.findIndex((g) => g.id === groupId && g.type === 'group-start');
+            const endIndex = next.findIndex((g) => g.id === groupId && g.type === 'group-end');
+
+            if (startIndex === -1 || endIndex === -1)
+              throw new Error('cant find group start or group end');
+
+            api.group.createGroup(projectId, startIndex, endIndex, newGroupStart);
+          }
+
+          return next;
+        });
+      }
     },
-    [setLayerTreeItems],
+    [setLayerTreeItems, activeLayerIds, markDirty, getCanvasRect, isLoadedFromCloud],
   );
 
-  const deleteItem = useCallback((id: string) => {
-    setLayerTreeItems((prev) => {
-      const next = [...prev];
-
-      const item = next.find(
+  const deleteItem = useCallback(
+    (id: string) => {
+      const item = layerTreeItems.find(
         (i) => i.id === id && (i.type === 'group-start' || i.type === 'layer'),
       );
 
-      if (!item) return next;
+      if (!item) return;
 
-      switch (item.type) {
-        case 'layer':
-          return next.filter((item) => item.id !== id);
-        case 'group-start':
-          const startIndex = next.findIndex((i) => i.type === 'group-start' && i.id === id);
-          const endIndex = next.findIndex((i) => i.type === 'group-end' && i.id === id);
+      let dirtyRect: Rectangle | undefined;
+      let idsToDelete: string[] = [id];
+      let nextItems = layerTreeItems;
 
-          if (startIndex === -1 || endIndex === -1) return next;
-
-          next.splice(startIndex, endIndex - startIndex + 1);
-
-          return next;
-        default:
-          break;
+      if (item.type === 'layer') {
+        dirtyRect = item.layer.rect;
+        nextItems = layerTreeItems.filter((item) => item.id !== id);
       }
 
-      return next;
-    });
-  }, []);
+      if (item.type === 'group-start') {
+        const startIndex = layerTreeItems.findIndex((i) => i.type === 'group-start' && i.id === id);
+        const endIndex = layerTreeItems.findIndex((i) => i.type === 'group-end' && i.id === id);
+
+        if (startIndex === -1 || endIndex === -1) return;
+
+        const rectangles: Rectangle[] = [];
+
+        for (let i = startIndex; i < endIndex; i++) {
+          const layer = layerTreeItems[i];
+          if (layer.type === 'layer') {
+            rectangles.push(layer.layer.rect);
+          }
+        }
+
+        dirtyRect = combineManyRectangles(rectangles);
+        nextItems = [...layerTreeItems];
+        nextItems.splice(startIndex, endIndex - startIndex + 1);
+      }
+
+      setActiveLayerIds((prev) => prev.filter((layerId) => id !== layerId));
+      setLayerTreeItems(nextItems);
+
+      if (isLoadedFromCloud) {
+        const shouldPreview = !!dirtyRect && dirtyRect.height > 0 && dirtyRect.width > 0;
+        api.project.deleteMultipleItems(idsToDelete, shouldPreview, projectId, requestPreview);
+      }
+
+      if (dirtyRect) {
+        markDirty(dirtyRect);
+      }
+    },
+    [layerTreeItems, markDirty, isLoadedFromCloud, projectId, requestPreview, setActiveLayerIds],
+  );
+
+  const deleteMultipleItems = useCallback(
+    (ids: string[]) => {
+      const idsToDelete = new Set(ids);
+      const indexesToRemove = new Set<number>();
+      const dirtyRects: Rectangle[] = [];
+
+      for (let i = 0; i < layerTreeItems.length; i++) {
+        const item = layerTreeItems[i];
+
+        if (!idsToDelete.has(item.id)) continue;
+
+        if (item.type === 'layer') {
+          indexesToRemove.add(i);
+          dirtyRects.push(item.layer.rect);
+          continue;
+        }
+
+        if (item.type === 'group-start') {
+          const endIndex = layerTreeItems.findIndex(
+            (candidate, idx) =>
+              idx > i && candidate.type === 'group-end' && candidate.id === item.id,
+          );
+
+          if (endIndex === -1) continue;
+
+          for (let j = i; j <= endIndex; j++) {
+            indexesToRemove.add(j);
+
+            const rangeItem = layerTreeItems[j];
+            if (rangeItem.type === 'layer') {
+              dirtyRects.push(rangeItem.layer.rect);
+            }
+          }
+
+          i = endIndex;
+        }
+      }
+
+      const nextItems = layerTreeItems.filter((_, index) => !indexesToRemove.has(index));
+
+      setActiveLayerIds((prev) => prev.filter((itemId) => !idsToDelete.has(itemId)));
+      setLayerTreeItems(nextItems);
+
+      if (isLoadedFromCloud) {
+        const shouldPreview = dirtyRects.some((rect) => rect.height > 0 && rect.width > 0);
+        api.project.deleteMultipleItems(ids, shouldPreview, projectId, requestPreview);
+      }
+
+      if (dirtyRects.length > 0) {
+        markDirty(combineManyRectangles(dirtyRects));
+      }
+    },
+    [
+      layerTreeItems,
+      isLoadedFromCloud,
+      markDirty,
+      projectId,
+      requestPreview,
+      setActiveLayerIds,
+      setLayerTreeItems,
+    ],
+  );
 
   const checkDropAvailability = useCallback(
     (position: DropAtEnum, id: string): boolean => {
@@ -187,6 +392,8 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
 
   const dropItem = useCallback(
     (position: DropAtEnum, fromId: string, toId: string) => {
+      let dirtyRect: Rectangle = { x: 0, y: 0, width: 0, height: 0 };
+
       setLayerTreeItems((prev) => {
         const next = [...prev];
 
@@ -201,6 +408,18 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
             : next.findIndex((item) => item.id === fromId && item.type === 'group-end');
 
         if (fromEnd === -1) return prev;
+
+        const recntangles: Rectangle[] = [];
+
+        for (let i = fromStart; i <= fromEnd; i++) {
+          const layer = prev[i];
+
+          if (layer.type === 'layer') {
+            recntangles.push(layer.layer.rect);
+          }
+        }
+
+        dirtyRect = combineManyRectangles(recntangles);
 
         const removed = next.splice(fromStart, fromEnd - fromStart + 1);
 
@@ -235,8 +454,12 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
         next.splice(insertIndex, 0, ...removed);
         return next;
       });
+      if (dirtyRect.width < 1 || dirtyRect.height < 1) return;
+
+      markDirty(dirtyRect);
     },
-    [setLayerTreeItems],
+
+    [setLayerTreeItems, markDirty, width, height],
   );
 
   const onSelectItem = useCallback(
@@ -333,13 +556,63 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
     [layerTreeItems, activeLayerIds, setActiveLayerIds],
   );
 
+  const orderRef = useRef<Order[]>([]);
+
+  const order = useMemo(
+    (): Order[] => layerTreeItems.map((item, index) => ({ id: item.id, type: item.type, index })),
+    [layerTreeItems],
+  );
+
+  useEffect(() => {
+    orderRef.current = order;
+  }, [order]);
+
+  const orderKey = useMemo(
+    () => layerTreeItems.map((item, index) => `${item.id}:${item.type}:${index}`).join('|'),
+    [layerTreeItems],
+  );
+
+  const timeOutRef = useRef<number | null>(null);
+
+  const [orderState, setOrderState] = useState<LoadingState>('saved');
+
+  const saveOrder = useCallback(async () => {
+    try {
+      setOrderState('saving');
+      await api.project.saveOrder(orderRef.current, projectId);
+    } finally {
+      setOrderState('saved');
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    if (!isLoadedFromCloud) return;
+
+    setOrderState('not-saved');
+
+    const delay = 5000;
+
+    if (timeOutRef.current) {
+      clearTimeout(timeOutRef.current);
+    }
+
+    const timer = window.setTimeout(() => {
+      saveOrder();
+      timeOutRef.current = null;
+    }, delay);
+
+    timeOutRef.current = timer;
+  }, [orderKey]);
+
   const value = useMemo(
     () => ({
+      orderState,
       collapseGroup,
       changeLayerName,
       addLayer,
       addGroup,
       deleteItem,
+      deleteMultipleItems,
       dragId,
       setDragId,
       checkDropAvailability,
@@ -347,11 +620,13 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
       onSelectItem,
     }),
     [
+      orderState,
       collapseGroup,
       changeLayerName,
       addLayer,
       addGroup,
       deleteItem,
+      deleteMultipleItems,
       dragId,
       setDragId,
       checkDropAvailability,

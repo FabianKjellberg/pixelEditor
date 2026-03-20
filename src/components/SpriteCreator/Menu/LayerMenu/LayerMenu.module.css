@@ -133,3 +133,44 @@
   color: var(--highlight);
   background-color: var(--highlight-dim);
 }
+
+.visibleButton {
+  display: flex;
+  border: none;
+  background-color: rgba(0, 0, 0, 0);
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+.visibleButton:hover {
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.visibleButton img:hover {
+  filter: brightness(0) saturate(100%) invert(70%) sepia(85%) saturate(450%) hue-rotate(60deg);
+}
+
+.layerBar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.titleBar {
+  text-align: center;
+  padding: 5px;
+  text-decoration: underline;
+  color: var(--highlight);
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.loading {
+  position: relative;
+  display: flex;
+  right: 0;
+}

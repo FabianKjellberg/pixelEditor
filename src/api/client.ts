@@ -3,6 +3,7 @@ import * as users from './users';
 import * as project from './project';
 import * as layer from './layer';
 import * as ai from './ai';
+import * as group from './group';
 
 // export api functions for easier usage. Each module should export functions that use the apiClient.
 export const api = {
@@ -10,6 +11,7 @@ export const api = {
   project,
   layer,
   ai,
+  group,
 };
 
 type MethodNoBody = 'GET';

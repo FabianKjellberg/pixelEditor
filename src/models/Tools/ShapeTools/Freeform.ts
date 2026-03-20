@@ -64,10 +64,26 @@ export class FreeformTool implements ITool {
       mouseButton === 0 ? setAlpha(sColor, opacity.value) : setAlpha(pColor, opacity.value);
 
     if (!this.originalLayer) {
-      const getLayer = this.deps.getLayer?.();
-      if (!getLayer) throw new Error('unable to fetch getLayer');
+      const getLayers = this.deps.getLayers?.();
+      if (!getLayers) throw new Error('unable to fetch getLayer');
 
-      this.originalLayer = getLayer;
+      if (getLayers.length === 0) {
+        this.deps.onToast?.(
+          'You need to have a layer selected to use the Freeform Tool',
+          'warning',
+        );
+        return;
+      }
+
+      if (getLayers.length > 1) {
+        this.deps.onToast?.(
+          'You can only have 1 layer selected to use the Freeform Tool',
+          'warning',
+        );
+        return;
+      }
+
+      this.originalLayer = getLayers[0];
     }
 
     const pos = getPixelPositions(x, y, pixelSize);
@@ -80,16 +96,6 @@ export class FreeformTool implements ITool {
         this.commitShape();
         return;
       }
-    }
-
-    const hasBaseline = this.deps.hasBaseline;
-    if (!hasBaseline) throw new Error('unable to fetch hasBaseLine');
-
-    if (!hasBaseline(this.originalLayer.id)) {
-      const checkPoint = this.deps.checkPoint;
-      if (!checkPoint) throw new Error('unable to fetch checkpoint');
-
-      checkPoint(this.originalLayer);
     }
 
     const canvasRect = this.deps.getCanvasRect?.();
@@ -115,8 +121,8 @@ export class FreeformTool implements ITool {
     this.lastX = pos.x;
     this.lastY = pos.y;
 
-    const setLayer = this.deps.setLayer;
-    if (!setLayer) throw new Error('unable to fetch setLayer');
+    const setLayers = this.deps.setLayers;
+    if (!setLayers) throw new Error('unable to fetch setLayer');
 
     const properties = this.deps.getProperties?.('freeformTool');
     if (!properties) throw new Error('unable to fetch properties');
@@ -176,16 +182,16 @@ export class FreeformTool implements ITool {
     const originalLayer = this.originalLayer;
     if (!originalLayer) throw new Error('original Layer never set');
 
-    setLayer((prevLayer: LayerEntity) => {
+    setLayers((prevLayers: LayerEntity[]) => {
       const newLayer = stampToCanvasLayer(selectionFilteredLayer, originalLayer.layer);
       const layer = {
-        ...prevLayer,
+        ...prevLayers[0],
         layer: newLayer,
       };
 
       this.layerLastDrawn = layer;
 
-      return { layer: layer, dirtyRect };
+      return { layers: [layer], dirtyRect };
     });
   }
   onCommit(): void {
@@ -197,7 +203,7 @@ export class FreeformTool implements ITool {
 
   private resetValues(backToOriginal: boolean) {
     if (backToOriginal) {
-      const setLayer = this.deps.setLayer;
+      const setLayer = this.deps.setLayers;
       if (!setLayer) throw new Error('unable to fetch setLayer');
 
       const originalLayer = this.originalLayer;
@@ -205,22 +211,24 @@ export class FreeformTool implements ITool {
 
       if (!originalLayer || !dirtyRect) return;
 
-      setLayer((prevLayer: LayerEntity) => {
+      setLayer((prevLayers: LayerEntity[]) => {
         const layer = {
-          ...prevLayer,
+          ...prevLayers[0],
           layer: originalLayer.layer,
         };
 
-        return { layer: layer, dirtyRect };
+        return { layers: [layer], dirtyRect };
       });
     } else {
       const checkPoint = this.deps.checkPoint;
-      if (!checkPoint) throw new Error('unable to fetch checkpoint');
+      if (!this.layerLastDrawn || !checkPoint || !this.originalLayer) return;
 
-      const layerLastDrawn = this.layerLastDrawn;
-      if (!layerLastDrawn) return;
-
-      checkPoint(layerLastDrawn);
+      checkPoint({
+        up: [this.originalLayer],
+        down: [this.layerLastDrawn],
+      });
+      this.layerLastDrawn = null;
+      this.originalLayer = null;
     }
 
     this.points = [];
@@ -243,8 +251,8 @@ export class FreeformTool implements ITool {
     const lastX = this.lastX ?? this.points[0].x;
     const lastY = this.lastX ?? this.points[0].y;
 
-    const setLayer = this.deps.setLayer;
-    if (!setLayer) throw new Error('unable to fetch setLayer');
+    const setLayers = this.deps.setLayers;
+    if (!setLayers) throw new Error('unable to fetch setLayer');
 
     const properties = this.deps.getProperties?.('freeformTool');
     if (!properties) throw new Error('unable to fetch properties');
@@ -309,17 +317,16 @@ export class FreeformTool implements ITool {
 
     const filterCanvas: Layer = clipLayerToRect(selectionFilteredLayer, canvasRect);
 
-    setLayer((prevLayer: LayerEntity) => {
+    setLayers((prevLayers: LayerEntity[]) => {
       const newLayer = stampToCanvasLayer(filterCanvas, originalLayer.layer);
       const layer = {
+        ...prevLayers[0],
         layer: newLayer,
-        name: prevLayer.name,
-        id: prevLayer.id,
       };
 
       this.layerLastDrawn = layer;
 
-      return { layer: layer, dirtyRect };
+      return { layers: [layer], dirtyRect };
     });
 
     this.resetValues(false);

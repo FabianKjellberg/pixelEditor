@@ -59,36 +59,6 @@ export async function saveLayer(
   }
 }
 
-export async function deleteLayer(
-  layerId: string,
-  shouldPreview: boolean,
-  requestPreview: () => Promise<Blob>,
-): Promise<void> {
-  try {
-    const response = await apiClient('DELETE', '/layer/delete', { layerId, shouldPreview });
-
-    if (response.ok) {
-      if (shouldPreview) {
-        const responseData: DeleteLayerResponseData = await response.json();
-
-        const previewBlobUrl: BlobUrl = {
-          url: responseData.previewUrl,
-          headers: { 'Content-Type': 'image/webp' },
-          expiration: '180',
-        };
-        const previewBlob = await requestPreview();
-        const uploadOk = await uploadBlob(previewBlobUrl, previewBlob);
-
-        if (!uploadOk) console.error('failed uploading layer or preview');
-      }
-    } else {
-      throw new Error('response not ok, deleteLayer');
-    }
-  } catch (error) {
-    throw new Error('failed to delete layer: ' + layerId + '. error: ' + error);
-  }
-}
-
 export async function addLayer(
   layer: LayerEntity,
   projectId: string,
@@ -110,6 +80,8 @@ export async function addLayer(
       zIndex: index,
       layerId: layer.id,
       name: layer.name,
+      opacity: layer.opacity,
+      visible: layer.visible,
     };
 
     const response = await apiClient('POST', '/layer/create', addLayerBody);
@@ -145,48 +117,5 @@ export async function addLayer(
     }
   } catch (error) {
     throw new Error('failed to add layer: ' + layer.id + '. error: ' + error);
-  }
-}
-
-export async function renameLayer(layerId: string, name: string) {
-  try {
-    const response = await apiClient('PUT', '/layer/name', { layerId, name });
-
-    if (!response.ok) {
-      throw new Error('response not ok, renameLayer');
-    }
-  } catch (error) {
-    throw new Error('failed to rename layer: ' + layerId + '. error: ' + error);
-  }
-}
-
-export async function moveLayers(allLayers: LayerEntity[], requestPreview: () => Promise<Blob>) {
-  try {
-    const body: MoveLayerBody = {
-      layerIndexes: allLayers.map((layer, index) => ({
-        zIndex: index,
-        layerId: layer.id,
-      })),
-    };
-
-    const response = await apiClient('PUT', '/layer/move', body);
-
-    if (response.ok) {
-      const responseData: MoveLayerResponseData = await response.json();
-
-      const previewBlobUrl: BlobUrl = {
-        url: responseData.previewUrl,
-        headers: { 'Content-Type': 'image/webp' },
-        expiration: '180',
-      };
-      const previewBlob = await requestPreview();
-      const uploadOk = await uploadBlob(previewBlobUrl, previewBlob);
-
-      if (!uploadOk) console.error('failed uploading layer or preview');
-    } else {
-      throw new Error('response not ok, addLayer');
-    }
-  } catch (error) {
-    throw new Error('failed to move layer: ' + '. error: ' + error);
   }
 }

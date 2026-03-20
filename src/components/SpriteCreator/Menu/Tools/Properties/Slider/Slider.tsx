@@ -34,7 +34,6 @@ const Slider = ({ value, onChange, sliderProperties }: SliderProps) => {
     (p: number) => {
       const t = gamma === 1 ? p : Math.pow(p, gamma);
       const raw = min + t * range;
-      // keep integer steps like before; remove Math.round for continuous
       return clamp(Math.round(raw), min, max);
     },
     [min, max, range, gamma],

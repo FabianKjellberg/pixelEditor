@@ -58,7 +58,7 @@ export async function downloadBlob(blobUrl: BlobUrl): Promise<Blob | null> {
   }
 }
 
-export async function getLayerFromBlob(layer: FetchedLayer): Promise<LayerEntity | null> {
+export async function getLayerFromBlob(layer: FetchedLayer): Promise<LayerEntity> {
   const blobUrl: BlobUrl = {
     url: layer.signedBlobUrl,
     expiration: '180',
@@ -66,7 +66,7 @@ export async function getLayerFromBlob(layer: FetchedLayer): Promise<LayerEntity
 
   const layerBlob = await downloadBlob(blobUrl);
 
-  if (!layerBlob) return null;
+  if (!layerBlob) throw new Error('unable to fetch blob');
 
   const pixels = await blobToUint32Array(layerBlob);
 
@@ -79,7 +79,7 @@ export async function getLayerFromBlob(layer: FetchedLayer): Promise<LayerEntity
 
   const newLayer: Layer = { rect: layerRectangle, pixels };
 
-  return createLayerEntity(layer.name, layer.id, newLayer);
+  return createLayerEntity(layer.name, layer.id, newLayer, layer.opacity, layer.visible);
 }
 
 export async function createPreview(

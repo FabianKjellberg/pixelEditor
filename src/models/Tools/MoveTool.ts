@@ -23,6 +23,9 @@ export class MoveTool implements ITool {
   private baseLayers: Layer[] | null = null;
   private movingSelectionLayer: SelectionLayer | null = null;
 
+  private originalLayers: LayerEntity[] | null = null;
+  private lastMovedLayers: LayerEntity[] | null = null;
+
   constructor(private toolDeps: IToolDeps) {
     this.deps = toolDeps;
   }
@@ -33,6 +36,16 @@ export class MoveTool implements ITool {
       this.deps.onToast?.('You need to select at least one layer to use the Move Tool', 'warning');
       return;
     }
+
+    this.originalLayers = selected.map((layer) => ({
+      ...layer,
+      layer: {
+        ...layer.layer,
+        rect: { ...layer.layer.rect },
+        pixels: layer.layer.pixels.slice(),
+      },
+    }));
+    this.lastMovedLayers = null;
 
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
     const selectionLayer = this.toolDeps.getSelectionLayer?.() ?? null;
@@ -113,6 +126,15 @@ export class MoveTool implements ITool {
           };
         });
 
+        this.lastMovedLayers = nextSelected.map((layer) => ({
+          ...layer,
+          layer: {
+            ...layer.layer,
+            rect: { ...layer.layer.rect },
+            pixels: layer.layer.pixels.slice(),
+          },
+        }));
+
         return {
           layers: nextSelected,
           dirtyRect: dirtyRectAcc ?? { x: 0, y: 0, width: 0, height: 0 },
@@ -120,7 +142,14 @@ export class MoveTool implements ITool {
       });
     }
 
-    // reset
+    const checkPoint = this.toolDeps.checkPoint;
+    if (checkPoint && this.originalLayers && this.lastMovedLayers) {
+      checkPoint({
+        up: this.originalLayers,
+        down: this.lastMovedLayers,
+      });
+    }
+
     this.moving = false;
     this.lastX = null;
     this.lastY = null;
@@ -129,11 +158,10 @@ export class MoveTool implements ITool {
     this.floatingLayers = null;
     this.baseLayers = null;
     this.movingSelectionLayer = null;
+    this.originalLayers = null;
+    this.lastMovedLayers = null;
   }
 
-  /**
-   * Move only the selected pixels (floating layers) across ALL selected layers
-   */
   private moveSelection(x: number, y: number): void {
     if (!this.floatingLayers || !this.baseLayers || !this.movingSelectionLayer) return;
     if (this.lastX === null || this.lastY === null) return;
@@ -191,6 +219,15 @@ export class MoveTool implements ITool {
         };
       });
 
+      this.lastMovedLayers = nextSelected.map((layer) => ({
+        ...layer,
+        layer: {
+          ...layer.layer,
+          rect: { ...layer.layer.rect },
+          pixels: layer.layer.pixels.slice(),
+        },
+      }));
+
       return {
         layers: nextSelected,
         dirtyRect: dirtyRectAcc ?? { x: 0, y: 0, width: 0, height: 0 },
@@ -198,15 +235,9 @@ export class MoveTool implements ITool {
     });
   }
 
-  /**
-   * Move the whole rect for ALL selected layers (no selection active)
-   *
-   * This uses canvas delta (not local per-layer delta), so all layers move together.
-   */
   private moveWholeLayers(x: number, y: number): void {
     if (this.lastX === null || this.lastY === null) return;
 
-    // delta in canvas pixel coords
     const deltaX = x - this.lastX;
     const deltaY = y - this.lastY;
 
@@ -242,6 +273,15 @@ export class MoveTool implements ITool {
 
         return nextEntity;
       });
+
+      this.lastMovedLayers = nextSelected.map((layer) => ({
+        ...layer,
+        layer: {
+          ...layer.layer,
+          rect: { ...layer.layer.rect },
+          pixels: layer.layer.pixels.slice(),
+        },
+      }));
 
       return {
         layers: nextSelected,

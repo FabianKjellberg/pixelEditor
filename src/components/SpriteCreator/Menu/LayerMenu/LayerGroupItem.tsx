@@ -12,6 +12,8 @@ import { useContextMenuContext } from '@/context/ContextMenuContext/ContextMenuC
 import { useLayerContext } from '@/context/LayerContext';
 import ConfirmationModal from '../../Modals/ConfirmationModal/ConfirmationModal';
 import { useModalContext } from '@/context/ModalContext/ModalContext';
+import { useCanvasContext } from '@/context/CanvasContext';
+import { api } from '@/api/client';
 
 type LayerGroupItemProps = {
   group: LayerGroupStart;
@@ -88,8 +90,8 @@ const LayerGroupItem = ({ group, groupItems }: LayerGroupItemProps) => {
         e.clientY < rect.top + middle
           ? DropAtEnum.over
           : e.clientY < rect.top + middle * 2
-            ? DropAtEnum.on
-            : DropAtEnum.below;
+          ? DropAtEnum.on
+          : DropAtEnum.below;
 
       const canDrop = checkDropAvailability(position, group.id);
 

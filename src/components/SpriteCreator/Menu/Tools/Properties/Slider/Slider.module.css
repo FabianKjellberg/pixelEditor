@@ -27,9 +27,8 @@
   border: 2px solid var(--border);
   background-color: var(--highlight);
   cursor: pointer;
-  transition: transform var(--transition-fast),
-              box-shadow var(--transition-fast),
-              border-color var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .sliderPoint:hover {
@@ -50,11 +49,18 @@
   display: flex;
   flex-direction: row;
   gap: 10px;
-  align-items: center;
-  justify-content: center;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .buttonPlusMinus button {
   width: 25px;
   font-weight: bold;
+  border: 2px solid var(--border) !important;
+  text-align: center !important;
+  outline: none !important;
+}
+
+.buttonPlusMinus button:hover {
+  border-color: var(--highlight) !important;
 }

@@ -13,7 +13,6 @@ const RightMenu = () => {
       <div className={menuStyles.menuContainer}>
         <LayerSelectorProvider>
           <div className={menuStyles.toolContainer}>
-            <p className={menuStyles.toolsHeader}>Layers</p>
             <LayerMenu />
           </div>
         </LayerSelectorProvider>

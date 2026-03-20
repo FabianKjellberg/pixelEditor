@@ -24,6 +24,7 @@ export class FillBucket implements ITool {
   name: string = 'fillBucket';
 
   private layerLastDrawn: LayerEntity | null = null;
+  private originalLayer: LayerEntity | null = null;
 
   constructor(deps: IToolDeps) {
     this.deps = deps;
@@ -34,20 +35,26 @@ export class FillBucket implements ITool {
 
     const pos = getPixelPositions(x, y, pixelSize);
 
-    const getLayer = this.deps.getLayer?.();
-    if (!getLayer) return;
+    const getLayers = this.deps.getLayers?.();
+    if (!getLayers) return;
 
-    const setLayer = this.deps.setLayer;
-    if (setLayer == undefined) return;
+    if (getLayers.length === 0) {
+      this.deps.onToast?.('You need to have a layer selected to use the Bucket Tool', 'warning');
+      return;
+    }
+
+    if (getLayers.length > 1) {
+      this.deps.onToast?.('You can only have 1 layer selected to use the Bucket Tool', 'warning');
+      return;
+    }
+
+    const setLayers = this.deps.setLayers;
+    if (setLayers == undefined) return;
 
     const checkPoint = this.deps.checkPoint;
     if (!checkPoint) return;
 
-    const hasBaseLine = this.deps.hasBaseline?.(getLayer.id);
-
-    if (hasBaseLine === false) {
-      this.deps.checkPoint?.(getLayer);
-    }
+    this.originalLayer = getLayers[0];
 
     const color: number =
       mouseButton == 0
@@ -70,7 +77,7 @@ export class FillBucket implements ITool {
 
     const canvasLayer = createLayer(canvasRect);
 
-    const fillLayer = stampToCanvasLayer(getLayer.layer, canvasLayer);
+    const fillLayer = stampToCanvasLayer(getLayers[0].layer, canvasLayer);
 
     const selectionLayer = this.deps.getSelectionLayer?.();
 
@@ -84,25 +91,29 @@ export class FillBucket implements ITool {
 
     if (!filledLayer) return;
 
-    setLayer((prevLayer: LayerEntity) => {
-      const newLayer = stampToCanvasLayer(filledLayer, prevLayer.layer);
+    setLayers((prevLayers: LayerEntity[]) => {
+      const newLayer = stampToCanvasLayer(filledLayer, prevLayers[0].layer);
       const layer = {
-        ...prevLayer,
+        ...prevLayers[0],
         layer: newLayer,
       };
 
       this.layerLastDrawn = layer;
 
-      return { layer: layer, dirtyRect: fillLayer.rect };
+      return { layers: [layer], dirtyRect: fillLayer.rect };
     });
   }
 
   onMove(x: number, y: number, pixelSize: number): void {}
   onUp(x: number, y: number, pixelSize: number): void {
     const checkPoint = this.deps.checkPoint;
-    if (!this.layerLastDrawn || !checkPoint) return;
+    if (!this.layerLastDrawn || !checkPoint || !this.originalLayer) return;
 
-    checkPoint(this.layerLastDrawn);
+    checkPoint({
+      up: [this.originalLayer],
+      down: [this.layerLastDrawn],
+    });
     this.layerLastDrawn = null;
+    this.originalLayer = null;
   }
 }

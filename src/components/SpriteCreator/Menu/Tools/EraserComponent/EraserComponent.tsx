@@ -14,7 +14,7 @@ const EraserComponent = () => {
   const { getActiveLayers, setActiveLayers } = useLayerContext();
   const { getProperties, setProperties } = useToolContext();
   const { getSelectionLayer, getCanvasRect } = useCanvasContext();
-  const { checkPoint, hasBaseline } = useUndoRedoContext();
+  const { checkPoint } = useUndoRedoContext();
   const { onToast } = useToastContext();
 
   useEffect(() => {
@@ -35,7 +35,6 @@ const EraserComponent = () => {
           getCanvasRect,
           getSelectionLayer,
           checkPoint,
-          hasBaseline,
           onToast,
         })
       }
