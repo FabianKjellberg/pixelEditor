@@ -1,3 +1,5 @@
+import { LayerGroupEnd, LayerGroupStart } from '../Layer';
+
 export type UrlHeader = {
   'Content-Type': string;
 };
@@ -27,7 +29,10 @@ type ProjectRequestBody = {
   height: number;
 };
 
-type LayerRequestBody = {
+export type LayerTreeItemRequestBody = LayerRequestBody | GroupStartRequestBody;
+
+export type LayerRequestBody = {
+  type: 'layer';
   id: string;
   name: string;
   width: number;
@@ -36,11 +41,27 @@ type LayerRequestBody = {
   y: number;
   zIndex: number;
   length: number;
+  visible: boolean;
+  opacity: number;
+};
+
+export type GroupStartRequestBody = {
+  type: 'group-start';
+  id: string;
+  zIndex: number;
+  name: string;
+  collapsed: boolean;
+};
+
+export type GroupEndRequestBody = {
+  type: 'group-end';
+  id: string;
+  zIndex: string;
 };
 
 export type CreateProjectRequest = {
   project: ProjectRequestBody;
-  layers: LayerRequestBody[];
+  layers: LayerTreeItemRequestBody[];
 };
 
 export type GetMyProjectPreviewsResponse = {
@@ -65,6 +86,7 @@ export type FetchedProject = {
 };
 
 export type FetchedLayer = {
+  type: 'layer';
   id: string;
   name: string;
   signedBlobUrl: string;
@@ -73,13 +95,32 @@ export type FetchedLayer = {
   x: number;
   y: number;
   zIndex: number;
+  opacity: number;
+  visible: boolean;
 };
+
+export type FetchedGroupStart = {
+  type: 'group-start';
+  id: string;
+  projectId: string;
+  name: string;
+  collapsed: boolean;
+  zIndex: number;
+};
+
+export type FetchedGroupEnd = { type: 'group-end'; id: string; projectId: string; zIndex: number };
+
+export type FetchedLayerTreeItem = FetchedLayer | FetchedGroupStart | FetchedGroupEnd;
 
 export type ProjectWithLayers = {
   project: FetchedProject;
-  layers: FetchedLayer[];
+  layers: FetchedLayerTreeItem[];
 };
 
 export type UpdateCanvasDimensionResponseData = {
+  previewUrl: string;
+};
+
+export type DeleteItemsResponseData = {
   previewUrl: string;
 };

@@ -222,3 +222,129 @@
   height: 100%;
   border: 0;
 }
+
+/* === HOME PAGE HERO === */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: 8px;
+}
+
+.heroTitle {
+  font-size: 2rem;
+  margin: 0 0 8px 0;
+  letter-spacing: 0.01em;
+}
+
+.heroSubtitle {
+  font-size: 1rem;
+  color: var(--text-secondary, #999);
+  margin: 0 0 4px 0;
+  max-width: 480px;
+}
+
+.videoCaption {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #999);
+  text-align: center;
+  margin: 8px 0 0 0;
+  max-width: 480px;
+}
+
+/* === SECTION HEADINGS === */
+
+.sectionTitle {
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--highlight);
+  margin: 0 0 8px 0;
+}
+
+.sectionSubtitle {
+  color: var(--text-secondary, #999);
+  font-size: 0.9rem;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+/* === FEATURE GRID === */
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+.featureCard {
+  border: 2px solid var(--border);
+  padding: 16px 18px;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.featureCard:hover {
+  border-color: color-mix(in srgb, var(--border), var(--highlight) 40%);
+  background-color: var(--highlight-dim);
+}
+
+.featureCard h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.95rem;
+  color: var(--foreground);
+}
+
+.featureCard p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #999);
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .featureGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .featureGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === TECH STACK === */
+
+.techStack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.techPill {
+  border: 2px solid var(--border);
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.techPill:hover {
+  border-color: var(--highlight);
+  color: var(--highlight);
+}
+
+.techNote {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #999);
+  line-height: 1.5;
+  margin: 0;
+}

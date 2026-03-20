@@ -102,6 +102,47 @@ const layerColumns: TableColumn[] = [
     constraints: 'NOT NULL, DEFAULT 0',
     description: 'Stacking order',
   },
+  {
+    name: 'visible',
+    type: 'INTEGER',
+    constraints: 'NOT NULL, DEFAULT 1',
+    description: 'Layer visibility (1 = visible, 0 = hidden)',
+  },
+  {
+    name: 'opacity',
+    type: 'INTEGER',
+    constraints: 'NOT NULL, DEFAULT 255',
+    description: 'Layer opacity (0 to 255)',
+  },
+];
+
+const layerGroupColumns: TableColumn[] = [
+  { name: 'id', type: 'TEXT', constraints: 'PRIMARY KEY', description: 'UUID identifier' },
+  {
+    name: 'project_id',
+    type: 'TEXT',
+    constraints: 'NOT NULL, FK -> project',
+    description: 'Parent project',
+  },
+  { name: 'name', type: 'TEXT', constraints: 'NULLABLE', description: 'Group name' },
+  {
+    name: 'collapsed',
+    type: 'INTEGER',
+    constraints: 'NULLABLE',
+    description: 'Whether the group is collapsed (0/1)',
+  },
+  {
+    name: 'start_index',
+    type: 'INTEGER',
+    constraints: 'NOT NULL',
+    description: 'Start index for the group range in the layer tree',
+  },
+  {
+    name: 'end_index',
+    type: 'INTEGER',
+    constraints: 'NOT NULL',
+    description: 'End index for the group range in the layer tree',
+  },
 ];
 
 const refreshSessionColumns: TableColumn[] = [
@@ -172,6 +213,7 @@ const DatabaseSchema = () => {
       <SchemaTable tableName="users" columns={usersColumns} />
       <SchemaTable tableName="project" columns={projectColumns} />
       <SchemaTable tableName="layer" columns={layerColumns} />
+      <SchemaTable tableName="layerGroup" columns={layerGroupColumns} />
       <SchemaTable tableName="refresh_session" columns={refreshSessionColumns} />
       <SchemaTable tableName="refresh_token" columns={refreshTokenColumns} />
     </DocumentationSection>

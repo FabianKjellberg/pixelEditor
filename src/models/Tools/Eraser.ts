@@ -25,6 +25,7 @@ export class Eraser implements ITool {
   private strokeMatrix: Layer = createLayer({ x: 0, y: 0, width: 0, height: 0 }, 0);
 
   private layerLastErased: LayerEntity | null = null;
+  private orignalLayer: LayerEntity | null = null;
 
   //Constructor make sure that the tool accesses the currently selected layer
   constructor(private toolDeps: IToolDeps) {
@@ -35,14 +36,20 @@ export class Eraser implements ITool {
   onDown(x: number, y: number, pixelSize: number): void {
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
 
-    const layer = this.deps.getLayer?.();
-    if (!layer) return;
+    const layers = this.deps.getLayers?.();
+    if (!layers) return;
 
-    const hasBaseLine = this.deps.hasBaseline?.(layer.id);
-
-    if (hasBaseLine === false) {
-      this.deps.checkPoint?.(layer);
+    if (layers.length === 0) {
+      this.deps.onToast?.('You need to select a layer to erase', 'warning');
+      return;
     }
+
+    if (layers.length > 1) {
+      this.deps.onToast?.('You need to only have 1 layer selected to erase', 'warning');
+      return;
+    }
+
+    this.orignalLayer = layers[0];
 
     this.erase(pixelPos.x, pixelPos.y);
 
@@ -66,15 +73,20 @@ export class Eraser implements ITool {
     this.strokeNr++;
 
     const checkPoint = this.deps.checkPoint;
-    if (!this.layerLastErased || !checkPoint) return;
+    if (!this.layerLastErased || !checkPoint || !this.orignalLayer) return;
 
-    checkPoint(this.layerLastErased);
+    checkPoint({
+      up: [this.orignalLayer],
+      down: [this.layerLastErased],
+    });
+    this.layerLastErased = null;
+    this.orignalLayer = null;
   }
 
   /** -- OTHER METHODS -- **/
   private erase = (x: number, y: number): void => {
-    const setLayer = this.toolDeps.setLayer;
-    if (setLayer == undefined) return;
+    const setLayers = this.toolDeps.setLayers;
+    if (setLayers == undefined) return;
 
     // Get properties (same pattern as PenTool)
     const properties: IProperty[] = this.toolDeps.getProperties?.('eraser') ?? [];
@@ -136,17 +148,16 @@ export class Eraser implements ITool {
     const dirtyRectangle: Rectangle = filterCanvas.rect;
 
     // Update layer using eraseFromCanvasLayer
-    setLayer((prevLayer: LayerEntity) => {
-      const newLayer = eraseFromCanvasLayer(filterCanvas, prevLayer.layer);
+    setLayers((prevLayers: LayerEntity[]) => {
+      const newLayer = eraseFromCanvasLayer(filterCanvas, prevLayers[0].layer);
       const layer = {
+        ...prevLayers[0],
         layer: newLayer,
-        name: prevLayer.name,
-        id: prevLayer.id,
       };
 
       this.layerLastErased = layer;
 
-      return { layer: layer, dirtyRect: dirtyRectangle };
+      return { layers: [layer], dirtyRect: dirtyRectangle };
     });
   };
 

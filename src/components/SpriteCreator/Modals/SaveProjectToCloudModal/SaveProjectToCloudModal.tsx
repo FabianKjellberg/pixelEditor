@@ -12,7 +12,7 @@ import { useToastContext } from '@/context/ToastContext/ToastContext';
 import Loading from '@/components/Loading/Loading';
 
 const SaveProjectToCloudModal = () => {
-  const { allLayers } = useLayerContext();
+  const { allLayers, layerTreeItems } = useLayerContext();
   const { projectId, width, height, setIsLoadedFromCloud, requestPreview, setProjectName } =
     useCanvasContext();
   const { onHide } = useModalContext();
@@ -34,7 +34,7 @@ const SaveProjectToCloudModal = () => {
     try {
       setLoading(true);
 
-      const urls = await api.project.createProject(projectId, name, width, height, allLayers);
+      const urls = await api.project.createProject(projectId, name, width, height, layerTreeItems);
       const previewBlob = await requestPreview();
 
       if (!urls) {

@@ -8,12 +8,14 @@ import { useEffect } from 'react';
 import { OpacityProperty, SizeProperty } from '@/models/Tools/Properties';
 import { useCanvasContext } from '@/context/CanvasContext';
 import { useUndoRedoContext } from '@/context/UndoRedoContext';
+import { useToastContext } from '@/context/ToastContext/ToastContext';
 
 const EraserComponent = () => {
-  const { getActiveLayer, setActiveLayer } = useLayerContext();
+  const { getActiveLayers, setActiveLayers } = useLayerContext();
   const { getProperties, setProperties } = useToolContext();
   const { getSelectionLayer, getCanvasRect } = useCanvasContext();
-  const { checkPoint, hasBaseline } = useUndoRedoContext();
+  const { checkPoint } = useUndoRedoContext();
+  const { onToast } = useToastContext();
 
   useEffect(() => {
     const existing = getProperties('eraser');
@@ -27,13 +29,13 @@ const EraserComponent = () => {
       icon="/icons/eraser.png"
       tool={
         new Eraser({
-          setLayer: setActiveLayer,
-          getLayer: getActiveLayer,
+          setLayers: setActiveLayers,
+          getLayers: getActiveLayers,
           getProperties,
           getCanvasRect,
           getSelectionLayer,
           checkPoint,
-          hasBaseline,
+          onToast,
         })
       }
     />

@@ -1,0 +1,48 @@
+.layout {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 320px;
+}
+
+.text {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.description {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.warning {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.warning img {
+  image-rendering: pixelated;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.confirm {
+  border: 2px solid rgb(156, 11, 11);
+}
+
+.cancel {
+}
+
+.confirm:hover {
+  background-color: rgb(46, 0, 0) !important;
+  border-color: rgb(243, 7, 7) !important;
+}

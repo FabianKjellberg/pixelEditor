@@ -1,10 +1,8 @@
 import {
   clipLayerToSelection,
   combineRectangles,
-  createLayer,
   getPixelPositions,
   isRectanglesIntersecting,
-  outOfBoundFinder,
   reduceLayerToContent,
   stampToCanvasLayer,
 } from '@/util/LayerUtil';
@@ -15,81 +13,72 @@ import { getPixelIndex, rgbaToInt } from '@/helpers/color';
 export class MoveTool implements ITool {
   name: string = 'moveTool';
   deps: IToolDeps = {};
-  private moving: boolean = false;
+
+  private moving = false;
   private lastX: number | null = null;
   private lastY: number | null = null;
 
-  // Selection-based movement state
-  private selectionActive: boolean = false;
-  private floatingLayer: Layer | null = null; // Pixels being moved (from selection)
-  private baseLayer: Layer | null = null; // Original layer with selection pixels removed
-  private movingSelectionLayer: SelectionLayer | null = null; // Selection layer being moved
+  private selectionActive = false;
+  private floatingLayers: Layer[] | null = null;
+  private baseLayers: Layer[] | null = null;
+  private movingSelectionLayer: SelectionLayer | null = null;
 
-  private layerLastMoved: LayerEntity | null = null;
+  private originalLayers: LayerEntity[] | null = null;
+  private lastMovedLayers: LayerEntity[] | null = null;
 
   constructor(private toolDeps: IToolDeps) {
     this.deps = toolDeps;
   }
 
   onDown(x: number, y: number, pixelSize: number): void {
-    const layer = this.toolDeps.getLayer?.() || undefined;
-    if (layer == undefined) return;
-
-    const hasBaseLine = this.deps.hasBaseline?.(layer.id);
-
-    if (hasBaseLine === false) {
-      this.deps.checkPoint?.(layer);
+    const selected = this.toolDeps.getLayers?.();
+    if (!selected || selected.length === 0) {
+      this.deps.onToast?.('You need to select at least one layer to use the Move Tool', 'warning');
+      return;
     }
 
-    const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
-    const selectionLayer = this.toolDeps.getSelectionLayer?.();
+    this.originalLayers = selected.map((layer) => ({
+      ...layer,
+      layer: {
+        ...layer.layer,
+        rect: { ...layer.layer.rect },
+        pixels: layer.layer.pixels.slice(),
+      },
+    }));
+    this.lastMovedLayers = null;
 
-    // Check if there's an active selection
+    const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
+    const selectionLayer = this.toolDeps.getSelectionLayer?.() ?? null;
+
+    this.selectionActive = false;
+    this.floatingLayers = null;
+    this.baseLayers = null;
+    this.movingSelectionLayer = null;
+
     if (selectionLayer && selectionLayer.rect.width > 0 && selectionLayer.rect.height > 0) {
-      // Check if click is within selection bounds
       const clickInSelection = this.isPointInSelection(pixelPos.x, pixelPos.y, selectionLayer);
 
       if (clickInSelection) {
-        // Extract the selected pixels into a floating layer
-        this.floatingLayer = clipLayerToSelection(layer.layer, selectionLayer);
+        this.floatingLayers = selected.map((e) => clipLayerToSelection(e.layer, selectionLayer));
+        this.baseLayers = selected.map((e) =>
+          this.clearSelectionFromLayer(e.layer, selectionLayer),
+        );
 
-        // Create base layer with selection pixels removed (cleared to transparent)
-        this.baseLayer = this.clearSelectionFromLayer(layer.layer, selectionLayer);
-
-        // Store a copy of the selection layer to move along with the pixels
         this.movingSelectionLayer = {
           pixels: selectionLayer.pixels,
           rect: { ...selectionLayer.rect },
         };
 
         this.selectionActive = true;
-        this.lastX = pixelPos.x;
-        this.lastY = pixelPos.y;
-        this.moving = true;
-        return;
       }
     }
 
-    // No selection or click outside selection: regular layer move
-    const localPos = { x: pixelPos.x - layer.layer.rect.x, y: pixelPos.y - layer.layer.rect.y };
-
-    const boundsItem = outOfBoundFinder(
-      { x: localPos.x, y: localPos.y, width: 1, height: 1 },
-      layer.layer.rect.width,
-      layer.layer.rect.height,
-    );
-
-    // Early return if you click out of bounds
-    if (boundsItem.outOfBounds) return;
-
-    this.selectionActive = false;
-    this.lastX = localPos.x;
-    this.lastY = localPos.y;
+    this.lastX = pixelPos.x;
+    this.lastY = pixelPos.y;
     this.moving = true;
   }
 
   onMove(x: number, y: number, pixelSize: number): void {
-    // Early return if not moving
     if (!this.moving) return;
     if (this.lastX === null || this.lastY === null) return;
 
@@ -98,155 +87,213 @@ export class MoveTool implements ITool {
     if (this.selectionActive) {
       this.moveSelection(pixelPos.x, pixelPos.y);
     } else {
-      this.moveWholeLayer(pixelPos.x, pixelPos.y);
+      this.moveWholeLayers(pixelPos.x, pixelPos.y);
     }
   }
 
   onUp(_x: number, _y: number): void {
-    if (this.selectionActive && this.floatingLayer && this.baseLayer) {
-      const combinedLayer = stampToCanvasLayer(this.floatingLayer, this.baseLayer);
-      const reducedLayer = reduceLayerToContent(combinedLayer);
+    if (this.selectionActive && this.floatingLayers && this.baseLayers) {
+      const floatingLayers = this.floatingLayers;
+      const baseLayers = this.baseLayers;
 
-      const dirtyRect = combineRectangles(
-        combineRectangles(this.baseLayer.rect, this.floatingLayer.rect),
-        reducedLayer.rect,
-      );
+      this.toolDeps.setLayers?.((prevSelected) => {
+        if (
+          prevSelected.length !== floatingLayers.length ||
+          prevSelected.length !== baseLayers.length
+        ) {
+          return { layers: prevSelected, dirtyRect: { x: 0, y: 0, width: 0, height: 0 } };
+        }
 
-      const current = this.toolDeps.getLayer?.();
-      if (current) {
-        const finalLayerEntity: LayerEntity = {
-          id: current.id,
-          name: current.name,
-          layer: reducedLayer,
-        };
+        let dirtyRectAcc: Rectangle | null = null;
 
-        this.layerLastMoved = finalLayerEntity;
+        const nextSelected = prevSelected.map((entity, i) => {
+          const floating = floatingLayers[i];
+          const base = baseLayers[i];
 
-        this.toolDeps.setLayer?.(() => ({
-          layer: finalLayerEntity,
-          dirtyRect,
+          const combined = stampToCanvasLayer(floating, base);
+          const reduced = reduceLayerToContent(combined);
+
+          const layerDirty = combineRectangles(
+            combineRectangles(base.rect, floating.rect),
+            reduced.rect,
+          );
+
+          dirtyRectAcc = dirtyRectAcc ? combineRectangles(dirtyRectAcc, layerDirty) : layerDirty;
+
+          return {
+            ...entity,
+            layer: reduced,
+          };
+        });
+
+        this.lastMovedLayers = nextSelected.map((layer) => ({
+          ...layer,
+          layer: {
+            ...layer.layer,
+            rect: { ...layer.layer.rect },
+            pixels: layer.layer.pixels.slice(),
+          },
         }));
-      }
+
+        return {
+          layers: nextSelected,
+          dirtyRect: dirtyRectAcc ?? { x: 0, y: 0, width: 0, height: 0 },
+        };
+      });
     }
 
-    if (this.layerLastMoved) this.deps.checkPoint?.(this.layerLastMoved);
+    const checkPoint = this.toolDeps.checkPoint;
+    if (checkPoint && this.originalLayers && this.lastMovedLayers) {
+      checkPoint({
+        up: this.originalLayers,
+        down: this.lastMovedLayers,
+      });
+    }
 
-    // reset
     this.moving = false;
     this.lastX = null;
     this.lastY = null;
+
     this.selectionActive = false;
-    this.floatingLayer = null;
-    this.baseLayer = null;
+    this.floatingLayers = null;
+    this.baseLayers = null;
     this.movingSelectionLayer = null;
-    this.layerLastMoved = null;
+    this.originalLayers = null;
+    this.lastMovedLayers = null;
   }
 
-  /**
-   * Move only the selected pixels (floating layer)
-   */
   private moveSelection(x: number, y: number): void {
-    if (!this.floatingLayer || !this.baseLayer || !this.movingSelectionLayer) return;
+    if (!this.floatingLayers || !this.baseLayers || !this.movingSelectionLayer) return;
     if (this.lastX === null || this.lastY === null) return;
 
-    // Early return if hasn't moved
     if (this.lastX === x && this.lastY === y) return;
 
     const deltaX = x - this.lastX;
     const deltaY = y - this.lastY;
 
-    // Update last position
     this.lastX = x;
     this.lastY = y;
 
-    // Store original floating rect for dirty calculation
-    const originalFloatingRect = { ...this.floatingLayer.rect };
-
-    // Move the floating layer
-    this.floatingLayer.rect.x += deltaX;
-    this.floatingLayer.rect.y += deltaY;
-
-    // Move the selection layer along with the pixels
+    const originalFloatingRects = this.floatingLayers.map((l) => ({ ...l.rect }));
+    for (const fl of this.floatingLayers) {
+      fl.rect.x += deltaX;
+      fl.rect.y += deltaY;
+    }
     this.movingSelectionLayer.rect.x += deltaX;
     this.movingSelectionLayer.rect.y += deltaY;
 
-    // Update the selection layer in context
     this.toolDeps.setSelectionLayer?.({
       pixels: this.movingSelectionLayer.pixels,
       rect: { ...this.movingSelectionLayer.rect },
     });
 
-    // Calculate dirty rectangle (covers old and new positions + base)
-    const floatingCombined = combineRectangles(originalFloatingRect, this.floatingLayer.rect);
-    const dirtyRect = combineRectangles(floatingCombined, this.baseLayer.rect);
+    const floatingLayers = this.floatingLayers;
+    const baseLayers = this.baseLayers;
 
-    // Create a temporary combined layer for display
-    const displayLayer = stampToCanvasLayer(this.floatingLayer, this.baseLayer);
+    this.toolDeps.setLayers?.((prevSelected) => {
+      if (
+        prevSelected.length !== floatingLayers.length ||
+        prevSelected.length !== baseLayers.length
+      ) {
+        return { layers: prevSelected, dirtyRect: { x: 0, y: 0, width: 0, height: 0 } };
+      }
 
-    this.toolDeps.setLayer?.((prevLayer: LayerEntity) => {
-      const layerEntity: LayerEntity = {
-        id: prevLayer.id,
-        name: prevLayer.name,
-        layer: displayLayer,
-      };
+      let dirtyRectAcc: Rectangle | null = null;
 
-      this.layerLastMoved = layerEntity;
+      const nextSelected = prevSelected.map((entity, i) => {
+        const floating = floatingLayers[i];
+        const base = baseLayers[i];
+
+        const originalFloating = originalFloatingRects[i];
+
+        const floatingCombined = combineRectangles(originalFloating, floating.rect);
+        const dirtyRect = combineRectangles(floatingCombined, base.rect);
+
+        dirtyRectAcc = dirtyRectAcc ? combineRectangles(dirtyRectAcc, dirtyRect) : dirtyRect;
+
+        const displayLayer = stampToCanvasLayer(floating, base);
+
+        return {
+          ...entity,
+          layer: displayLayer,
+        };
+      });
+
+      this.lastMovedLayers = nextSelected.map((layer) => ({
+        ...layer,
+        layer: {
+          ...layer.layer,
+          rect: { ...layer.layer.rect },
+          pixels: layer.layer.pixels.slice(),
+        },
+      }));
 
       return {
-        layer: layerEntity,
-        dirtyRect,
+        layers: nextSelected,
+        dirtyRect: dirtyRectAcc ?? { x: 0, y: 0, width: 0, height: 0 },
       };
     });
   }
 
-  /**
-   * Move the whole layer (original behavior when no selection)
-   */
-  private moveWholeLayer(x: number, y: number): void {
-    const layerEntity = this.toolDeps.getLayer?.();
-    if (!layerEntity) return;
+  private moveWholeLayers(x: number, y: number): void {
     if (this.lastX === null || this.lastY === null) return;
 
-    const localPos = { x: x - layerEntity.layer.rect.x, y: y - layerEntity.layer.rect.y };
-    if (this.lastX === localPos.x && this.lastY === localPos.y) return;
+    const deltaX = x - this.lastX;
+    const deltaY = y - this.lastY;
 
-    const originalRect = { ...layerEntity.layer.rect };
+    if (deltaX === 0 && deltaY === 0) return;
 
-    const nextRect: Rectangle = {
-      ...layerEntity.layer.rect,
-      x: layerEntity.layer.rect.x + (localPos.x - this.lastX),
-      y: layerEntity.layer.rect.y + (localPos.y - this.lastY),
-    };
+    this.lastX = x;
+    this.lastY = y;
 
-    const nextLayer: Layer = {
-      ...layerEntity.layer,
-      rect: nextRect,
-    };
+    this.toolDeps.setLayers?.((prevSelected) => {
+      let dirtyRectAcc: Rectangle | null = null;
 
-    const nextEntity: LayerEntity = {
-      ...layerEntity,
-      layer: nextLayer,
-    };
+      const nextSelected = prevSelected.map((entity) => {
+        const originalRect = { ...entity.layer.rect };
 
-    const dirtyRect = combineRectangles(originalRect, nextRect);
+        const nextRect: Rectangle = {
+          ...entity.layer.rect,
+          x: entity.layer.rect.x + deltaX,
+          y: entity.layer.rect.y + deltaY,
+        };
 
-    this.layerLastMoved = nextEntity;
+        const nextLayer: Layer = {
+          ...entity.layer,
+          rect: nextRect,
+        };
 
-    this.toolDeps.setLayer?.(() => ({
-      layer: nextEntity,
-      dirtyRect,
-    }));
+        const nextEntity: LayerEntity = {
+          ...entity,
+          layer: nextLayer,
+        };
+
+        const dirtyRect = combineRectangles(originalRect, nextRect);
+        dirtyRectAcc = dirtyRectAcc ? combineRectangles(dirtyRectAcc, dirtyRect) : dirtyRect;
+
+        return nextEntity;
+      });
+
+      this.lastMovedLayers = nextSelected.map((layer) => ({
+        ...layer,
+        layer: {
+          ...layer.layer,
+          rect: { ...layer.layer.rect },
+          pixels: layer.layer.pixels.slice(),
+        },
+      }));
+
+      return {
+        layers: nextSelected,
+        dirtyRect: dirtyRectAcc ?? { x: 0, y: 0, width: 0, height: 0 },
+      };
+    });
   }
 
-  /**
-   * Check if a point (in canvas coordinates) is within the selection
-   */
   private isPointInSelection(x: number, y: number, selectionLayer: SelectionLayer): boolean {
-    // Convert to selection-local coordinates
     const localX = x - selectionLayer.rect.x;
     const localY = y - selectionLayer.rect.y;
 
-    // Check bounds
     if (
       localX < 0 ||
       localY < 0 ||
@@ -256,25 +303,18 @@ export class MoveTool implements ITool {
       return false;
     }
 
-    // Check if the pixel is selected (non-zero)
     const index = getPixelIndex(localY, selectionLayer.rect.width, localX);
     return selectionLayer.pixels[index] !== 0;
   }
 
-  /**
-   * Create a copy of the layer with selection pixels cleared to transparent
-   */
   private clearSelectionFromLayer(layer: Layer, selectionLayer: SelectionLayer): Layer {
-    // Check if there's any intersection
     if (!isRectanglesIntersecting(layer.rect, selectionLayer.rect)) {
-      // No intersection, return a copy of the original layer
       return {
         ...layer,
         pixels: layer.pixels.slice(),
       };
     }
 
-    // Create a copy of the layer
     const newLayer: Layer = {
       ...layer,
       rect: { ...layer.rect },
@@ -283,20 +323,16 @@ export class MoveTool implements ITool {
 
     const TRANSPARENT = rgbaToInt(0, 0, 0, 0);
 
-    // Clear pixels that are within the selection
     for (let y = 0; y < selectionLayer.rect.height; y++) {
       for (let x = 0; x < selectionLayer.rect.width; x++) {
-        // Check if this pixel is selected
         const selectionIndex = getPixelIndex(y, selectionLayer.rect.width, x);
         if (selectionLayer.pixels[selectionIndex] === 0) continue;
 
-        // Convert to layer-local coordinates
         const globalX = selectionLayer.rect.x + x;
         const globalY = selectionLayer.rect.y + y;
         const layerLocalX = globalX - layer.rect.x;
         const layerLocalY = globalY - layer.rect.y;
 
-        // Check if within layer bounds
         if (
           layerLocalX < 0 ||
           layerLocalY < 0 ||
@@ -306,7 +342,6 @@ export class MoveTool implements ITool {
           continue;
         }
 
-        // Clear the pixel
         const layerIndex = getPixelIndex(layerLocalY, layer.rect.width, layerLocalX);
         newLayer.pixels[layerIndex] = TRANSPARENT;
       }

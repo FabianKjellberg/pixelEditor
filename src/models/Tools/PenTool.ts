@@ -24,6 +24,7 @@ export class PenTool implements ITool {
   private strokeMatrix: Layer = createLayer({ x: 0, y: 0, width: 0, height: 0 }, 0);
   private color: number | null = null;
 
+  private originalLayer: LayerEntity | null = null;
   private layerLastDrawn: LayerEntity | null = null;
 
   deps: IToolDeps = {};
@@ -39,14 +40,20 @@ export class PenTool implements ITool {
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
 
     //add a baseline entry if none exists
-    const layer = this.deps.getLayer?.();
-    if (!layer) return;
+    const layers = this.deps.getLayers?.();
+    if (!layers) return;
 
-    const hasBaseLine = this.deps.hasBaseline?.(layer.id);
-
-    if (hasBaseLine === false) {
-      this.deps.checkPoint?.(layer);
+    if (layers.length === 0) {
+      this.deps.onToast?.('You need to select a layer before using the pen tool', 'warning');
+      return;
     }
+
+    if (layers.length > 1) {
+      this.deps.onToast?.('You can only have 1 layer selected when using the pen tool', 'warning');
+      return;
+    }
+
+    this.originalLayer = layers[0];
 
     //get color and opacity
     const color: number =
@@ -88,16 +95,20 @@ export class PenTool implements ITool {
     this.strokeNr++;
 
     const checkPoint = this.deps.checkPoint;
-    if (!this.layerLastDrawn || !checkPoint) return;
+    if (!this.layerLastDrawn || !checkPoint || !this.originalLayer) return;
 
-    checkPoint(this.layerLastDrawn);
+    checkPoint({
+      up: [this.originalLayer],
+      down: [this.layerLastDrawn],
+    });
     this.layerLastDrawn = null;
+    this.originalLayer = null;
   }
 
   //Other Methods
   private draw = (x: number, y: number): void => {
-    const setLayer = this.toolDeps.setLayer;
-    if (setLayer == undefined) return;
+    const setLayers = this.toolDeps.setLayers;
+    if (setLayers == undefined) return;
 
     //get properties
     const properties: IProperty[] = this.toolDeps.getProperties?.('pencil') ?? [];
@@ -155,17 +166,16 @@ export class PenTool implements ITool {
 
     const dirtyRectangle: Rectangle = filterCanvas.rect;
 
-    setLayer((prevLayer: LayerEntity) => {
-      const newLayer = stampToCanvasLayer(filterCanvas, prevLayer.layer);
+    setLayers((prevLayers: LayerEntity[]) => {
+      const newLayer = stampToCanvasLayer(filterCanvas, prevLayers[0].layer);
       const layer = {
+        ...prevLayers[0],
         layer: newLayer,
-        name: prevLayer.name,
-        id: prevLayer.id,
       };
 
       this.layerLastDrawn = layer;
 
-      return { layer: layer, dirtyRect: dirtyRectangle };
+      return { layers: [layer], dirtyRect: dirtyRectangle };
     });
   };
 

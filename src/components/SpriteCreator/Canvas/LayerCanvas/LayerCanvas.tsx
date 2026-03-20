@@ -86,6 +86,8 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     // Draw layers bottom-to-top: lower index = drawn first (bottom), higher index = drawn last (on top)
     const layersBottomToTop = [...allLayers].reverse();
     for (const layer of layersBottomToTop) {
+      if (!layer.visible) continue;
+
       const L = layer.layer.rect; // { x, y, width, height }
       // overlap of (rx,ry,rw,rh) with layer rect
       const ix = Math.max(rx, L.x);
@@ -125,6 +127,7 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
       lCtx.putImageData(img, dstX, dstY);
 
       (accumCtx as CanvasRenderingContext2D).globalCompositeOperation = 'source-over';
+      (accumCtx as CanvasRenderingContext2D).globalAlpha = layer.opacity / 255;
       (accumCtx as CanvasRenderingContext2D).drawImage(layerRef.current as CanvasImageSource, 0, 0);
     }
 

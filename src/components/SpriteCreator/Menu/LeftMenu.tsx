@@ -7,8 +7,8 @@ import PanToolComponent from './Tools/PanToolComponent/PanToolComponent';
 import RectangleSelectorComponent from './Tools/RectangleSelectorComponent/RectangleSelectorComponent';
 import EyedropperComponent from './Tools/EyedropperComponent/EyedropperComponent';
 import ShapeComponents from './Tools/ShapeComponents/ShapeComponents';
-import BucketFillComponent from './Tools/BucketFillComponent';
 import AreaComponents from './Tools/AreaComponents/AreaComponents';
+import UndoRedoButtons from './UndoRedoButtons';
 
 const LeftMenu = () => {
   return (
@@ -32,7 +32,6 @@ const LeftMenu = () => {
             <div className={menuStyles.toolIconRow}>
               <ShapeComponents />
               <AreaComponents />
-              {/*<BucketFillComponent />*/}
             </div>
           </div>
         </div>
@@ -40,6 +39,7 @@ const LeftMenu = () => {
           <p className={menuStyles.toolsHeader}>Properties</p>
           <Properties />
         </div>
+        <UndoRedoButtons />
       </div>
     </div>
   );

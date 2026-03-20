@@ -211,6 +211,7 @@ const projectEndpoints: ApiEndpointProps[] = [
   },
   "layers": [
     {
+      "type": "layer",
       "id": "uuid-string",
       "name": "string",
       "width": number,
@@ -218,7 +219,21 @@ const projectEndpoints: ApiEndpointProps[] = [
       "x": number,
       "y": number,
       "zIndex": number,
-      "length": number
+      "length": number,
+      "visible": boolean,
+      "opacity": number
+    },
+    {
+      "type": "group-start",
+      "id": "uuid-string",
+      "zIndex": number,
+      "name": "string",
+      "collapsed": boolean
+    },
+    {
+      "type": "group-end",
+      "id": "uuid-string",
+      "zIndex": number
     }
   ]
 }`,
@@ -329,6 +344,7 @@ const projectEndpoints: ApiEndpointProps[] = [
   },
   "layers": [
     {
+      "type": "layer",
       "id": "uuid-string",
       "name": "string",
       "signedBlobUrl": "string",
@@ -336,6 +352,22 @@ const projectEndpoints: ApiEndpointProps[] = [
       "height": number,
       "x": number,
       "y": number,
+      "zIndex": number,
+      "opacity": number,
+      "visible": boolean
+    },
+    {
+      "type": "group-start",
+      "id": "uuid-string",
+      "projectId": "uuid-string",
+      "name": "string",
+      "collapsed": boolean,
+      "zIndex": number
+    },
+    {
+      "type": "group-end",
+      "id": "uuid-string",
+      "projectId": "uuid-string",
       "zIndex": number
     }
   ]
@@ -400,6 +432,170 @@ const projectEndpoints: ApiEndpointProps[] = [
   "message": "Invalid or expired token"
 }`,
         note: 'Returned when token is invalid or expired',
+      },
+      {
+        status: '404 Not Found',
+        body: `{
+  "message": "not found"
+}`,
+      },
+      {
+        status: '500 Internal Server Error',
+        body: `{
+  "error": "Internal server error"
+}`,
+      },
+    ],
+  },
+  {
+    method: 'PUT',
+    path: '/project/order',
+    authType: 'bearer',
+    description: 'Update the ordering (layer z-index/ranges) of layers and groups in a project.',
+    requestBody: `{
+  "projectId": "uuid-string",
+  "order": [
+    { "type": "layer", "id": "uuid-string", "index": number },
+    { "type": "group-start", "id": "uuid-string", "index": number },
+    { "type": "group-end", "id": "uuid-string", "index": number }
+  ]
+}`,
+    responses: [
+      {
+        status: '200 OK',
+        body: `{
+  "message": "updated order successfully"
+}`,
+      },
+      {
+        status: '401 Unauthorized',
+        body: `{
+  "message": "Unauthorized"
+}`,
+        note: 'Returned when Authorization header is missing or invalid',
+      },
+      {
+        status: '404 Not Found',
+        body: `{
+  "message": "unable to find project"
+}`,
+      },
+      {
+        status: '500 Internal Server Error',
+        body: `{
+  "error": "Internal server error"
+}`,
+      },
+    ],
+  },
+  {
+    method: 'DELETE',
+    path: '/project/delete-items',
+    authType: 'bearer',
+    description: 'Delete one or more layers and/or groups from a project. Optionally returns a signed preview upload URL.',
+    requestBody: `{
+  "ids": ["uuid-string"],
+  "shouldPreview": boolean,
+  "projectId": "uuid-string"
+}`,
+    responses: [
+      {
+        status: '200 OK',
+        body: `{
+  "previewUrl": "string"
+}`,
+      },
+      {
+        status: '401 Unauthorized',
+        body: `{
+  "message": "Unauthorized"
+}`,
+        note: 'Returned when Authorization header is missing or invalid',
+      },
+      {
+        status: '404 Not Found',
+        body: `{
+  "message": "one or more items not found"
+}`,
+      },
+      {
+        status: '500 Internal Server Error',
+        body: `{
+  "error": "Internal server error"
+}`,
+      },
+    ],
+  },
+  {
+    method: 'PUT',
+    path: '/project/update-metadata',
+    authType: 'bearer',
+    description: 'Update layer/group metadata (visibility, opacity, collapse and rename) in a single batch.',
+    requestBody: `{
+  "projectId": "uuid-string",
+  "changes": [
+    { "type": "name", "id": "uuid-string", "name": "string" },
+    { "type": "visible", "id": "uuid-string", "visible": boolean },
+    { "type": "opacity", "id": "uuid-string", "opacity": number },
+    { "type": "collapse", "id": "uuid-string", "collapsed": boolean }
+  ]
+}`,
+    responses: [
+      {
+        status: '200 OK',
+        body: `{
+  "message": "successfully update metadata"
+}`,
+      },
+      {
+        status: '401 Unauthorized',
+        body: `{
+  "message": "Unauthorized"
+}`,
+      },
+      {
+        status: '404 Not Found',
+        body: `{
+  "message": "not found"
+}`,
+      },
+      {
+        status: '500 Internal Server Error',
+        body: `{
+  "error": "internal server error"
+}`,
+      },
+    ],
+  },
+];
+
+const groupEndpoints: ApiEndpointProps[] = [
+  {
+    method: 'POST',
+    path: '/group/create',
+    authType: 'bearer',
+    description: 'Create a new collapsible layer group and define its range in the layer tree.',
+    requestBody: `{
+  "projectId": "uuid-string",
+  "id": "uuid-string",
+  "collapsed": boolean,
+  "name": "string",
+  "startIndex": number,
+  "endIndex": number
+}`,
+    responses: [
+      {
+        status: '200 OK',
+        body: `{
+  "message": "successfully added group"
+}`,
+      },
+      {
+        status: '401 Unauthorized',
+        body: `{
+  "message": "Unauthorized"
+}`,
+        note: 'Returned when Authorization header is missing or invalid',
       },
       {
         status: '404 Not Found',
@@ -677,6 +873,11 @@ const ApiDocumentation = () => {
 
       <h4 style={{ marginTop: '20px', marginBottom: '12px' }}>Project Endpoints</h4>
       {projectEndpoints.map((endpoint) => (
+        <ApiEndpoint key={`${endpoint.method}-${endpoint.path}`} {...endpoint} />
+      ))}
+
+      <h4 style={{ marginTop: '20px', marginBottom: '12px' }}>Group Endpoints</h4>
+      {groupEndpoints.map((endpoint) => (
         <ApiEndpoint key={`${endpoint.method}-${endpoint.path}`} {...endpoint} />
       ))}
 

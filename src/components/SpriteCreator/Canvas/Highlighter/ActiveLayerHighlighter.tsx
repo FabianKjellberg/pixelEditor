@@ -4,18 +4,32 @@ import { useLayerContext } from '@/context/LayerContext';
 import { useMemo } from 'react';
 import styles from './ActiveLayerHighlighter.module.css';
 import { useCanvasContext } from '@/context/CanvasContext';
-
-//!TODO rename this class to selectionhighligter
+import { LayerEntity } from '@/models/Layer';
+import { combineManyRectangles } from '@/util/LayerUtil';
 
 const ActiveLayerHighlighter = () => {
-  const { activeLayer } = useLayerContext();
+  const { activeLayerIds, layerTreeItems } = useLayerContext();
   const { pixelSize, width, height, pan } = useCanvasContext();
 
+  const combinedLayer = useMemo(() => {
+    const activeLayers: LayerEntity[] = [];
+
+    for (let i = 0; i < layerTreeItems.length; i++) {
+      const layer = layerTreeItems[i];
+
+      if (layer.type === 'layer' && activeLayerIds.some((id) => id === layer.id)) {
+        activeLayers.push(layer);
+      }
+    }
+
+    return combineManyRectangles(activeLayers.map((layer) => layer.layer.rect));
+  }, [activeLayerIds, layerTreeItems]);
+
   const highLightStyle = useMemo(() => {
-    const x1cordinate = Math.min(Math.max(0, activeLayer.layer.rect.x), width);
-    const x2cordinate = Math.min(width, activeLayer.layer.rect.x + activeLayer.layer.rect.width);
-    const y1cordinate = Math.min(Math.max(0, activeLayer.layer.rect.y), height);
-    const y2cordinate = Math.min(height, activeLayer.layer.rect.y + activeLayer.layer.rect.height);
+    const x1cordinate = Math.min(Math.max(0, combinedLayer.x), width);
+    const x2cordinate = Math.min(width, combinedLayer.x + combinedLayer.width);
+    const y1cordinate = Math.min(Math.max(0, combinedLayer.y), height);
+    const y2cordinate = Math.min(height, combinedLayer.y + combinedLayer.height);
 
     // cordinates
     const x1 = pan.x + x1cordinate * pixelSize;
@@ -30,11 +44,11 @@ const ActiveLayerHighlighter = () => {
       left: x1,
       top: y1,
     };
-  }, [activeLayer, pixelSize, width, height, pan]);
+  }, [combinedLayer, pixelSize, width, height, pan]);
 
   return (
     <>
-      {activeLayer.layer.rect.height > 0 && activeLayer.layer.rect.width > 0 && (
+      {combinedLayer.height > 0 && combinedLayer.width > 0 && (
         <div style={highLightStyle} className={styles.layerHighlight} />
       )}
     </>
