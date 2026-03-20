@@ -121,7 +121,7 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
         return next;
       });
     },
-    [setLayerTreeItems, isLoadedFromCloud],
+    [setLayerTreeItems, isLoadedFromCloud, projectId],
   );
 
   const addGroup = useCallback(
@@ -219,7 +219,7 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
         });
       }
     },
-    [setLayerTreeItems, activeLayerIds, markDirty, getCanvasRect, isLoadedFromCloud],
+    [setLayerTreeItems, activeLayerIds, markDirty, getCanvasRect, isLoadedFromCloud, projectId],
   );
 
   const deleteItem = useCallback(
@@ -254,7 +254,9 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
           }
         }
 
-        dirtyRect = combineManyRectangles(rectangles);
+        if (rectangles.length > 0) {
+          dirtyRect = combineManyRectangles(rectangles);
+        }
         nextItems = [...layerTreeItems];
         nextItems.splice(startIndex, endIndex - startIndex + 1);
       }
