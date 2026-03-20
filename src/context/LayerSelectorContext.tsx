@@ -231,7 +231,7 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
       if (!item) return;
 
       let dirtyRect: Rectangle | undefined;
-      let idsToDelete: string[] = [id];
+      const idsToDelete: string[] = [id];
       let nextItems = layerTreeItems;
 
       if (item.type === 'layer') {
