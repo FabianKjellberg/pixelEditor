@@ -40,7 +40,7 @@ const AreaComponents = () => {
   const { setActiveLayers, getActiveLayers } = useLayerContext();
   const { getPrimaryColor, ensureProperties, getProperties, getSecondaryColor } = useToolContext();
   const { getSelectionLayer, getCanvasRect } = useCanvasContext();
-  const { checkPoint, hasBaseline } = useUndoRedoContext();
+  const { checkPoint } = useUndoRedoContext();
   const { onToast } = useToastContext();
 
   useEffect(() => {
@@ -104,7 +104,6 @@ const AreaComponents = () => {
         getPrimaryColor,
         getSecondaryColor,
         checkPoint,
-        hasBaseline,
         onToast,
       }),
     [getActiveLayers, setActiveLayers, getPrimaryColor, getProperties, onToast],
@@ -121,7 +120,6 @@ const AreaComponents = () => {
         getSelectionLayer,
         getCanvasRect,
         checkPoint,
-        hasBaseline,
         onToast,
       }),
     [getActiveLayers, setActiveLayers, getPrimaryColor, getProperties, onToast],

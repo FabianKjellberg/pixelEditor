@@ -25,6 +25,7 @@ import { RectangleTool } from '@/models/Tools/ShapeTools/RectangleTool';
 import { FreeformTool } from '@/models/Tools/ShapeTools/Freeform';
 import { LayerEntity } from '@/models/Layer';
 import { createLayerEntity } from '@/util/LayerUtil';
+import { useLayerSelectorContext } from './LayerSelectorContext';
 
 type AiActionsContextValue = {
   excecuteActions: (actions: AiToolCall[]) => void | Promise<void>;
@@ -44,9 +45,10 @@ const AI_ACTION_DELAY_MS = 75;
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const AiActionsContextProvider = ({ children }: { children: React.ReactNode }) => {
-  const { setActiveLayer, getActiveLayer, addLayer, setActiveLayerIndex } = useLayerContext();
+  const { setActiveLayers, getActiveLayers, setActiveLayerIds } = useLayerContext();
+  const { addLayer } = useLayerSelectorContext();
   const { getSelectionLayer, getCanvasRect, setDimensions, pixelSize } = useCanvasContext();
-  const { checkPoint, hasBaseline } = useUndoRedoContext();
+  const { checkPoint } = useUndoRedoContext();
 
   // AI-specific properties - isolated from user's ToolContext
   const [aiPrimaryColor, setAiPrimaryColorState] = useState<number>(DEFAULT_AI_COLOR);
@@ -93,14 +95,13 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
 
       const strokeSize = new SizeProperty(args.size);
       const strokePen = new PenTool({
-        setLayer: setActiveLayer,
-        getLayer: getActiveLayer,
+        setLayers: setActiveLayers,
+        getLayers: getActiveLayers,
         getPrimaryColor: () => color,
         getProperties: (key) => (key === 'pencil' ? [strokeSize] : getAiProperties(key)),
         getSelectionLayer,
         getCanvasRect,
         checkPoint,
-        hasBaseline,
       });
 
       strokePen.onDown(args.points[0].x * pixelSize, args.points[0].y * pixelSize, pixelSize, 0);
@@ -115,12 +116,11 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
       setAiProperties,
       setAiPrimaryColor,
       getAiProperties,
-      setActiveLayer,
-      getActiveLayer,
+      setActiveLayers,
+      getActiveLayers,
       getSelectionLayer,
       getCanvasRect,
       checkPoint,
-      hasBaseline,
       pixelSize,
     ],
   );
@@ -145,15 +145,14 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     );
 
     const tool = new OvalTool({
-      setLayer: setActiveLayer,
-      getLayer: getActiveLayer,
+      setLayers: setActiveLayers,
+      getLayers: getActiveLayers,
       getPrimaryColor: () => primaryColor,
       getSecondaryColor: () => secondaryColor,
       getProperties: (key) => [strokeAlignProp, strokeWidthProp, fillProp, opacityProp],
       getSelectionLayer,
       getCanvasRect,
       checkPoint,
-      hasBaseline,
     });
 
     tool.onDown(args.from.x * pixelSize, args.from.y * pixelSize, pixelSize, 0);
@@ -173,14 +172,13 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     const color = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
 
     const tool = new FillBucket({
-      setLayer: setActiveLayer,
-      getLayer: getActiveLayer,
+      setLayers: setActiveLayers,
+      getLayers: getActiveLayers,
       getPrimaryColor: () => color,
       getProperties: (key) => [opacityProp],
       getSelectionLayer,
       getCanvasRect,
       checkPoint,
-      hasBaseline,
     });
 
     tool.onDown(args.x * pixelSize, args.y * pixelSize, pixelSize, 0);
@@ -199,14 +197,13 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     const color = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
 
     const tool = new LineTool({
-      setLayer: setActiveLayer,
-      getLayer: getActiveLayer,
+      setLayers: setActiveLayers,
+      getLayers: getActiveLayers,
       getPrimaryColor: () => color,
       getProperties: (key) => [strokeWidthProp, opacityProp],
       getSelectionLayer,
       getCanvasRect,
       checkPoint,
-      hasBaseline,
     });
 
     tool.onDown(args.from.x * pixelSize, args.from.y * pixelSize, pixelSize, 0);
@@ -236,15 +233,14 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     );
 
     const tool = new RectangleTool({
-      setLayer: setActiveLayer,
-      getLayer: getActiveLayer,
+      setLayers: setActiveLayers,
+      getLayers: getActiveLayers,
       getPrimaryColor: () => primaryColor,
       getSecondaryColor: () => secondaryColor,
       getProperties: (key) => [strokeAlignProp, strokeWidthProp, fillProp, opacityProp],
       getSelectionLayer,
       getCanvasRect,
       checkPoint,
-      hasBaseline,
     });
 
     tool.onDown(args.from.x * pixelSize, args.from.y * pixelSize, pixelSize, 0);
@@ -267,15 +263,14 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     const secondaryColor = rgbaToInt(args.toColor.r, args.toColor.g, args.toColor.b, args.opacity);
 
     const tool = new GradientTool({
-      setLayer: setActiveLayer,
-      getLayer: getActiveLayer,
+      setLayers: setActiveLayers,
+      getLayers: getActiveLayers,
       getPrimaryColor: () => primaryColor,
       getSecondaryColor: () => secondaryColor,
       getProperties: () => [opacityProp, singleColorProp, gradientTypeProp],
       getSelectionLayer,
       getCanvasRect,
       checkPoint,
-      hasBaseline,
     });
 
     tool.onDown(args.from.x * pixelSize, args.from.y * pixelSize, pixelSize, 0);
@@ -302,15 +297,14 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     );
 
     const tool = new FreeformTool({
-      setLayer: setActiveLayer,
-      getLayer: getActiveLayer,
+      setLayers: setActiveLayers,
+      getLayers: getActiveLayers,
       getPrimaryColor: () => primaryColor,
       getSecondaryColor: () => secondaryColor,
       getProperties: () => [strokeWidthProp, opacityProp, fillProp],
       getSelectionLayer,
       getCanvasRect,
       checkPoint,
-      hasBaseline,
     });
 
     for (const point of args.points) {
@@ -388,11 +382,11 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
   );
 
   const selectLayer = async (layerId: string, layers: string[]) => {
-    const existingIndex = layers.indexOf(layerId);
-    if (existingIndex !== -1) {
-      setActiveLayerIndex(existingIndex);
+    if (layers.some((id) => id === layerId)) {
+      setActiveLayerIds([layerId]);
     } else {
-      addLayer(createLayerEntity(layerId, crypto.randomUUID()), 0);
+      addLayer(0, createLayerEntity(layerId, crypto.randomUUID()));
+      setActiveLayerIds([layerId]);
       layers.unshift(layerId);
     }
 

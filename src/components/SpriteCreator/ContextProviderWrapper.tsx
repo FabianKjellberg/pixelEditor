@@ -3,6 +3,7 @@ import { AutoSaveProvider } from '@/context/AutoSaveContext';
 import { CanvasProvider } from '@/context/CanvasContext';
 import { ContextMenuProvider } from '@/context/ContextMenuContext/ContextMenuContext';
 import { LayerProvider } from '@/context/LayerContext';
+import { LayerSelectorProvider } from '@/context/LayerSelectorContext';
 import { MetaDataAutoSaveProvider } from '@/context/MetaDataAutoSaveContext';
 import { ModalProvider } from '@/context/ModalContext/ModalContext';
 import { SettingsProvider } from '@/context/SettingsContext';
@@ -19,11 +20,13 @@ const ContextProviderWrapper = ({ children }: { children: React.ReactNode }) => 
             <MetaDataAutoSaveProvider>
               <UndoRedoContextProvider>
                 <ToolProvider>
-                  <AiActionsContextProvider>
-                    <ModalProvider>
-                      <ContextMenuProvider>{children}</ContextMenuProvider>
-                    </ModalProvider>
-                  </AiActionsContextProvider>
+                  <LayerSelectorProvider>
+                    <AiActionsContextProvider>
+                      <ModalProvider>
+                        <ContextMenuProvider>{children}</ContextMenuProvider>
+                      </ModalProvider>
+                    </AiActionsContextProvider>
+                  </LayerSelectorProvider>
                 </ToolProvider>
               </UndoRedoContextProvider>
             </MetaDataAutoSaveProvider>
