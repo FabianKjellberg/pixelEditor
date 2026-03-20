@@ -10,6 +10,62 @@ const Changelog = () => {
         Version history and what I&apos;ve been up to. Point form, but I&apos;ll keep it readable.
       </p>
       <br />
+      <ChangelogEntry date="2026-03-20" title="Layers, groups & multi-layer actions">
+        <li>
+          <p>
+            <b>Drag-and-drop layer reordering.</b> Layers and groups can now be moved directly in the
+            Layers menu using drag and drop.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Collapsible groups in a tree.</b> Added nested layer groups that can be collapsed
+            and expanded, so you can structure your canvas with groups inside groups.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Multi-layer activation.</b> You can activate multiple layers at the same time and
+            run layer actions on all active layers together (for example selection-related actions
+            and moving multiple layers).
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Unified layer/group context menu.</b> Right-click now opens a shared context menu
+            for both layers and groups, with common actions like <b>Delete</b>, <b>Rename</b>,{" "}
+            <b>Add layer below</b>, and <b>Add group below</b>.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Layer actions: duplicate, merge & opacity.</b> Reworked <b>Duplicate</b>. Added{" "}
+            <b>Merge down</b> (merge the clicked layer into the one below) and <b>Merge selected</b>{" "}
+            (merge all selected layers into the bottom-most layer). Also added an <b>Opacity</b>{" "}
+            slider for changing the opacity of a whole layer.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Layer visibility toggle.</b> Added an eye button next to layers so you can hide or
+            show layers quickly.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Undo/redo for multi-layer changes.</b> Updated undo and redo so it can restore all
+            affected layers when an action changes multiple layers at once (like move operations).
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Debounced metadata sync.</b> When a project is synced to cloud storage, layer/group
+            metadata changes (like opacity, visibility, and collapse) are debounced and saved in a
+            single batch after 5 seconds of inactivity. The layers menu shows the current save
+            state.
+          </p>
+        </li>
+      </ChangelogEntry>
       <ChangelogEntry date="2026-02-25" title="Selection menu">
         <li>
           <p>
