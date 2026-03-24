@@ -39,7 +39,7 @@ const LeftMenu = () => {
           <p className={menuStyles.toolsHeader}>Properties</p>
           <Properties />
         </div>
-        <UndoRedoButtons />
+        {/*<UndoRedoButtons />*/}
       </div>
     </div>
   );
