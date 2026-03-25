@@ -31,14 +31,12 @@ const Canvas = () => {
         {showSelectedLayerBoundary && <ActiveLayerHighlighter />}
         <Selection canvasWidth={width} canvasHeight={height} />
         <MouseEventContextProvider>
-          {transforming && <TransformOverlay />}
-
           {width && height && <ToolOverlay canvasWidth={width} canvasHeight={height} />}
           <ToolClickHandler />
-
           <ZoomHandler />
           <KeyboardShortcutHandler />
         </MouseEventContextProvider>
+        {transforming && <TransformOverlay width={width} height={height} />}
       </div>
     </div>
   );

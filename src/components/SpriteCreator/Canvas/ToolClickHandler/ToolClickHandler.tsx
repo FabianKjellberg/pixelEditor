@@ -15,6 +15,7 @@ const ToolClickHandler = () => {
     setCursorType,
     onKeyDownEvent,
     onKeyUpEvent,
+    mouseDown,
   } = useMouseEventContext();
   const { pixelSize } = useCanvasContext();
 
@@ -91,9 +92,10 @@ const ToolClickHandler = () => {
     else if (activeTool.name == 'rectangleSelector' || activeTool.name == 'eyedropper')
       setCursorType({ cursor: 'crosshair' });
     else if (activeTool.name == 'moveTool') setCursorType({ cursor: 'move' });
-    else if (activeTool.name == 'panTool') setCursorType({ cursor: 'grab' });
+    else if (activeTool.name == 'panTool')
+      setCursorType({ cursor: mouseDown ? 'grabbing' : 'grab' });
     else setCursorType({ cursor: 'pointer' });
-  }, [ctrlDown, activeTool, shiftDown]);
+  }, [ctrlDown, activeTool, shiftDown, mouseDown]);
 
   return null;
 };

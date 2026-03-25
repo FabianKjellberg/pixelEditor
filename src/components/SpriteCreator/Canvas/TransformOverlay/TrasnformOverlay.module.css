@@ -1,0 +1,24 @@
+.rotate {
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.nwse {
+  cursor: nwse-resize;
+  pointer-events: auto;
+}
+
+.nesw {
+  cursor: nesw-resize;
+  pointer-events: auto;
+}
+
+.ns {
+  cursor: ns-resize;
+  pointer-events: auto;
+}
+
+.ew {
+  cursor: ew-resize;
+  pointer-events: auto;
+}

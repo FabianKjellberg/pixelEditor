@@ -16,6 +16,7 @@ import styles from './MouseEventContext.module.css';
 import { Cordinate } from '@/models/Layer';
 import { getCanvasPosition } from '@/helpers/canvas';
 import { useCanvasContext } from '../CanvasContext';
+import { useToolContext } from '../ToolContext';
 
 type MouseEventContextValue = {
   cursorType: CSSProperties;
@@ -75,6 +76,7 @@ function isTypingTarget(target: EventTarget | null): boolean {
 
 export const MouseEventContextProvider = ({ children }: { children: ReactNode }) => {
   const { pan } = useCanvasContext();
+  const { activeTool } = useToolContext();
 
   const [cursorType, setCursorType] = useState<CSSProperties>({ cursor: 'pointer' });
   const [mouseDown, setMouseDown] = useState<boolean>(false);
@@ -280,17 +282,21 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
   return (
     <MouseEventContext.Provider value={value}>
       {children}
-      <div
-        className={styles.mouseEvents}
-        style={cursorType}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerLeave={onPointerLeave}
-        onPointerCancel={onPointerCancel}
-        onContextMenu={(e) => e.preventDefault()}
-        onWheel={onScroll}
-      />
+      {activeTool.name === 'transform' ? (
+        <div onContextMenu={(e) => e.preventDefault()} onWheel={onScroll} />
+      ) : (
+        <div
+          className={styles.mouseEvents}
+          style={cursorType}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerLeave={onPointerLeave}
+          onPointerCancel={onPointerCancel}
+          onContextMenu={(e) => e.preventDefault()}
+          onWheel={onScroll}
+        />
+      )}
     </MouseEventContext.Provider>
   );
 };

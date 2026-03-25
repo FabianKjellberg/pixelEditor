@@ -6,9 +6,7 @@ export class Transform implements ITool {
   onDown?(x: number, y: number, pixelSize: number, mouseButton: number): void {
     console.log('hej');
   }
-  onMove?(x: number, y: number, pixelSize: number): void {
-    console.log('hej');
-  }
+  onMove?(x: number, y: number, pixelSize: number): void {}
   onUp?(x: number, y: number, pixelSize: number, mouseButton: number): void {
     console.log('hej');
   }
