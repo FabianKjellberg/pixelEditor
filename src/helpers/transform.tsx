@@ -1,4 +1,5 @@
 import { TransformBtn } from '@/components/SpriteCreator/Canvas/TransformOverlay/TransformOverlay';
+import { CSSProperties } from 'react';
 
 export const rectangleButton = (cx: number, cy: number) => {
   const x = cx - 5;
@@ -23,87 +24,88 @@ export const roundButton = (cx: number, cy: number) => {
   );
 };
 
-export const getX = (btn: TransformBtn, oldX: number, newX: number, pixelSize: number) => {
+export const getW = (btn: TransformBtn, dx: number, oldW: number) => {
   switch (btn) {
     case TransformBtn.nw:
     case TransformBtn.sw:
     case TransformBtn.w:
-      const dif = Math.round((newX - oldX * pixelSize) / pixelSize);
-
-      return oldX + dif;
-    case TransformBtn.n:
     case TransformBtn.ne:
     case TransformBtn.e:
-    case TransformBtn.s:
     case TransformBtn.se:
+      const newWidth = Math.abs(dx * 2);
 
+      return newWidth;
+    case TransformBtn.s:
+    case TransformBtn.n:
     default:
-      return oldX;
+      return oldW;
   }
 };
-
-export const getY = (btn: TransformBtn, oldY: number, newY: number, pixelSize: number) => {
+export const getH = (btn: TransformBtn, dy: number, oldH: number) => {
   switch (btn) {
-    case TransformBtn.n:
-    case TransformBtn.ne:
-    case TransformBtn.nw:
-      const dif = Math.round((newY - oldY * pixelSize) / pixelSize);
-
-      return oldY + dif;
-    case TransformBtn.e:
-    case TransformBtn.w:
-    case TransformBtn.s:
-    case TransformBtn.se:
-    case TransformBtn.sw:
-    default:
-      return oldY;
-  }
-};
-
-export const getW = (
-  btn: TransformBtn,
-  oldX: number,
-  oldW: number,
-  newX: number,
-  pixelSize: number,
-) => {
-  switch (btn) {
-    case TransformBtn.ne:
-    case TransformBtn.e:
-    case TransformBtn.se:
-      const dif = Math.round((newX - (oldX + oldW) * pixelSize) / pixelSize);
-
-      return oldW + oldX + dif;
     case TransformBtn.nw:
     case TransformBtn.n:
-    case TransformBtn.w:
-    case TransformBtn.s:
-    case TransformBtn.sw:
-    default:
-      return oldW + oldX;
-  }
-};
-
-export const getH = (
-  btn: TransformBtn,
-  oldY: number,
-  oldH: number,
-  newY: number,
-  pixelSize: number,
-) => {
-  switch (btn) {
-    case TransformBtn.s:
-    case TransformBtn.sw:
-    case TransformBtn.se:
-      const dif = Math.round((newY - (oldY + oldH) * pixelSize) / pixelSize);
-
-      return oldH + oldY + dif;
-    case TransformBtn.nw:
-    case TransformBtn.n:
-    case TransformBtn.w:
     case TransformBtn.ne:
+    case TransformBtn.sw:
+    case TransformBtn.s:
+    case TransformBtn.se:
+      const newHeight = Math.abs(dy * 2);
+
+      return newHeight <= 1 ? 1 : newHeight;
     case TransformBtn.e:
+    case TransformBtn.w:
     default:
-      return oldH + oldY;
+      return oldH;
   }
 };
+
+export const getStyles = (btn: TransformBtn, rotation: number): CSSProperties => {
+  const normalizedRotation = ((rotation % 360) + 360) % 360;
+
+  const directions: TransformBtn[] = [
+    TransformBtn.n,
+    TransformBtn.ne,
+    TransformBtn.e,
+    TransformBtn.se,
+    TransformBtn.s,
+    TransformBtn.sw,
+    TransformBtn.w,
+    TransformBtn.nw,
+  ];
+
+  const rotationSteps = Math.round(normalizedRotation / 45) % 8;
+
+  const baseIndex = directions.indexOf(btn);
+  const rotatedIndex = (baseIndex + rotationSteps) % 8;
+  const rotatedDirection = directions[rotatedIndex];
+
+  const cursor = getCursorForDirection(rotatedDirection);
+
+  return {
+    pointerEvents: 'auto',
+    cursor,
+  };
+};
+
+function getCursorForDirection(direction: TransformBtn): CSSProperties['cursor'] {
+  switch (direction) {
+    case TransformBtn.n:
+    case TransformBtn.s:
+      return 'ns-resize';
+
+    case TransformBtn.e:
+    case TransformBtn.w:
+      return 'ew-resize';
+
+    case TransformBtn.ne:
+    case TransformBtn.sw:
+      return 'nesw-resize';
+
+    case TransformBtn.nw:
+    case TransformBtn.se:
+      return 'nwse-resize';
+
+    default:
+      return 'default';
+  }
+}

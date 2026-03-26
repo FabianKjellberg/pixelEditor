@@ -1,5 +1,10 @@
-.rotate {
+.grab {
   cursor: grab;
+  pointer-events: auto;
+}
+
+.grabbing {
+  cursor: grabbing;
   pointer-events: auto;
 }
 
@@ -20,5 +25,10 @@
 
 .ew {
   cursor: ew-resize;
+  pointer-events: auto;
+}
+
+.move {
+  cursor: move;
   pointer-events: auto;
 }

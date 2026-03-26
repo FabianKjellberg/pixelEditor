@@ -53,3 +53,10 @@ export type Rectangle = {
   width: number;
   height: number;
 };
+
+export type CenteredRectangle = {
+  center: Cordinate;
+  width: number;
+  height: number;
+  rotation: number; // degrees
+};

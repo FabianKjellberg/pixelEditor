@@ -2,12 +2,11 @@
 
 import { useCanvasContext } from '@/context/CanvasContext';
 import { useLayerContext } from '@/context/LayerContext';
-import { LayerEntity, Rectangle } from '@/models/Layer';
+import { CenteredRectangle, Cordinate, LayerEntity } from '@/models/Layer';
 import { combineManyRectangles, rectangleIntersection } from '@/util/LayerUtil';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './TrasnformOverlay.module.css';
-import { useToolContext } from '@/context/ToolContext';
-import { getH, getW, getX, getY, rectangleButton, roundButton } from '@/helpers/transform';
+import { getH, getStyles, getW, rectangleButton, roundButton } from '@/helpers/transform';
 
 type TransformOverlayProps = {
   width: number;
@@ -15,7 +14,7 @@ type TransformOverlayProps = {
 };
 
 export enum TransformBtn {
-  'default',
+  'move',
   'n',
   'ne',
   'e',
@@ -30,9 +29,8 @@ export enum TransformBtn {
 const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
   const { activeLayerIds, layerTreeItems } = useLayerContext();
   const { selectionLayer, pixelSize, pan } = useCanvasContext();
-  const { activeTool } = useToolContext();
 
-  const [transformArea, setTransformArea] = useState<{ rect: Rectangle; rotation: number }>(() => {
+  const [transformArea, setTransformArea] = useState<CenteredRectangle>(() => {
     const activeLayers: LayerEntity[] = layerTreeItems.filter((layer): layer is LayerEntity =>
       activeLayerIds.some((id) => id === layer.id),
     );
@@ -44,32 +42,31 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
       : layerRectangle;
 
     return {
-      rect,
+      center: { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 },
+      width: rect.width,
+      height: rect.height,
       rotation: 0,
     };
   });
-
-  useEffect(() => {
-    console.log(transformArea.rotation);
-  }, [transformArea.rotation]);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const isDraggingRef = useRef<boolean>(false);
+  const originRef = useRef<Cordinate | null>(null);
+  const moveDifference = useRef<Cordinate | null>(null);
 
-  const onPointerDownCallback = useCallback(
-    (e: React.PointerEvent<SVGGElement>, btn: TransformBtn) => {
-      isDraggingRef.current = true;
-      e.currentTarget.setPointerCapture(e.pointerId);
-    },
-    [],
-  );
+  useEffect(() => {
+    isDraggingRef.current = isDragging;
+  }, [isDragging]);
 
   const tryChangeRectangle = useCallback(
     (x: number, y: number, btn: TransformBtn, shiftKey: boolean) => {
       setTransformArea((prev) => {
         if (btn === TransformBtn.rot) {
-          const centerX = (prev.rect.width / 2 + prev.rect.x) * pixelSize;
-          const centerY = (prev.rect.height / 2 + prev.rect.y) * pixelSize;
+          const centerX = prev.center.x * pixelSize;
+          const centerY = prev.center.y * pixelSize;
+
+          originRef.current = { x: centerX + pan.x, y: centerY + pan.y };
 
           const dx = x - pan.x - centerX;
           const dy = y - pan.y - centerY;
@@ -78,7 +75,7 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
 
           let degrees = (angle * 180) / Math.PI;
 
-          if (shiftKey) {
+          if (!shiftKey) {
             degrees = Math.round(degrees / 15) * 15;
           }
 
@@ -87,28 +84,77 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
           }
 
           return { ...prev, rotation: degrees };
-        } else {
-          const x1 = getX(btn, prev.rect.x, x - pan.x, pixelSize);
-          const y1 = getY(btn, prev.rect.y, y - pan.y, pixelSize);
-          const x2 = getW(btn, prev.rect.x, prev.rect.width, x - pan.x, pixelSize);
-          const y2 = getH(btn, prev.rect.y, prev.rect.height, y - pan.y, pixelSize);
+        } else if (btn === TransformBtn.move) {
+          const md = moveDifference.current;
 
-          if (
-            x1 === prev.rect.x &&
-            y1 === prev.rect.y &&
-            x2 - x1 === prev.rect.width &&
-            y2 - y1 === prev.rect.height
-          ) {
-            return prev;
+          if (md === null) return prev;
+
+          let newX = (x - md.x - pan.x) / pixelSize;
+          let newY = (y - md.y - pan.y) / pixelSize;
+
+          if (!shiftKey) {
+            newX = Math.round(newX);
+            newY = Math.round(newY);
+
+            if (prev.width % 2 === 1) newX += 0.5; // adjusted of odd widths
+            if (prev.height % 2 === 1) newY += 0.5; // adjusted for odd height
           }
-          return {
-            rect: { x: x1, y: y1, width: x2 - x1, height: y2 - y1 },
-            rotation: prev.rotation,
-          };
+
+          if (prev.center.x === newX && prev.center.y === newY) return prev;
+
+          return { ...prev, center: { x: newX, y: newY } };
+        } else {
+          const dx = (x - pan.x) / pixelSize - prev.center.x;
+          const dy = (y - pan.y) / pixelSize - prev.center.y;
+
+          const rads = prev.rotation * (Math.PI / 180);
+
+          const cos = Math.cos(-rads);
+          const sin = Math.sin(-rads);
+
+          const xFromCenter = dx * cos - dy * sin;
+          const yFromCenter = dx * sin + dy * cos;
+
+          let newW = getW(btn, xFromCenter, prev.width);
+          let newH = getH(btn, yFromCenter, prev.height);
+
+          if (!shiftKey) {
+            newW = Math.round(newW);
+            newH = Math.round(newH);
+          }
+
+          if (prev.height === newH && prev.width === newW) return prev;
+
+          return { ...prev, width: newW, height: newH };
         }
       });
     },
     [pan, pixelSize],
+  );
+
+  const onPointerDownCallback = useCallback(
+    (e: React.PointerEvent<SVGGElement>, btn: TransformBtn) => {
+      setIsDragging(true);
+      e.currentTarget.setPointerCapture(e.pointerId);
+
+      if (btn === TransformBtn.move && svgRef.current !== null) {
+        const svg = svgRef.current;
+        const ctm = svg.getScreenCTM();
+        if (!ctm) return;
+
+        const point = svg.createSVGPoint();
+        point.x = e.clientX;
+        point.y = e.clientY;
+
+        const localPoint = point.matrixTransform(ctm.inverse());
+
+        const dx = localPoint.x - (transformArea.center.x * pixelSize + pan.x);
+        const dy = localPoint.y - (transformArea.center.y * pixelSize + pan.y);
+
+        moveDifference.current = { x: dx, y: dy };
+      }
+    },
+    [pan, transformArea],
   );
 
   const onPointerMoveCallback = useCallback(
@@ -132,102 +178,116 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
 
   const onPointerUpCallback = useCallback(
     (e: React.PointerEvent<SVGGElement>, btn: TransformBtn) => {
-      isDraggingRef.current = false;
+      setIsDragging(false);
       e.currentTarget.releasePointerCapture(e.pointerId);
+      moveDifference.current = null;
     },
     [],
   );
 
   const rectangle = useMemo(() => {
-    const x = pan.x + pixelSize * transformArea.rect.x;
-    const y = pan.y + pixelSize * transformArea.rect.y;
-    const w = pixelSize * transformArea.rect.width;
-    const h = pixelSize * transformArea.rect.height;
+    const x = pan.x + pixelSize * transformArea.center.x;
+    const y = pan.y + pixelSize * transformArea.center.y;
+    const w = pixelSize * transformArea.width;
+    const h = pixelSize * transformArea.height;
 
-    const originX = x + w / 2;
-    const originY = y + h / 2;
+    if (originRef.current === null) {
+      originRef.current = { x, y };
+    }
 
     return (
-      <g transform={`rotate(${transformArea.rotation} ${originX} ${originY})`}>
-        <rect x={x} y={y} width={w} height={h} fill="none" stroke="black" strokeWidth={2} />
-        <line x1={x + w / 2} x2={x + w / 2} y1={y} y2={y - 20} stroke="black" strokeWidth={2} />
+      <g transform={`rotate(${transformArea.rotation} ${x} ${y})`}>
+        <rect
+          x={x - w / 2}
+          y={y - h / 2}
+          width={w}
+          height={h}
+          fill="#00000000"
+          stroke="black"
+          strokeWidth={2}
+          className={styles.move}
+          onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.move)}
+          onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.move)}
+          onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.move)}
+        />
+        <line x1={x} x2={x} y1={y - h / 2} y2={y - h / 2 - 20} stroke="black" strokeWidth={2} />
 
         <g
-          className={styles.rotate}
+          className={isDragging ? styles.grabbing : styles.grab}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.rot)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.rot)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.rot)}
         >
-          {roundButton(x + w / 2, y - 20)}
+          {roundButton(x, y - h / 2 - 20)}
         </g>
 
         <g
-          className={styles.nwse}
+          style={getStyles(TransformBtn.nw, transformArea.rotation)}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.nw)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.nw)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.nw)}
         >
-          {rectangleButton(x, y)}
+          {rectangleButton(x - w / 2, y - h / 2)}
         </g>
         <g
-          className={styles.nesw}
+          style={getStyles(TransformBtn.ne, transformArea.rotation)}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.ne)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.ne)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.ne)}
         >
-          {rectangleButton(x + w, y)}
+          {rectangleButton(x + w / 2, y - h / 2)}
         </g>
         <g
-          className={styles.nesw}
+          style={getStyles(TransformBtn.sw, transformArea.rotation)}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.sw)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.sw)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.sw)}
         >
-          {rectangleButton(x, y + h)}
+          {rectangleButton(x - w / 2, y + h / 2)}
         </g>
         <g
-          className={styles.nwse}
+          style={getStyles(TransformBtn.se, transformArea.rotation)}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.se)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.se)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.se)}
         >
-          {rectangleButton(x + w, y + h)}
+          {rectangleButton(x + w / 2, y + h / 2)}
         </g>
         <g
-          className={styles.ns}
+          style={getStyles(TransformBtn.n, transformArea.rotation)}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.n)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.n)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.n)}
         >
-          {rectangleButton(x + w / 2, y)}
+          {rectangleButton(x, y - h / 2)}
         </g>
         <g
-          className={styles.ns}
+          style={getStyles(TransformBtn.s, transformArea.rotation)}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.s)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.s)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.s)}
         >
-          {rectangleButton(x + w / 2, y + h)}
+          {rectangleButton(x, y + h / 2)}
         </g>
         <g
-          className={styles.ew}
+          style={getStyles(TransformBtn.w, transformArea.rotation)}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.w)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.w)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.w)}
         >
-          {rectangleButton(x, y + h / 2)}
+          {rectangleButton(x - w / 2, y)}
         </g>
         <g
-          className={styles.ew}
+          style={getStyles(TransformBtn.e, transformArea.rotation)}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.e)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.e)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.e)}
         >
-          {rectangleButton(x + w, y + h / 2)}
+          {rectangleButton(x + w / 2, y)}
         </g>
       </g>
     );
-  }, [pan, pixelSize, transformArea, onPointerMoveCallback]);
+  }, [pan, pixelSize, transformArea, onPointerMoveCallback, isDragging]);
 
   return (
     <>
