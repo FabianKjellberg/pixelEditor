@@ -6,29 +6,27 @@ import { CenteredRectangle, Cordinate, LayerEntity } from '@/models/Layer';
 import { combineManyRectangles, rectangleIntersection } from '@/util/LayerUtil';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './TrasnformOverlay.module.css';
-import { getH, getStyles, getW, rectangleButton, roundButton } from '@/helpers/transform';
+import {
+  getH,
+  getStyles,
+  getW,
+  radToDeg,
+  rectangleButton,
+  roundButton,
+  TransformBtn,
+} from '@/helpers/transform';
+import { useToolContext } from '@/context/ToolContext';
+import { TransformProperty } from '@/models/Tools/Properties';
 
 type TransformOverlayProps = {
   width: number;
   height: number;
 };
 
-export enum TransformBtn {
-  'move',
-  'n',
-  'ne',
-  'e',
-  'se',
-  's',
-  'sw',
-  'w',
-  'nw',
-  'rot',
-}
-
 const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
   const { activeLayerIds, layerTreeItems } = useLayerContext();
   const { selectionLayer, pixelSize, pan } = useCanvasContext();
+  const { activeTool, setProperties } = useToolContext();
 
   const [transformArea, setTransformArea] = useState<CenteredRectangle>(() => {
     const activeLayers: LayerEntity[] = layerTreeItems.filter((layer): layer is LayerEntity =>
@@ -59,6 +57,12 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
     isDraggingRef.current = isDragging;
   }, [isDragging]);
 
+  useEffect(() => {
+    if (activeTool.name === 'transform' && transformArea != null) {
+      activeTool.onUpdate?.(new TransformProperty(transformArea));
+    }
+  }, [transformArea, activeTool]);
+
   const tryChangeRectangle = useCallback(
     (x: number, y: number, btn: TransformBtn, shiftKey: boolean) => {
       setTransformArea((prev) => {
@@ -73,10 +77,12 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
 
           const angle = Math.atan2(dx, -dy);
 
-          let degrees = (angle * 180) / Math.PI;
+          let degrees = radToDeg(angle);
 
           if (!shiftKey) {
             degrees = Math.round(degrees / 15) * 15;
+
+            if (degrees === prev.rotation) return prev;
           }
 
           if (degrees < 0) {
@@ -135,6 +141,7 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
   const onPointerDownCallback = useCallback(
     (e: React.PointerEvent<SVGGElement>, btn: TransformBtn) => {
       setIsDragging(true);
+      if (activeTool.name !== 'transform') return;
       e.currentTarget.setPointerCapture(e.pointerId);
 
       if (btn === TransformBtn.move && svgRef.current !== null) {
@@ -154,11 +161,13 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
         moveDifference.current = { x: dx, y: dy };
       }
     },
-    [pan, transformArea],
+    [pan, transformArea, activeTool],
   );
 
   const onPointerMoveCallback = useCallback(
     (e: React.PointerEvent<SVGGElement>, btn: TransformBtn) => {
+      if (activeTool.name !== 'transform') return;
+
       if (!isDraggingRef.current || svgRef.current === null) return;
 
       const svg = svgRef.current;
@@ -173,7 +182,7 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
 
       tryChangeRectangle(localPoint.x, localPoint.y, btn, e.shiftKey);
     },
-    [tryChangeRectangle],
+    [tryChangeRectangle, activeTool],
   );
 
   const onPointerUpCallback = useCallback(
@@ -182,7 +191,7 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
       e.currentTarget.releasePointerCapture(e.pointerId);
       moveDifference.current = null;
     },
-    [],
+    [activeTool],
   );
 
   const rectangle = useMemo(() => {
@@ -287,7 +296,15 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
         </g>
       </g>
     );
-  }, [pan, pixelSize, transformArea, onPointerMoveCallback, isDragging]);
+  }, [
+    pan,
+    pixelSize,
+    transformArea,
+    onPointerMoveCallback,
+    isDragging,
+    onPointerDownCallback,
+    onPointerUpCallback,
+  ]);
 
   return (
     <>

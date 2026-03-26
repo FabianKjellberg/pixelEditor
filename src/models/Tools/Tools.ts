@@ -1,6 +1,6 @@
 import { ToastType } from '@/context/ToastContext/ToastContext';
 import { Cordinate, LayerEntity, Rectangle, SelectionLayer } from '../Layer';
-import { IProperty } from './Properties';
+import { AnyProperty, IProperty } from './Properties';
 import { HistoryAction } from '@/context/UndoRedoContext';
 
 export type IToolDeps = {
@@ -31,6 +31,7 @@ export interface ITool {
   onMove?(x: number, y: number, pixelSize: number): void;
   onUp?(x: number, y: number, pixelSize: number, mouseButton: number): void;
 
+  onUpdate?(property?: AnyProperty): void;
   onCommit?(): void;
   onCancel?(): void;
 }

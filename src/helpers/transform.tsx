@@ -1,5 +1,18 @@
-import { TransformBtn } from '@/components/SpriteCreator/Canvas/TransformOverlay/TransformOverlay';
+import { CenteredRectangle, Rectangle } from '@/models/Layer';
 import { CSSProperties } from 'react';
+
+export enum TransformBtn {
+  'move',
+  'n',
+  'ne',
+  'e',
+  'se',
+  's',
+  'sw',
+  'w',
+  'nw',
+  'rot',
+}
 
 export const rectangleButton = (cx: number, cy: number) => {
   const x = cx - 5;
@@ -109,3 +122,43 @@ function getCursorForDirection(direction: TransformBtn): CSSProperties['cursor']
       return 'default';
   }
 }
+
+export const centeredRectFromRectangle = (rect: Rectangle): CenteredRectangle => {
+  return {
+    center: {
+      x: rect.x + rect.width / 2,
+      y: rect.y + rect.height / 2,
+    },
+    width: rect.width,
+    height: rect.height,
+    rotation: 0,
+  };
+};
+
+export const rectangleFromCenteredRect = (rect: CenteredRectangle): Rectangle => {
+  const a = degToRad(rect.rotation);
+
+  const cos = Math.cos(a);
+  const sin = Math.sin(a);
+
+  const width = Math.abs(rect.width * cos) + Math.abs(rect.height * sin);
+  const height = Math.abs(rect.width * sin) + Math.abs(rect.height * cos);
+
+  const x = rect.center.x - width / 2;
+  const y = rect.center.y - height / 2;
+
+  return {
+    width,
+    height,
+    x,
+    y,
+  };
+};
+
+export const degToRad = (deg: number): number => {
+  return (deg * Math.PI) / 180;
+};
+
+export const radToDeg = (rad: number): number => {
+  return (rad * 180) / Math.PI;
+};
