@@ -65,7 +65,7 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
   );
 
   const tryChangeRectangle = useCallback(
-    (x: number, y: number, btn: TransformBtn) => {
+    (x: number, y: number, btn: TransformBtn, shiftKey: boolean) => {
       setTransformArea((prev) => {
         if (btn === TransformBtn.rot) {
           const centerX = (prev.rect.width / 2 + prev.rect.x) * pixelSize;
@@ -77,6 +77,10 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
           const angle = Math.atan2(dx, -dy);
 
           let degrees = (angle * 180) / Math.PI;
+
+          if (shiftKey) {
+            degrees = Math.round(degrees / 15) * 15;
+          }
 
           if (degrees < 0) {
             degrees += 360;
@@ -121,7 +125,7 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
 
       const localPoint = point.matrixTransform(ctm.inverse());
 
-      tryChangeRectangle(localPoint.x, localPoint.y, btn);
+      tryChangeRectangle(localPoint.x, localPoint.y, btn, e.shiftKey);
     },
     [tryChangeRectangle],
   );
