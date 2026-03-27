@@ -58,7 +58,6 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
 
   const setActiveToolCallback = useCallback(
     (tool: ITool) => {
-      activeTool.onCancel?.();
       activeTool.onUp?.(0, 0, 0, 0);
       setActiveTool(tool);
     },

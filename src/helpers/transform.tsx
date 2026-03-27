@@ -1,5 +1,6 @@
 import { CenteredRectangle, Rectangle } from '@/models/Layer';
 import { CSSProperties } from 'react';
+import { he } from 'zod/v4/locales';
 
 export enum TransformBtn {
   'move',
@@ -141,11 +142,11 @@ export const rectangleFromCenteredRect = (rect: CenteredRectangle): Rectangle =>
   const cos = Math.cos(a);
   const sin = Math.sin(a);
 
-  const width = Math.abs(rect.width * cos) + Math.abs(rect.height * sin);
-  const height = Math.abs(rect.width * sin) + Math.abs(rect.height * cos);
+  const width = Math.round(Math.abs(rect.width * cos)) + Math.round(Math.abs(rect.height * sin));
+  const height = Math.round(Math.abs(rect.width * sin)) + Math.round(Math.abs(rect.height * cos));
 
-  const x = rect.center.x - width / 2;
-  const y = rect.center.y - height / 2;
+  const x = Math.round(rect.center.x - width / 2);
+  const y = Math.round(rect.center.y - height / 2);
 
   return {
     width,

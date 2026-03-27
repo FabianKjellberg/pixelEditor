@@ -7,73 +7,79 @@ import {
   createLayer,
   replacePixels,
   stampToCanvasLayer,
+  tryReduceLayerSize,
 } from '@/util/LayerUtil';
+import { CropLayer, cropLayer, transformLayer } from '@/util/TransformUtil';
 
 export class TransformTool implements ITool {
   name: string = 'transform';
   deps: IToolDeps = {};
 
+  //to set back onCancel
   originalLayers: LayerEntity[] | undefined = undefined;
-  originalLayersWithoutRect: LayerEntity[] | undefined;
+
+  //layers to stamp the adjusted rectangle on to
+  splitOriginal: CropLayer[] | undefined = undefined;
+
+  // the original rectangle of the transformation
   originalRect: Rectangle | undefined = undefined;
-  transformingLayers: LayerEntity[] | undefined = undefined;
-  lastTransRect: CenteredRectangle | undefined = undefined;
+
+  lastRect: Rectangle | undefined = undefined;
+
+  firstRound: boolean = true;
 
   constructor(deps: IToolDeps) {
     this.deps = deps;
   }
 
   onUpdate(property: AnyProperty): void {
-    console.log('hej1');
-
     const transformProperty = getProperty<TransformProperty>([property], PropertyType.Transform);
     if (!transformProperty?.value) return;
-    const selectionLayer = this.deps.getSelectionLayer?.();
-    const setLayers = this.deps.setLayers;
-    if (!setLayers) return;
-    const layers = this.deps.getLayers?.();
-    if (!layers) return;
-    const transRect = transformProperty.value;
 
-    const lastTransRect = this.lastTransRect;
+    const transformRect = transformProperty.value;
 
-    this.lastTransRect = transRect;
-
-    console.log('ol', this.originalLayers);
-    console.log('tl', this.transformingLayers);
-    console.log('ltr', this.lastTransRect);
-    console.log('olwor', this.originalLayersWithoutRect);
-
-    if (
-      !this.originalLayers ||
-      /*!this.transformingLayers ||*/
-      !lastTransRect ||
-      !this.originalLayersWithoutRect
-    ) {
-      this.init(layers, transRect);
-    } else {
-      console.log(this.originalLayersWithoutRect);
-
-      const dirtyRect = combineRectangles(
-        rectangleFromCenteredRect(transRect),
-        rectangleFromCenteredRect(lastTransRect),
-      );
-
-      setLayers((prevLayers: LayerEntity[]) => {
-        return {
-          layers: prevLayers,
-          dirtyRect,
-        };
-      });
+    // set up tool tool with values to change
+    if (this.firstRound) {
+      this.firstRound = false;
+      this.init(transformRect);
+    }
+    //take existing cropped layers and add to original layers into the current rectangle
+    else {
+      this.updateLayers(transformRect);
     }
   }
 
   onCommit?(): void {
-    console.log('hej');
+    const setLayers = this.deps.setLayers;
+    const checkPoint = this.deps.checkPoint;
+    const up = this.originalLayers;
+
+    if (!setLayers || !checkPoint || !up) return;
+
+    let down: LayerEntity[] = [];
+
+    setLayers((prevLayers) => {
+      const reducedLayerBounds = prevLayers.map((layer) => {
+        return {
+          ...layer,
+          layer: tryReduceLayerSize({ top: 1, bottom: 1, left: 1, right: 1 }, layer.layer).layer,
+        } as LayerEntity;
+      });
+
+      down = reducedLayerBounds;
+
+      return {
+        dirtyRect: { x: 0, y: 0, width: 1, height: 1 },
+        layers: reducedLayerBounds,
+      };
+    });
+
+    checkPoint({ down, up });
+    this.reset();
   }
   onCancel?(): void {
     const setLayers = this.deps.setLayers;
-    if (!setLayers || !this.lastTransRect || !this.originalRect || !this.originalLayers) {
+    if (!setLayers || !this.originalRect || !this.originalLayers) {
       return;
       throw new Error('unable to set layers back to normal');
     }
@@ -84,27 +90,97 @@ export class TransformTool implements ITool {
 
     const originalLayers = this.originalLayers;
 
-    const cr = this.lastTransRect;
+    const cr = this.lastRect;
+    if (!cr) return;
 
-    const dirtyRect = combineRectangles(rectangleFromCenteredRect(cr), this.originalRect);
+    const dirtyRect = combineRectangles(cr, this.originalRect);
 
     setLayers((prevLayers: LayerEntity[]) => {
       return { layers: originalLayers, dirtyRect };
     });
+
+    this.reset();
   }
 
-  private init(layers: LayerEntity[], transRect: CenteredRectangle): void {
-    this.originalLayers = layers;
-    this.originalRect = rectangleFromCenteredRect(transRect);
+  private init(originalCRect: CenteredRectangle): void {
+    //save original rect
+    const originalRect = rectangleFromCenteredRect(originalCRect);
 
-    const emptyLayer = createLayer(this.originalRect);
+    //get original layers and crop
+    const originalLayers = this.deps.getLayers?.();
+    if (!originalLayers) return;
+    const selectionLayer = this.deps.getSelectionLayer?.();
 
-    this.originalLayersWithoutRect = [];
+    const splitOriginal: CropLayer[] = [];
 
-    this.originalLayers.map((layer) => {
-      const croppedLayer = { ...layer };
-      replacePixels(croppedLayer.layer, emptyLayer);
-      this.originalLayersWithoutRect?.push(croppedLayer);
+    originalLayers.map((layer) => {
+      const croppedLayer = cropLayer(layer, originalRect, selectionLayer);
+
+      splitOriginal.push(croppedLayer);
     });
+
+    //save layers for later use
+    this.splitOriginal = splitOriginal;
+    this.originalRect = originalRect;
+    this.originalLayers = originalLayers;
+    this.lastRect = originalRect;
+  }
+
+  private updateLayers(transformRect: CenteredRectangle) {
+    const splitOriginal = this.splitOriginal;
+    if (!splitOriginal) return;
+
+    const originalRect = this.originalRect;
+    if (!originalRect) return;
+
+    const setLayers = this.deps.setLayers;
+    if (!setLayers) return;
+
+    const lastRect = this.lastRect;
+    if (!lastRect) return;
+
+    const updatedLayers: LayerEntity[] = [];
+
+    splitOriginal.map((split) => {
+      const updatedLayer = transformLayer(
+        split.restLayer,
+        split.croppedLayer,
+        transformRect,
+        originalRect,
+      );
+
+      updatedLayers.push(updatedLayer);
+    });
+
+    const transRect = rectangleFromCenteredRect(transformRect);
+
+    const incTransRect: Rectangle = {
+      x: transRect.x - 1,
+      y: transRect.y - 1,
+      width: transRect.width + 2,
+      height: transRect.height + 2,
+    };
+
+    const incLastRect: Rectangle = {
+      x: lastRect.x - 1,
+      y: lastRect.y - 1,
+      width: lastRect.width + 2,
+      height: lastRect.height + 2,
+    };
+
+    const dirtyRect = combineRectangles(incTransRect, incLastRect);
+    this.lastRect = transRect;
+
+    setLayers((prevLayers) => {
+      return { dirtyRect, layers: updatedLayers };
+    });
+  }
+
+  private reset() {
+    this.originalLayers = undefined;
+    this.splitOriginal = undefined;
+    this.originalRect = undefined;
+    this.lastRect = undefined;
+    this.firstRound = true;
   }
 }

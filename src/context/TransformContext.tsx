@@ -43,6 +43,10 @@ export const TransformContextProvider = ({ children }: { children: React.ReactNo
           }),
         );
       } else if (lastToolRef.current) {
+        if (activeTool.name === 'transform') {
+          activeTool.onCancel?.();
+        }
+
         setActiveTool(lastToolRef.current);
         lastToolRef.current = undefined;
       }

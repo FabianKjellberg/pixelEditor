@@ -3,6 +3,7 @@
 import { useCanvasContext } from '@/context/CanvasContext';
 import { useMouseEventContext } from '@/context/MouseEventContext/MouseEventContext';
 import { useToolContext } from '@/context/ToolContext';
+import { useTransformContext } from '@/context/TransformContext';
 import { useEffect, useState } from 'react';
 
 const ToolClickHandler = () => {
@@ -18,6 +19,7 @@ const ToolClickHandler = () => {
     mouseDown,
   } = useMouseEventContext();
   const { pixelSize } = useCanvasContext();
+  const { setTransforming } = useTransformContext();
 
   const [ctrlDown, setCtrlDown] = useState<boolean>(false);
   const [shiftDown, setShiftDown] = useState<boolean>(false);
@@ -64,8 +66,16 @@ const ToolClickHandler = () => {
 
     if (onKeyDownEvent.key === 'enter') {
       activeTool.onCommit?.();
+
+      if (activeTool.name === 'transform') {
+        setTransforming(false);
+      }
     } else if (onKeyDownEvent.key === 'escape') {
       activeTool.onCancel?.();
+
+      if (activeTool.name === 'transform') {
+        setTransforming(false);
+      }
     }
   }, [onKeyDownEvent?.trigger]);
 
