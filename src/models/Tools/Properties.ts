@@ -14,6 +14,7 @@ export enum PropertyType {
   GradientType = 9,
   Dithering = 10,
   Transform = 11,
+  TransformInterpolation = 12,
 }
 
 export interface IProperty<T = unknown, S extends UIControlSpec = UIControlSpec> {
@@ -237,6 +238,26 @@ export class TransformProperty implements IProperty {
   }
   set value(v: CenteredRectangle | undefined) {
     this._value = v;
+  }
+}
+
+export class TransformInterpolation implements IProperty {
+  propertyType: PropertyType = PropertyType.TransformInterpolation;
+  spec: IMultiChoice = {
+    allowEmpty: false,
+    label: 'Rendering',
+    choices: ['Nearest Neighbor', 'Bilinear'],
+    type: 'multiChoice',
+  };
+  constructor(private _value: string | null = 'Nearest Neighbor') {}
+  get value() {
+    return this._value;
+  }
+  set value(v: string | null) {
+    if (!this.spec.choices.some((c) => c === v)) {
+      if (this.spec.allowEmpty) this._value = null;
+      else this.value = this.spec.choices[0] ?? null;
+    } else this._value = v;
   }
 }
 

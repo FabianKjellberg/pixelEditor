@@ -1,6 +1,12 @@
 import { rectangleFromCenteredRect } from '@/helpers/transform';
 import { CenteredRectangle, LayerEntity, Rectangle } from '../Layer';
-import { AnyProperty, getProperty, PropertyType, TransformProperty } from './Properties';
+import {
+  AnyProperty,
+  getProperty,
+  PropertyType,
+  TransformInterpolation,
+  TransformProperty,
+} from './Properties';
 import { IToolDeps, ITool } from './Tools';
 import {
   combineRectangles,
@@ -81,7 +87,6 @@ export class TransformTool implements ITool {
     const setLayers = this.deps.setLayers;
     if (!setLayers || !this.originalRect || !this.originalLayers) {
       return;
-      throw new Error('unable to set layers back to normal');
     }
 
     if (this.originalRect === null) {
@@ -130,6 +135,13 @@ export class TransformTool implements ITool {
     const splitOriginal = this.splitOriginal;
     if (!splitOriginal) return;
 
+    const properties = this.deps.getProperties?.('transform') ?? [];
+    const rendering = getProperty<TransformInterpolation>(
+      properties,
+      PropertyType.TransformInterpolation,
+    );
+    if (!rendering) return;
+
     const originalRect = this.originalRect;
     if (!originalRect) return;
 
@@ -147,6 +159,7 @@ export class TransformTool implements ITool {
         split.croppedLayer,
         transformRect,
         originalRect,
+        rendering.value,
       );
 
       updatedLayers.push(updatedLayer);

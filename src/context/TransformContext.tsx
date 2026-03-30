@@ -8,6 +8,7 @@ import { useLayerContext } from './LayerContext';
 import { useCanvasContext } from './CanvasContext';
 import { useUndoRedoContext } from './UndoRedoContext';
 import { useToastContext } from './ToastContext/ToastContext';
+import { PropertyType, TransformInterpolation } from '@/models/Tools/Properties';
 
 type TransformContextValue = {
   transforming: boolean;
@@ -17,7 +18,7 @@ type TransformContextValue = {
 const TransformContext = createContext<TransformContextValue | undefined>(undefined);
 
 export const TransformContextProvider = ({ children }: { children: React.ReactNode }) => {
-  const { activeTool, setActiveTool, getProperties } = useToolContext();
+  const { activeTool, setActiveTool, getProperties, ensureProperties } = useToolContext();
   const { setActiveLayers, getActiveLayers } = useLayerContext();
   const { getCanvasRect, getSelectionLayer } = useCanvasContext();
   const { checkPoint } = useUndoRedoContext();
@@ -30,6 +31,15 @@ export const TransformContextProvider = ({ children }: { children: React.ReactNo
   const setTranformingCallback = useCallback(
     (transform: boolean) => {
       if (transform) {
+        const transformExisting = getProperties('transform');
+        const transformHasRendering = transformExisting.some(
+          (p) => p.propertyType === PropertyType.TransformInterpolation,
+        );
+
+        if (!transformHasRendering) {
+          ensureProperties('transform', [new TransformInterpolation()]);
+        }
+
         lastToolRef.current = activeTool;
         setActiveTool(
           new TransformTool({
