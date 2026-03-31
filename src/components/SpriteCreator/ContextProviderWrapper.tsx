@@ -21,15 +21,15 @@ const ContextProviderWrapper = ({ children }: { children: React.ReactNode }) => 
             <MetaDataAutoSaveProvider>
               <UndoRedoContextProvider>
                 <ToolProvider>
-                  <LayerSelectorProvider>
-                    <TransformContextProvider>
+                  <TransformContextProvider>
+                    <LayerSelectorProvider>
                       <AiActionsContextProvider>
                         <ModalProvider>
                           <ContextMenuProvider>{children}</ContextMenuProvider>
                         </ModalProvider>
                       </AiActionsContextProvider>
-                    </TransformContextProvider>
-                  </LayerSelectorProvider>
+                    </LayerSelectorProvider>
+                  </TransformContextProvider>
                 </ToolProvider>
               </UndoRedoContextProvider>
             </MetaDataAutoSaveProvider>

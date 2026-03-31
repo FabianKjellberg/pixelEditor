@@ -47,11 +47,41 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
     };
   });
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isCtrlPressed, setIsCtrlPressed] = useState(false);
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const isDraggingRef = useRef<boolean>(false);
   const originRef = useRef<Cordinate | null>(null);
   const moveDifference = useRef<Cordinate | null>(null);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        setIsCtrlPressed(true);
+      }
+    };
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (!e.ctrlKey && !e.metaKey) {
+        setIsCtrlPressed(false);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isCtrlPressed) {
+      setIsDragging(false);
+      moveDifference.current = null;
+    }
+  }, [isCtrlPressed]);
 
   useEffect(() => {
     isDraggingRef.current = isDragging;
@@ -214,6 +244,9 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
           fill="#00000000"
           stroke="black"
           strokeWidth={2}
+          style={{
+            pointerEvents: isCtrlPressed ? 'none' : 'auto',
+          }}
           className={styles.move}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.move)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.move)}
@@ -222,6 +255,7 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
         <line x1={x} x2={x} y1={y - h / 2} y2={y - h / 2 - 20} stroke="black" strokeWidth={2} />
 
         <g
+          style={{ pointerEvents: isCtrlPressed ? 'none' : 'auto' }}
           className={isDragging ? styles.grabbing : styles.grab}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.rot)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.rot)}
@@ -231,7 +265,10 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
         </g>
 
         <g
-          style={getStyles(TransformBtn.nw, transformArea.rotation)}
+          style={{
+            ...getStyles(TransformBtn.nw, transformArea.rotation),
+            pointerEvents: isCtrlPressed ? 'none' : 'auto',
+          }}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.nw)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.nw)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.nw)}
@@ -239,7 +276,10 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
           {rectangleButton(x - w / 2, y - h / 2)}
         </g>
         <g
-          style={getStyles(TransformBtn.ne, transformArea.rotation)}
+          style={{
+            ...getStyles(TransformBtn.ne, transformArea.rotation),
+            pointerEvents: isCtrlPressed ? 'none' : 'auto',
+          }}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.ne)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.ne)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.ne)}
@@ -247,7 +287,10 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
           {rectangleButton(x + w / 2, y - h / 2)}
         </g>
         <g
-          style={getStyles(TransformBtn.sw, transformArea.rotation)}
+          style={{
+            ...getStyles(TransformBtn.sw, transformArea.rotation),
+            pointerEvents: isCtrlPressed ? 'none' : 'auto',
+          }}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.sw)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.sw)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.sw)}
@@ -255,7 +298,10 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
           {rectangleButton(x - w / 2, y + h / 2)}
         </g>
         <g
-          style={getStyles(TransformBtn.se, transformArea.rotation)}
+          style={{
+            ...getStyles(TransformBtn.se, transformArea.rotation),
+            pointerEvents: isCtrlPressed ? 'none' : 'auto',
+          }}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.se)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.se)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.se)}
@@ -263,7 +309,10 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
           {rectangleButton(x + w / 2, y + h / 2)}
         </g>
         <g
-          style={getStyles(TransformBtn.n, transformArea.rotation)}
+          style={{
+            ...getStyles(TransformBtn.n, transformArea.rotation),
+            pointerEvents: isCtrlPressed ? 'none' : 'auto',
+          }}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.n)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.n)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.n)}
@@ -271,7 +320,10 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
           {rectangleButton(x, y - h / 2)}
         </g>
         <g
-          style={getStyles(TransformBtn.s, transformArea.rotation)}
+          style={{
+            ...getStyles(TransformBtn.s, transformArea.rotation),
+            pointerEvents: isCtrlPressed ? 'none' : 'auto',
+          }}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.s)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.s)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.s)}
@@ -279,7 +331,10 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
           {rectangleButton(x, y + h / 2)}
         </g>
         <g
-          style={getStyles(TransformBtn.w, transformArea.rotation)}
+          style={{
+            ...getStyles(TransformBtn.w, transformArea.rotation),
+            pointerEvents: isCtrlPressed ? 'none' : 'auto',
+          }}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.w)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.w)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.w)}
@@ -287,7 +342,10 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
           {rectangleButton(x - w / 2, y)}
         </g>
         <g
-          style={getStyles(TransformBtn.e, transformArea.rotation)}
+          style={{
+            ...getStyles(TransformBtn.e, transformArea.rotation),
+            pointerEvents: isCtrlPressed ? 'none' : 'auto',
+          }}
           onPointerDown={(e) => onPointerDownCallback(e, TransformBtn.e)}
           onPointerMove={(e) => onPointerMoveCallback(e, TransformBtn.e)}
           onPointerUp={(e) => onPointerUpCallback(e, TransformBtn.e)}
@@ -304,6 +362,7 @@ const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
     isDragging,
     onPointerDownCallback,
     onPointerUpCallback,
+    isCtrlPressed,
   ]);
 
   return (

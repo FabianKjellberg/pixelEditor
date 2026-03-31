@@ -58,10 +58,6 @@ export const UndoRedoContextProvider = ({ children }: { children: ReactNode }) =
     isLoadedFromCloudRef.current = isLoadedFromCloud;
   }, [isLoadedFromCloud]);
 
-  /*useEffect(() => {
-    allLayersRef.current = allLayers;
-  }, [allLayers]);
-*/
   useEffect(() => {
     const u = pendingUpdateRef.current;
     if (!u) return;

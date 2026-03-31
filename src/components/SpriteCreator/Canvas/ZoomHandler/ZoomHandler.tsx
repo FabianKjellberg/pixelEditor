@@ -11,6 +11,10 @@ const ZoomHandler = () => {
   const [pixelDecimalSize, setPixelDecimalSize] = useState<number>(pixelSize);
 
   useEffect(() => {
+    setPixelDecimalSize(pixelSize);
+  }, [pixelSize]);
+
+  useEffect(() => {
     if (!onScrollEvent) return;
 
     if (getMouseDown()) return;
