@@ -8,6 +8,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -15,10 +16,15 @@ import styles from './MouseEventContext.module.css';
 import { Cordinate } from '@/models/Layer';
 import { getCanvasPosition } from '@/helpers/canvas';
 import { useCanvasContext } from '../CanvasContext';
+import { useToolContext } from '../ToolContext';
 
 type MouseEventContextValue = {
   cursorType: CSSProperties;
   setCursorType: (properties: CSSProperties) => void;
+
+  mouseDown: boolean;
+  getMouseDown: () => boolean;
+  setMouseDown: (down: boolean) => void;
 
   onKeyDownEvent: KeyEvent | null;
   onKeyUpEvent: KeyEvent | null;
@@ -43,6 +49,8 @@ export type PointerEventPayload = {
   pos: Cordinate;
   mouseButton: number;
   trigger: number;
+  ctrlDown: boolean;
+  shiftDown: boolean;
 };
 
 export type ScrollEvent = {
@@ -68,8 +76,20 @@ function isTypingTarget(target: EventTarget | null): boolean {
 
 export const MouseEventContextProvider = ({ children }: { children: ReactNode }) => {
   const { pan } = useCanvasContext();
+  const { activeTool } = useToolContext();
 
   const [cursorType, setCursorType] = useState<CSSProperties>({ cursor: 'pointer' });
+  const [mouseDown, setMouseDown] = useState<boolean>(false);
+
+  const mouseDownRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    mouseDownRef.current = mouseDown;
+  }, [mouseDown]);
+
+  const getMouseDown = useCallback(() => {
+    return mouseDownRef.current;
+  }, []);
 
   const [onKeyDownEvent, setOnKeyDownEvent] = useState<KeyEvent | null>(null);
   const [onKeyUpEvent, setOnKeyUpEvent] = useState<KeyEvent | null>(null);
@@ -84,7 +104,6 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
 
   const [onScrollEvent, setOnScrollEvent] = useState<ScrollEvent | null>(null);
 
-  // ✅ Global keyboard listeners (Option A)
   useEffect(() => {
     const opts: AddEventListenerOptions = { capture: true };
 
@@ -122,6 +141,7 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
 
   const onPointerDown: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
+      setMouseDown(true);
       e.currentTarget.setPointerCapture(e.pointerId);
 
       const c = getCanvasPosition(e, pan);
@@ -129,6 +149,8 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
         pos: c,
         trigger: prev ? prev.trigger + 1 : 0,
         mouseButton: e.button,
+        ctrlDown: e.ctrlKey,
+        shiftDown: e.shiftKey,
       }));
     },
     [pan],
@@ -141,6 +163,8 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
         pos: c,
         trigger: prev ? prev.trigger + 1 : 0,
         mouseButton: 0,
+        ctrlDown: e.ctrlKey,
+        shiftDown: e.shiftKey,
       }));
     },
     [pan],
@@ -153,11 +177,13 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
       if (e.currentTarget.hasPointerCapture(e.pointerId)) {
         e.currentTarget.releasePointerCapture(e.pointerId);
       }
-
+      setMouseDown(false);
       setOnPointerUpEvent((prev) => ({
         pos: c,
         trigger: prev ? prev.trigger + 1 : 0,
         mouseButton: e.button,
+        ctrlDown: e.ctrlKey,
+        shiftDown: e.shiftKey,
       }));
     },
     [pan],
@@ -170,6 +196,8 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
         pos: c,
         trigger: prev ? prev.trigger + 1 : 0,
         mouseButton: 0,
+        ctrlDown: e.ctrlKey,
+        shiftDown: e.shiftKey,
       }));
     },
     [pan],
@@ -187,6 +215,8 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
         pos: c,
         trigger: prev ? prev.trigger + 1 : 0,
         mouseButton: 0,
+        ctrlDown: e.ctrlKey,
+        shiftDown: e.shiftKey,
       }));
 
       // You were also emitting pointerUp on cancel – keeping that behavior
@@ -194,6 +224,8 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
         pos: c,
         trigger: prev ? prev.trigger + 1 : 0,
         mouseButton: 0,
+        ctrlDown: e.ctrlKey,
+        shiftDown: e.shiftKey,
       }));
     },
     [pan],
@@ -217,7 +249,9 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
     () => ({
       cursorType,
       setCursorType,
-
+      mouseDown,
+      getMouseDown,
+      setMouseDown,
       onKeyDownEvent,
       onKeyUpEvent,
 
@@ -230,6 +264,9 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
       onScrollEvent,
     }),
     [
+      mouseDown,
+      getMouseDown,
+      setMouseDown,
       cursorType,
       onKeyDownEvent,
       onKeyUpEvent,
@@ -245,17 +282,21 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
   return (
     <MouseEventContext.Provider value={value}>
       {children}
-      <div
-        className={styles.mouseEvents}
-        style={cursorType}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerLeave={onPointerLeave}
-        onPointerCancel={onPointerCancel}
-        onContextMenu={(e) => e.preventDefault()}
-        onWheel={onScroll}
-      />
+      {activeTool.name === 'transform' ? (
+        <div onContextMenu={(e) => e.preventDefault()} onWheel={onScroll} />
+      ) : (
+        <div
+          className={styles.mouseEvents}
+          style={cursorType}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerLeave={onPointerLeave}
+          onPointerCancel={onPointerCancel}
+          onContextMenu={(e) => e.preventDefault()}
+          onWheel={onScroll}
+        />
+      )}
     </MouseEventContext.Provider>
   );
 };

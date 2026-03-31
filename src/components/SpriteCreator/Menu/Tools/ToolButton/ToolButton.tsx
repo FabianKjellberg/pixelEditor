@@ -5,6 +5,7 @@ import styles from './ToolButton.module.css';
 import { useToolContext } from '@/context/ToolContext';
 import { useCallback, useMemo, useRef } from 'react';
 import Image from 'next/image';
+import { useTransformContext } from '@/context/TransformContext';
 
 type ToolButtonProps = {
   icon: string;
@@ -15,12 +16,17 @@ type ToolButtonProps = {
 
 const ToolButton = ({ icon, tool, onRightClickCallback = null }: ToolButtonProps) => {
   const { activeTool, setActiveTool } = useToolContext();
+  const { transforming, setTransforming } = useTransformContext();
 
   const isSelected = useMemo(() => activeTool.name === tool.name, [activeTool.name, tool.name]);
 
   const divRef = useRef<HTMLDivElement | null>(null);
 
   const onClickToolButton = useCallback(() => {
+    if (transforming) {
+      setTransforming(false);
+    }
+
     setActiveTool(tool);
   }, [setActiveTool, tool]);
 

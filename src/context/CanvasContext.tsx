@@ -13,8 +13,8 @@ import {
   useState,
 } from 'react';
 
-const defaultWidth: number = 64;
-const defaultHeight: number = 64;
+const defaultWidth: number = 128;
+const defaultHeight: number = 128;
 const defaultPixelSize: number = 25;
 const defaultPan: Cordinate = { x: 0, y: 0 };
 

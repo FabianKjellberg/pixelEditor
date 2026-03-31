@@ -59,15 +59,8 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [redrawVersion, setRedrawVersion] = useState(0);
   const dirtyQueueRef = useRef<Rectangle[]>([]);
 
-  const { getCanvasRect, isLoadedFromCloud, requestPreview } = useCanvasContext();
-  const { debounceSave, beginSaving, endSaving } = useAutoSaveContext();
+  const { getCanvasRect } = useCanvasContext();
   const { onToast } = useToastContext();
-
-  const isLoadedFromCloudRef = useRef(isLoadedFromCloud);
-
-  useEffect(() => {
-    isLoadedFromCloudRef.current = isLoadedFromCloud;
-  }, [isLoadedFromCloud]);
 
   const pushDirty = useCallback(
     (dirtyRect: Rectangle): void => {
@@ -107,36 +100,6 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
     return allLayersRef.current.filter((layer) => ids.some((id) => id === layer.id));
   }, []);
 
-  const saveFunction = (layerId: string) => {
-    const layer: LayerEntity | undefined = allLayersRef.current.find((l) => l.id == layerId);
-
-    if (!layer) {
-      throw new Error('could not find layer to save');
-    }
-
-    if (!beginSaving(layerId)) {
-      // maybe implement a waiting here
-      throw new Error('this layer is already saving');
-    }
-
-    api.layer
-      .saveLayer(layer, requestPreview)
-      .catch((error) => {
-        throw new Error(error);
-      })
-      .finally(() => {
-        endSaving(layer.id);
-      });
-  };
-
-  const trySave = (layers: LayerEntity[]) => {
-    if (isLoadedFromCloudRef.current) {
-      layers.forEach((layer) => {
-        debounceSave(layer.id, saveFunction);
-      });
-    }
-  };
-
   const setActiveLayers = useCallback(
     (updater: (prevLayer: LayerEntity[]) => { layers: LayerEntity[]; dirtyRect: Rectangle }) => {
       let dirtyToPush: Rectangle | null = null;
@@ -161,14 +124,12 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
 
         pushDirty(dirtyToPush);
 
-        trySave(prevLayers);
-
         const layerMap = new Map(nextLayers.map((layer) => [layer.id, layer]));
 
         return prev.map((item) => layerMap.get(item.id) ?? item);
       });
     },
-    [pushDirty, trySave],
+    [pushDirty],
   );
 
   const setLayerById = useCallback(
@@ -179,11 +140,9 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
         );
       });
 
-      trySave([newLayer]);
-
       pushDirty(dirtyRect);
     },
-    [pushDirty, trySave],
+    [pushDirty],
   );
 
   const resetToBlankProject = useCallback(
@@ -261,6 +220,7 @@ export const LayerProvider = ({ children }: { children: React.ReactNode }) => {
       setLayerTreeItems,
       allLayers,
       getActiveLayers,
+      activeLayerIds,
       setActiveLayers,
       setLayerById,
       redrawVersion,

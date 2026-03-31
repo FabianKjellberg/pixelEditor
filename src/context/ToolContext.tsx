@@ -27,6 +27,7 @@ class NoopTool implements ITool {
 
 type ToolContextValue = {
   activeTool: ITool;
+  getActiveTool: () => ITool;
   setActiveTool: (tool: ITool) => void;
 
   getProperties: (toolKey: string) => IProperty[];
@@ -48,6 +49,25 @@ const ToolContext = createContext<ToolContextValue | undefined>(undefined);
 
 export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeTool, setActiveTool] = useState<ITool>(new NoopTool({}));
+
+  const activeToolRef = useRef<ITool>(activeTool);
+
+  useEffect(() => {
+    activeToolRef.current = activeTool;
+  }, [activeTool]);
+
+  const setActiveToolCallback = useCallback(
+    (tool: ITool) => {
+      activeTool.onUp?.(0, 0, 0, 0);
+      setActiveTool(tool);
+    },
+    [activeTool],
+  );
+
+  const getActiveTool = useCallback((): ITool => {
+    return activeToolRef.current;
+  }, []);
+
   const [primaryColor, setPrimaryColor] = useState<number>(0x000000ff);
   const [secondaryColor, setSecondaryColor] = useState<number>(0xffffffff);
   const [propertiesMap, setPropertiesMap] = useState<Map<string, AnyProperty[]>>(new Map());
@@ -127,7 +147,8 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
   const value = useMemo(
     () => ({
       activeTool,
-      setActiveTool,
+      getActiveTool,
+      setActiveTool: setActiveToolCallback,
       properties,
       setProperties,
       getProperties,
@@ -142,6 +163,8 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
     }),
     [
       activeTool,
+      getActiveTool,
+      setActiveTool,
       properties,
       setProperties,
       getProperties,

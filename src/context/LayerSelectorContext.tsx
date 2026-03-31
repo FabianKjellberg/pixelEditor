@@ -23,6 +23,9 @@ import { useCanvasContext } from './CanvasContext';
 import { api } from '@/api/client';
 import { useMetaDataAutoSaveContext } from './MetaDataAutoSaveContext';
 import { LoadingState } from '@/components/Loading/Loading';
+import { useTransformContext } from './TransformContext';
+import { useToastContext } from './ToastContext/ToastContext';
+import { useToolContext } from './ToolContext';
 
 export type Order = {
   id: string;
@@ -53,6 +56,8 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
 
   const { getCanvasRect, width, height, isLoadedFromCloud, projectId, requestPreview } =
     useCanvasContext();
+
+  const { setTransforming, transforming } = useTransformContext();
 
   const { addChange } = useMetaDataAutoSaveContext();
 
@@ -464,9 +469,22 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
     [setLayerTreeItems, markDirty, width, height],
   );
 
+  const { onToast } = useToastContext();
+  const { activeTool } = useToolContext();
+
   const onSelectItem = useCallback(
     (id: string, shiftClick: boolean, ctrlClick: boolean) => {
       if (shiftClick && ctrlClick) return;
+
+      if (transforming) {
+        onToast(
+          'Cannot change layers during a transformation. Press Enter to commit or Esc to cancel',
+          'warning',
+        );
+        return;
+      }
+
+      activeTool.onCancel?.();
 
       const index = layerTreeItems.findIndex(
         (i) => i.id === id && (i.type === 'group-start' || i.type === 'layer'),
@@ -555,7 +573,7 @@ export const LayerSelectorProvider = ({ children }: { children: React.ReactNode 
           break;
       }
     },
-    [layerTreeItems, activeLayerIds, setActiveLayerIds],
+    [layerTreeItems, activeLayerIds, setActiveLayerIds, transforming],
   );
 
   const orderRef = useRef<Order[]>([]);

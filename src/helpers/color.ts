@@ -1,4 +1,4 @@
-import { Rectangle } from '@/models/Layer';
+import { Cordinate, Rectangle } from '@/models/Layer';
 import { Hsb100, Hsv, RGBAobj } from '@/models/Tools/Color';
 
 export const rgbaToInt = (r: number, g: number, b: number, a = 255): number =>
@@ -33,6 +33,13 @@ export const getLocalPixelIndex = (globalX: number, globalY: number, rect: Recta
   }
 
   return localY * rect.width + localX;
+};
+
+export const getGlobalCordinate = (localX: number, localY: number, rect: Rectangle): Cordinate => {
+  return {
+    x: localX + rect.x,
+    y: localY + rect.y,
+  };
 };
 
 export function hsvToRgb(h: number, s: number, v: number): RGBAobj {

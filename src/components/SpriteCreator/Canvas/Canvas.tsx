@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import BackgroundCanvas from './BackgroundCanvas/BackgroundCanvas';
 import styles from './Canvas.module.css';
 import ClickHandler from './ClickHandler/ClickHandler';
@@ -11,11 +11,17 @@ import Selection from './Selection/Selection';
 import { useSettingsContext } from '@/context/SettingsContext';
 import ToolOverlay from './ToolOverlay/ToolOverlay';
 import { MouseEventContextProvider } from '@/context/MouseEventContext/MouseEventContext';
+import { useTransformContext } from '@/context/TransformContext';
+import TransformOverlay from './TransformOverlay/TransformOverlay';
+import ToolClickHandler from './ToolClickHandler/ToolClickHandler';
+import ZoomHandler from './ZoomHandler/ZoomHandler';
+import KeyboardShortcutHandler from './KeyboardShortcutHandler/KeyboardShortcutHandler';
 
 const Canvas = () => {
   const frameRef = useRef<HTMLDivElement>(null);
   const { width, height } = useSize(frameRef);
   const { showSelectedLayerBoundary } = useSettingsContext();
+  const { transforming } = useTransformContext();
 
   return (
     <div className={styles.spriteCanvas} ref={frameRef}>
@@ -26,8 +32,11 @@ const Canvas = () => {
         <Selection canvasWidth={width} canvasHeight={height} />
         <MouseEventContextProvider>
           {width && height && <ToolOverlay canvasWidth={width} canvasHeight={height} />}
-          <ClickHandler />
+          <ToolClickHandler />
+          <ZoomHandler />
+          <KeyboardShortcutHandler />
         </MouseEventContextProvider>
+        {transforming && <TransformOverlay width={width} height={height} />}
       </div>
     </div>
   );

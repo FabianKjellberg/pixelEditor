@@ -1,3 +1,5 @@
+import { CenteredRectangle } from '../Layer';
+
 export interface ISlider {
   type: 'slider';
   label: string;
@@ -26,4 +28,8 @@ export interface IDithering {
   choices: string[];
 }
 
-export type UIControlSpec = ISlider | IToggle | IMultiChoice | IDithering;
+export interface INone {
+  type: 'none';
+}
+
+export type UIControlSpec = ISlider | IToggle | IMultiChoice | IDithering | INone;

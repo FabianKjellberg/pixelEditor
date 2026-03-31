@@ -18,7 +18,6 @@ import {
   createLayerEntity,
   stampLayer,
 } from '@/util/LayerUtil';
-import { error } from 'console';
 
 type LayerItemProp = {
   layer: LayerEntity;
@@ -216,8 +215,6 @@ const LayerItem = ({ layer }: LayerItemProp) => {
     const finalLayer = stampLayers.pop();
 
     if (!finalLayer) throw new Error('final item not found merging many layers');
-
-    console.log(stampLayers, finalLayer);
 
     for (let i = stampLayers.length - 1; i >= 0; i--) {
       finalLayer.layer = stampLayer(stampLayers[i].layer, finalLayer.layer, false);

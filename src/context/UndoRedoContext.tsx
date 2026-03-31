@@ -13,6 +13,9 @@ import {
 } from 'react';
 import { useLayerContext } from './LayerContext';
 import { combineManyRectangles, combineRectangles } from '@/util/LayerUtil';
+import { useCanvasContext } from './CanvasContext';
+import { useAutoSaveContext } from './AutoSaveContext';
+import { api } from '@/api/client';
 
 type UndoRedoValue = {
   undo: () => void;
@@ -42,9 +45,18 @@ const MAX_HISTORY = 50;
 const UndoRedoContext = createContext<UndoRedoValue | undefined>(undefined);
 
 export const UndoRedoContextProvider = ({ children }: { children: ReactNode }) => {
-  const { setLayerTreeItems, markDirty } = useLayerContext();
+  const { setLayerTreeItems, markDirty, allLayers } = useLayerContext();
+  const { isLoadedFromCloud, requestPreview } = useCanvasContext();
+  const { debounceSave, beginSaving, endSaving } = useAutoSaveContext();
 
   const pendingUpdateRef = useRef<PendingLayerUpdate>(null);
+
+  const isLoadedFromCloudRef = useRef(isLoadedFromCloud);
+  //const allLayersRef = useRef(allLayers);
+
+  useEffect(() => {
+    isLoadedFromCloudRef.current = isLoadedFromCloud;
+  }, [isLoadedFromCloud]);
 
   useEffect(() => {
     const u = pendingUpdateRef.current;
@@ -88,6 +100,8 @@ export const UndoRedoContextProvider = ({ children }: { children: ReactNode }) =
         dirtyRect: dirtyRect,
       };
 
+      trySaveLayers(action.up);
+
       const { from, to } = popPushN(prev.undo, prev.redo, 1);
 
       return {
@@ -98,6 +112,29 @@ export const UndoRedoContextProvider = ({ children }: { children: ReactNode }) =
   }, [canUndo, history, setHistory]);
 
   const canRedo = useMemo((): boolean => history.redo.length > 0, [history.redo]);
+
+  const saveLayerEntity = (layer: LayerEntity) => {
+    if (!beginSaving(layer.id)) {
+      throw new Error('this layer is already saving');
+    }
+
+    api.layer
+      .saveLayer(layer, requestPreview)
+      .catch((error) => {
+        throw new Error(error);
+      })
+      .finally(() => {
+        endSaving(layer.id);
+      });
+  };
+
+  const trySaveLayers = (layers: LayerEntity[]) => {
+    if (!isLoadedFromCloudRef.current) return;
+
+    layers.forEach((layer) => {
+      debounceSave(layer.id, () => saveLayerEntity(layer));
+    });
+  };
 
   const redo = useCallback(() => {
     if (!canRedo) return;
@@ -115,6 +152,8 @@ export const UndoRedoContextProvider = ({ children }: { children: ReactNode }) =
         dirtyRect: dirtyRect,
       };
 
+      trySaveLayers(action.down);
+
       const { from, to } = popPushN(prev.redo, prev.undo, 1);
 
       return {
@@ -126,6 +165,8 @@ export const UndoRedoContextProvider = ({ children }: { children: ReactNode }) =
 
   const checkPoint = useCallback(
     (action: HistoryAction) => {
+      trySaveLayers(action.down);
+
       setHistory((prev) => {
         const updated = [...prev.undo, action];
 

@@ -1,0 +1,27 @@
+.grab {
+  cursor: grab;
+}
+
+.grabbing {
+  cursor: grabbing;
+}
+
+.nwse {
+  cursor: nwse-resize;
+}
+
+.nesw {
+  cursor: nesw-resize;
+}
+
+.ns {
+  cursor: ns-resize;
+}
+
+.ew {
+  cursor: ew-resize;
+}
+
+.move {
+  cursor: move;
+}

@@ -1,4 +1,5 @@
-import { IDithering, IMultiChoice, ISlider, IToggle, UIControlSpec } from './PropertySpecs';
+import { CenteredRectangle } from '../Layer';
+import { IDithering, IMultiChoice, INone, ISlider, IToggle, UIControlSpec } from './PropertySpecs';
 
 export enum PropertyType {
   Size = 0,
@@ -12,6 +13,8 @@ export enum PropertyType {
   SingleColor = 8,
   GradientType = 9,
   Dithering = 10,
+  Transform = 11,
+  TransformInterpolation = 12,
 }
 
 export interface IProperty<T = unknown, S extends UIControlSpec = UIControlSpec> {
@@ -214,13 +217,47 @@ export class DitheringProperty implements IProperty {
         v.size === 1
           ? default1x1DitheringValue
           : v.size === 2
-          ? default2x2DitheringValue
-          : v.size === 4
-          ? default4x4DitheringValue
-          : default8x8DitheringValue;
+            ? default2x2DitheringValue
+            : v.size === 4
+              ? default4x4DitheringValue
+              : default8x8DitheringValue;
     } else {
       this._value = v;
     }
+  }
+}
+
+export class TransformProperty implements IProperty {
+  propertyType: PropertyType = PropertyType.Transform;
+  spec: INone = {
+    type: 'none',
+  };
+  constructor(private _value: CenteredRectangle | undefined = undefined) {}
+  get value() {
+    return this._value;
+  }
+  set value(v: CenteredRectangle | undefined) {
+    this._value = v;
+  }
+}
+
+export class TransformInterpolation implements IProperty {
+  propertyType: PropertyType = PropertyType.TransformInterpolation;
+  spec: IMultiChoice = {
+    allowEmpty: false,
+    label: 'Rendering',
+    choices: ['Nearest Neighbor', 'Bilinear'],
+    type: 'multiChoice',
+  };
+  constructor(private _value: string | null = 'Nearest Neighbor') {}
+  get value() {
+    return this._value;
+  }
+  set value(v: string | null) {
+    if (!this.spec.choices.some((c) => c === v)) {
+      if (this.spec.allowEmpty) this._value = null;
+      else this.value = this.spec.choices[0] ?? null;
+    } else this._value = v;
   }
 }
 
