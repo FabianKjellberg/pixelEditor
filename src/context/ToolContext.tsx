@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react';
 import type { ITool, IToolDeps } from '@/models/Tools/Tools';
-import { upsertProperty, type AnyProperty, type IProperty } from '@/models/Tools/Properties';
+import { upsertProperty, type AnyProperty, type IProperty } from '@/models/properties/Properties';
 
 // Example fallback tool so the app has something usable by default
 class NoopTool implements ITool {

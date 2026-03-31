@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import type { ISlider } from '@/models/Tools/PropertySpecs';
+import type { ISlider } from '@/models/properties/PropertySpecs';
 import Slider from '@/components/SpriteCreator/Menu/Tools/Properties/Slider/Slider';
 import styles from './DitheringPatternModal.module.css';
 
@@ -144,55 +144,51 @@ const DitheringPatternModal = ({ size, pattern, onChange }: DitheringPatternModa
             className={styles.grid}
             style={{ gridTemplateColumns: `repeat(${size}, ${cellSize}px)` }}
           >
-        {localPattern.map((row, y) =>
-          row.map((value, x) => {
-            const isEditing = editing?.x === x && editing?.y === y;
+            {localPattern.map((row, y) =>
+              row.map((value, x) => {
+                const isEditing = editing?.x === x && editing?.y === y;
 
-            return (
-              <div key={`${x}-${y}`} className={styles.cell}>
-                {isEditing ? (
-                  <input
-                    className={styles.valueInput}
-                    value={draft}
-                    inputMode="numeric"
-                    autoFocus
-                    onChange={(e) => setDraft(e.target.value)}
-                    onFocus={(e) => e.currentTarget.select()}
-                    onBlur={handleBlur}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (isDraftValid(draft)) commit();
-                        else cancelEditing();
-                      } else if (e.key === 'Escape') {
-                        e.preventDefault();
-                        cancelEditing();
-                      }
-                    }}
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    className={styles.valueButton}
-                    onClick={() => startEditing(x, y)}
-                    aria-label={`Edit value at ${x}, ${y}`}
-                  >
-                    {value}
-                  </button>
-                )}
-              </div>
-            );
-          }),
-        )}
+                return (
+                  <div key={`${x}-${y}`} className={styles.cell}>
+                    {isEditing ? (
+                      <input
+                        className={styles.valueInput}
+                        value={draft}
+                        inputMode="numeric"
+                        autoFocus
+                        onChange={(e) => setDraft(e.target.value)}
+                        onFocus={(e) => e.currentTarget.select()}
+                        onBlur={handleBlur}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (isDraftValid(draft)) commit();
+                            else cancelEditing();
+                          } else if (e.key === 'Escape') {
+                            e.preventDefault();
+                            cancelEditing();
+                          }
+                        }}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        className={styles.valueButton}
+                        onClick={() => startEditing(x, y)}
+                        aria-label={`Edit value at ${x}, ${y}`}
+                      >
+                        {value}
+                      </button>
+                    )}
+                  </div>
+                );
+              }),
+            )}
           </div>
         </div>
       </div>
       <div className={styles.sliderSection}>
-        <Slider
-          sliderProperties={sliderSpec}
-          value={threshold}
-          onChange={setThreshold}
-        />
+        <Slider sliderProperties={sliderSpec} value={threshold} onChange={setThreshold} />
       </div>
     </div>
   );

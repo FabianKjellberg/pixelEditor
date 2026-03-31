@@ -1,4 +1,4 @@
-import type { IToggle } from '@/models/Tools/PropertySpecs';
+import type { IToggle } from '@/models/properties/PropertySpecs';
 import PropertyLabel from '../PropertyLabel/PropertyLabel';
 
 import styles from './Toggle.module.css';

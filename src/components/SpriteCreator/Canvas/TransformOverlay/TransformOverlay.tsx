@@ -16,7 +16,7 @@ import {
   TransformBtn,
 } from '@/helpers/transform';
 import { useToolContext } from '@/context/ToolContext';
-import { TransformProperty } from '@/models/Tools/Properties';
+import { TransformProperty } from '@/models/properties/transformProperties';
 
 type TransformOverlayProps = {
   width: number;

@@ -1,12 +1,6 @@
 import { rectangleFromCenteredRect } from '@/helpers/transform';
 import { CenteredRectangle, LayerEntity, Rectangle } from '../Layer';
-import {
-  AnyProperty,
-  getProperty,
-  PropertyType,
-  TransformInterpolation,
-  TransformProperty,
-} from './Properties';
+import { AnyProperty, getProperty, PropertyType } from '../properties/Properties';
 import { IToolDeps, ITool } from './Tools';
 import {
   combineRectangles,
@@ -15,7 +9,14 @@ import {
   stampToCanvasLayer,
   tryReduceLayerSize,
 } from '@/util/LayerUtil';
-import { CropLayer, cropLayer, transformLayer } from '@/util/TransformUtil';
+import {
+  CropLayer,
+  cropLayer,
+  invertHorizontally,
+  invertVertically,
+  transformLayer,
+} from '@/util/TransformUtil';
+import { TransformInterpolation, TransformProperty } from '../properties/transformProperties';
 
 export class TransformTool implements ITool {
   name: string = 'transform';
@@ -31,6 +32,8 @@ export class TransformTool implements ITool {
   originalRect: Rectangle | undefined = undefined;
 
   lastRect: Rectangle | undefined = undefined;
+
+  lastTransformRect: CenteredRectangle | undefined;
 
   firstRound: boolean = true;
 
@@ -107,6 +110,27 @@ export class TransformTool implements ITool {
     this.reset();
   }
 
+  onAction(action: string): void {
+    if (!this.lastTransformRect || !this.splitOriginal || !this.originalRect) return;
+
+    const originalRect = this.originalRect;
+
+    switch (action) {
+      case 'horizontal':
+        this.splitOriginal.map((original) =>
+          invertHorizontally(original.croppedLayer, originalRect),
+        );
+        break;
+      case 'vertical':
+        this.splitOriginal.map((original) => {
+          invertVertically(original.croppedLayer, originalRect);
+        });
+        break;
+    }
+
+    this.updateLayers(this.lastTransformRect);
+  }
+
   private init(originalCRect: CenteredRectangle): void {
     //save original rect
     const originalRect = rectangleFromCenteredRect(originalCRect);
@@ -132,6 +156,7 @@ export class TransformTool implements ITool {
   }
 
   private updateLayers(transformRect: CenteredRectangle) {
+    this.lastTransformRect = transformRect;
     const splitOriginal = this.splitOriginal;
     if (!splitOriginal) return;
 

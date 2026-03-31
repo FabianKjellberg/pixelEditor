@@ -9,7 +9,7 @@ import {
   OpacityProperty,
   PropertyType,
   SingleColor,
-} from '../Properties';
+} from '../../properties/Properties';
 import { intToRGB, rgbaToInt } from '@/helpers/color';
 import { Layer, LayerEntity, Rectangle } from '@/models/Layer';
 
@@ -81,8 +81,8 @@ export class GradientTool implements ITool {
     this.toColor = singleColorProperty?.value
       ? 0
       : mouseButton === 0
-      ? secondaryColorWithOpacity
-      : primaryColorWithOpacity;
+        ? secondaryColorWithOpacity
+        : primaryColorWithOpacity;
   }
   onMove(x: number, y: number, pixelSize: number): void {
     if (

@@ -20,7 +20,7 @@ import {
   PropertyType,
   StrokeAlignProperty,
   StrokeWidthProperty,
-} from '@/models/Tools/Properties';
+} from '@/models/properties/Properties';
 import { FreeformTool } from '@/models/Tools/ShapeTools/Freeform';
 import { useToastContext } from '@/context/ToastContext/ToastContext';
 

@@ -1,4 +1,4 @@
-import { IMultiChoice } from '@/models/Tools/PropertySpecs';
+import { IMultiChoice } from '@/models/properties/PropertySpecs';
 import PropertyLabel from '../PropertyLabel/PropertyLabel';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -12,7 +12,11 @@ type MultiChoiceProps = {
 
 const MultiChoice = ({ multiChoiceProperties, value, onChange }: MultiChoiceProps) => {
   const [multiChoiceOpen, setMultiChoiceOpen] = useState<boolean>(false);
-  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -80,9 +84,15 @@ const MultiChoice = ({ multiChoiceProperties, value, onChange }: MultiChoiceProp
     <>
       <PropertyLabel label={label} />
       <div className={styles.multiChoiceWrapper} ref={wrapperRef}>
-        <button ref={buttonRef} className={styles.selectedChoiceButton} onClick={toggleMultiChoiceMenu}>
+        <button
+          ref={buttonRef}
+          className={styles.selectedChoiceButton}
+          onClick={toggleMultiChoiceMenu}
+        >
           <span className={styles.choiceText}>{value || 'Select...'}</span>
-          <span className={`${styles.dropdownArrow} ${multiChoiceOpen ? styles.dropdownArrowOpen : ''}`}>
+          <span
+            className={`${styles.dropdownArrow} ${multiChoiceOpen ? styles.dropdownArrowOpen : ''}`}
+          >
             ▼
           </span>
         </button>

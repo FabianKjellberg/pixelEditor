@@ -18,7 +18,7 @@ import {
   PropertyType,
   StrokeAlignProperty,
   StrokeWidthProperty,
-} from '../Properties';
+} from '../../properties/Properties';
 import { intToRGB, rgbaToInt } from '@/helpers/color';
 
 export class RectangleTool implements ITool {

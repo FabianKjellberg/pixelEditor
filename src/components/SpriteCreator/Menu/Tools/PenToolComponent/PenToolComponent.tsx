@@ -5,7 +5,7 @@ import { PenTool } from '@/models/Tools/PenTool';
 import { useLayerContext } from '@/context/LayerContext';
 import { useEffect, useMemo } from 'react';
 import { useToolContext } from '@/context/ToolContext';
-import { OpacityProperty, SizeProperty, SmoothEdgeProperty } from '@/models/Tools/Properties';
+import { OpacityProperty, SizeProperty, SmoothEdgeProperty } from '@/models/properties/Properties';
 import { useCanvasContext } from '@/context/CanvasContext';
 import { useUndoRedoContext } from '@/context/UndoRedoContext';
 import { useToastContext } from '@/context/ToastContext/ToastContext';

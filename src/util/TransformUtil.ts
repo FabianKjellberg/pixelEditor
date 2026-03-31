@@ -8,6 +8,7 @@ import {
 } from '@/models/Layer';
 import {
   blendPixels,
+  chunkArray,
   combineRectangles,
   createLayer,
   createLayerEntity,
@@ -255,4 +256,60 @@ function bilinear(srcX: number, srcY: number, stampRect: Rectangle, stamp: Layer
   const outA = a * 255;
 
   return rgbaToInt(Math.round(r), Math.round(g), Math.round(b), Math.round(outA));
+}
+
+export function invertHorizontally(layer: LayerEntity, boundary: Rectangle): void {
+  const width = layer.layer.rect.width;
+  const pixels = layer.layer.pixels;
+  const x = layer.layer.rect.x;
+
+  const result = new Uint32Array(pixels.length);
+
+  for (let y = 0; y < pixels.length / width; y++) {
+    const rowStart = y * width;
+
+    for (let x = 0; x < width; x++) {
+      const srcIndex = rowStart + x;
+      const dstIndex = rowStart + (width - 1 - x);
+
+      result[dstIndex] = pixels[srcIndex];
+    }
+  }
+
+  layer.layer = {
+    pixels: result,
+    rect: {
+      ...layer.layer.rect,
+      x: x === boundary.x ? x + boundary.width - width : x,
+    },
+  };
+}
+
+export function invertVertically(layer: LayerEntity, boundary: Rectangle): void {
+  const width = layer.layer.rect.width;
+  const height = layer.layer.rect.height;
+  const pixels = layer.layer.pixels;
+  const y = layer.layer.rect.y;
+
+  const result = new Uint32Array(pixels.length);
+
+  for (let y = 0; y < height; y++) {
+    const srcRow = y;
+    const dstRow = height - 1 - y;
+
+    for (let x = 0; x < width; x++) {
+      const srcIndex = srcRow * width + x;
+      const dstIndex = dstRow * width + x;
+
+      result[dstIndex] = pixels[srcIndex];
+    }
+  }
+
+  layer.layer = {
+    pixels: result,
+    rect: {
+      ...layer.layer.rect,
+      y: y === boundary.y ? y + boundary.height - height : y,
+    },
+  };
 }

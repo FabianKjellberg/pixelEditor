@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import ToolButton from '../ToolButton/ToolButton';
 import { useToolContext } from '@/context/ToolContext';
-import { ReplaceProperty } from '@/models/Tools/Properties';
+import { ReplaceProperty } from '@/models/properties/Properties';
 import { RectangleSelector } from '@/models/Tools/RectangleSelector';
 import { useCanvasContext } from '@/context/CanvasContext';
 

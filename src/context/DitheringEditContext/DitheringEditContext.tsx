@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import type { DitheringValue } from '@/models/Tools/Properties';
+import type { DitheringValue } from '@/models/properties/Properties';
 
 type DitheringEditState = {
   value: DitheringValue;

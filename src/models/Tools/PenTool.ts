@@ -1,6 +1,12 @@
 import { intToRGB, rgbaToInt } from '@/helpers/color';
 import { Cordinate, Layer, LayerEntity, Rectangle } from '../Layer';
-import { getProperty, IProperty, OpacityProperty, PropertyType, SizeProperty } from './Properties';
+import {
+  getProperty,
+  IProperty,
+  OpacityProperty,
+  PropertyType,
+  SizeProperty,
+} from '../properties/Properties';
 import { ITool, IToolDeps } from './Tools';
 import { config } from '@/config/env';
 import {
@@ -58,8 +64,8 @@ export class PenTool implements ITool {
     //get color and opacity
     const color: number =
       mouseButton == 0
-        ? this.toolDeps.getPrimaryColor?.() ?? config.defaultColor
-        : this.toolDeps.getSecondaryColor?.() ?? config.defaultColor;
+        ? (this.toolDeps.getPrimaryColor?.() ?? config.defaultColor)
+        : (this.toolDeps.getSecondaryColor?.() ?? config.defaultColor);
     const properties: IProperty[] = this.toolDeps.getProperties?.('pencil') ?? [];
     const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
 
