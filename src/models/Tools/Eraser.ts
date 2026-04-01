@@ -1,5 +1,11 @@
 import { ITool, IToolDeps } from './Tools';
-import { getProperty, IProperty, OpacityProperty, PropertyType, SizeProperty } from './Properties';
+import {
+  getProperty,
+  IProperty,
+  OpacityProperty,
+  PropertyType,
+  SizeProperty,
+} from '../properties/Properties';
 import { Cordinate, Layer, LayerEntity, Rectangle } from '../Layer';
 import {
   createLayer,

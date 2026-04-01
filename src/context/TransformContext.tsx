@@ -8,7 +8,12 @@ import { useLayerContext } from './LayerContext';
 import { useCanvasContext } from './CanvasContext';
 import { useUndoRedoContext } from './UndoRedoContext';
 import { useToastContext } from './ToastContext/ToastContext';
-import { PropertyType, TransformInterpolation } from '@/models/Tools/Properties';
+import { PropertyType } from '@/models/properties/Properties';
+import {
+  FlipHorizontally,
+  FlipVertically,
+  TransformInterpolation,
+} from '@/models/properties/transformProperties';
 
 type TransformContextValue = {
   transforming: boolean;
@@ -37,7 +42,11 @@ export const TransformContextProvider = ({ children }: { children: React.ReactNo
         );
 
         if (!transformHasRendering) {
-          ensureProperties('transform', [new TransformInterpolation()]);
+          ensureProperties('transform', [
+            new TransformInterpolation(),
+            new FlipHorizontally(),
+            new FlipVertically(),
+          ]);
         }
 
         lastToolRef.current = activeTool;

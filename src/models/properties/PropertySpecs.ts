@@ -28,8 +28,15 @@ export interface IDithering {
   choices: string[];
 }
 
+export interface IButton {
+  type: 'button';
+  label: string;
+  imgUrl?: string;
+  btnLabel?: string;
+}
+
 export interface INone {
   type: 'none';
 }
 
-export type UIControlSpec = ISlider | IToggle | IMultiChoice | IDithering | INone;
+export type UIControlSpec = ISlider | IToggle | IMultiChoice | IDithering | INone | IButton;

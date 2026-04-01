@@ -5,7 +5,7 @@ import ToolButton from '../ToolButton/ToolButton';
 import { Eraser } from '@/models/Tools/Eraser';
 import { useToolContext } from '@/context/ToolContext';
 import { useEffect } from 'react';
-import { OpacityProperty, SizeProperty } from '@/models/Tools/Properties';
+import { OpacityProperty, SizeProperty } from '@/models/properties/Properties';
 import { useCanvasContext } from '@/context/CanvasContext';
 import { useUndoRedoContext } from '@/context/UndoRedoContext';
 import { useToastContext } from '@/context/ToastContext/ToastContext';

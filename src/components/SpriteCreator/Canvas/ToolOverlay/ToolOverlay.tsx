@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useCanvasContext } from '@/context/CanvasContext';
 import { useToolContext } from '@/context/ToolContext';
 import { Cordinate } from '@/models/Layer';
-import { getProperty, IProperty, PropertyType, SizeProperty } from '@/models/Tools/Properties';
+import { getProperty, IProperty, PropertyType, SizeProperty } from '@/models/properties/Properties';
 import { useMouseEventContext } from '@/context/MouseEventContext/MouseEventContext';
 
 type ToolOverlayProps = {

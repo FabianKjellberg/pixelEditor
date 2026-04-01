@@ -1,0 +1,10 @@
+.actionButton {
+  width: auto;
+  display: flex;
+  width: fit-content;
+  padding: 4px;
+}
+
+.actionButton img {
+  image-rendering: pixelated;
+}

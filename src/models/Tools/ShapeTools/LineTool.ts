@@ -15,7 +15,7 @@ import {
   OpacityProperty,
   PropertyType,
   StrokeWidthProperty,
-} from '../Properties';
+} from '../../properties/Properties';
 import { intToRGB, rgbaToInt } from '@/helpers/color';
 
 export class LineTool implements ITool {
@@ -66,8 +66,8 @@ export class LineTool implements ITool {
     //get color and opacity
     const color: number =
       mouseButton == 0
-        ? this.deps.getPrimaryColor?.() ?? config.defaultColor
-        : this.deps.getSecondaryColor?.() ?? config.defaultColor;
+        ? (this.deps.getPrimaryColor?.() ?? config.defaultColor)
+        : (this.deps.getSecondaryColor?.() ?? config.defaultColor);
     const properties: IProperty[] = this.deps.getProperties?.('lineTool') ?? [];
     const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
 

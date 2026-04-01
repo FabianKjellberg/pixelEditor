@@ -24,7 +24,7 @@ import {
   StrokeAlignProperty,
   StrokeWidthProperty,
   ToleranceProperty,
-} from '@/models/Tools/Properties';
+} from '@/models/properties/Properties';
 import { FillBucket } from '@/models/Tools/AreaTools/FillBucket';
 import { GradientTool } from '@/models/Tools/AreaTools/GradientTool';
 import { useToastContext } from '@/context/ToastContext/ToastContext';

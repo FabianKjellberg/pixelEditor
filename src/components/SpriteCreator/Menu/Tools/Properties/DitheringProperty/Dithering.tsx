@@ -4,9 +4,9 @@ import {
   default4x4DitheringValue,
   default8x8DitheringValue,
   DitheringValue,
-} from '@/models/Tools/Properties';
+} from '@/models/properties/Properties';
 import MultiChoice from '../MultiChoice/MultiChoice';
-import { IDithering, IMultiChoice } from '@/models/Tools/PropertySpecs';
+import { IDithering, IMultiChoice } from '@/models/properties/PropertySpecs';
 import { useCallback, useEffect, useMemo } from 'react';
 import PropertyLabel from '../PropertyLabel/PropertyLabel';
 
@@ -38,12 +38,12 @@ const Dithering = ({ ditheringProperties, value, onChange }: DitheringPropertyPr
       value.size === 1
         ? '1x1'
         : value.size === 2
-        ? '2x2'
-        : value.size === 4
-        ? '4x4'
-        : value.size === 8
-        ? '8x8'
-        : '1x1s',
+          ? '2x2'
+          : value.size === 4
+            ? '4x4'
+            : value.size === 8
+              ? '8x8'
+              : '1x1s',
     [value.size],
   );
 
@@ -53,12 +53,12 @@ const Dithering = ({ ditheringProperties, value, onChange }: DitheringPropertyPr
       choice === '1x1'
         ? default1x1DitheringValue
         : choice === '2x2'
-        ? default2x2DitheringValue
-        : choice === '4x4'
-        ? default4x4DitheringValue
-        : choice === '8x8'
-        ? default8x8DitheringValue
-        : default1x1DitheringValue,
+          ? default2x2DitheringValue
+          : choice === '4x4'
+            ? default4x4DitheringValue
+            : choice === '8x8'
+              ? default8x8DitheringValue
+              : default1x1DitheringValue,
     );
   }, []);
 
@@ -80,10 +80,10 @@ const Dithering = ({ ditheringProperties, value, onChange }: DitheringPropertyPr
       value.size === 1
         ? default1x1DitheringValue
         : value.size === 2
-        ? default2x2DitheringValue
-        : value.size === 4
-        ? default4x4DitheringValue
-        : default8x8DitheringValue,
+          ? default2x2DitheringValue
+          : value.size === 4
+            ? default4x4DitheringValue
+            : default8x8DitheringValue,
     );
   }, [onChange, value.size]);
 

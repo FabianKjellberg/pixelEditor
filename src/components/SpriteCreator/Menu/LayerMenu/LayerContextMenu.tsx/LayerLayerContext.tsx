@@ -5,7 +5,7 @@ import Slider, { SliderProps } from '../../Tools/Properties/Slider/Slider';
 import { LayerEntity } from '@/models/Layer';
 import { useCallback, useMemo } from 'react';
 import { useLayerContext } from '@/context/LayerContext';
-import { ISlider } from '@/models/Tools/PropertySpecs';
+import { ISlider } from '@/models/properties/PropertySpecs';
 import { useCanvasContext } from '@/context/CanvasContext';
 import { useMetaDataAutoSaveContext } from '@/context/MetaDataAutoSaveContext';
 

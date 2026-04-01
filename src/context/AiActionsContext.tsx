@@ -15,7 +15,7 @@ import {
   SizeProperty,
   StrokeAlignProperty,
   StrokeWidthProperty,
-} from '@/models/Tools/Properties';
+} from '@/models/properties/Properties';
 import { rgbaToInt } from '@/helpers/color';
 import { OvalTool } from '@/models/Tools/ShapeTools/OvalTool';
 import { FillBucket } from '@/models/Tools/AreaTools/FillBucket';

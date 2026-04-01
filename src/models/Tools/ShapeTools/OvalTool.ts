@@ -9,7 +9,7 @@ import {
   PropertyType,
   StrokeAlignProperty,
   StrokeWidthProperty,
-} from '../Properties';
+} from '../../properties/Properties';
 import { intToRGB, rgbaToInt } from '@/helpers/color';
 import {
   clipLayerToRect,

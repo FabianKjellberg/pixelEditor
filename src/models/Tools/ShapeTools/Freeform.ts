@@ -6,7 +6,7 @@ import {
   OpacityProperty,
   PropertyType,
   StrokeWidthProperty,
-} from '../Properties';
+} from '../../properties/Properties';
 import {
   blendPixels,
   clipLayerToRect,

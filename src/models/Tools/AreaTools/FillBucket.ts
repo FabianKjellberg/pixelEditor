@@ -14,7 +14,7 @@ import {
   OpacityProperty,
   PropertyType,
   ToleranceProperty,
-} from '../Properties';
+} from '../../properties/Properties';
 import { intToRGB, rgbaToInt } from '@/helpers/color';
 import { RGBAobj } from '../Color';
 import { LayerEntity } from '../../Layer';
@@ -58,8 +58,8 @@ export class FillBucket implements ITool {
 
     const color: number =
       mouseButton == 0
-        ? this.deps.getPrimaryColor?.() ?? config.defaultColor
-        : this.deps.getSecondaryColor?.() ?? config.defaultColor;
+        ? (this.deps.getPrimaryColor?.() ?? config.defaultColor)
+        : (this.deps.getSecondaryColor?.() ?? config.defaultColor);
 
     const properties: IProperty[] = this.deps.getProperties?.('fillBucket') ?? [];
     const toleranceProp = getProperty<ToleranceProperty>(properties, PropertyType.Tolerance);

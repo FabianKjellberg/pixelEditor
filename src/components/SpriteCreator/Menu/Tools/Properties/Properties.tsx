@@ -6,8 +6,14 @@ import {
   IProperty,
   PropertyType,
   upsertProperty,
-} from '@/models/Tools/Properties';
-import { IDithering, IMultiChoice, ISlider, IToggle } from '@/models/Tools/PropertySpecs';
+} from '@/models/properties/Properties';
+import {
+  IButton,
+  IDithering,
+  IMultiChoice,
+  ISlider,
+  IToggle,
+} from '@/models/properties/PropertySpecs';
 import Slider from './Slider/Slider';
 import Toggle from './Toggle/Toggle';
 import { useToolContext } from '@/context/ToolContext';
@@ -15,6 +21,7 @@ import { useMemo } from 'react';
 import styles from './Properties.module.css';
 import MultiChoice from './MultiChoice/MultiChoice';
 import Dithering from './DitheringProperty/Dithering';
+import PropertyButton from './PropertyButton/PropertyButton';
 
 const PropertyControls = () => {
   const { properties, setProperties, activeTool } = useToolContext();
@@ -98,6 +105,18 @@ const PropertyControls = () => {
                 next.value = choice;
                 setProperties?.(activeTool.name, upsertProperty(properties, next));
               }}
+            />
+          );
+        }
+
+        case 'button': {
+          const p = property as IProperty<string, IButton>;
+
+          return (
+            <PropertyButton
+              key={`${activeTool.name}-${p.propertyType}-${index}`}
+              value={p.value}
+              buttonProperties={p.spec}
             />
           );
         }
