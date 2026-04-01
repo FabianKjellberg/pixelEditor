@@ -10,6 +10,16 @@ const Changelog = () => {
         Version history and what I&apos;ve been up to. Point form, but I&apos;ll keep it readable.
       </p>
       <br />
+      <ChangelogEntry date="2026-04-01" title="Transformation Flip">
+        <li>
+          <p>
+            <b>Flip Controls for Transform.</b> The Free Transform tool now includes options to flip
+            the selected area horizontally and vertically. These controls are available in the
+            properties panel when the transform tool is active, allowing quick mirroring of the
+            current transformation.
+          </p>
+        </li>
+      </ChangelogEntry>
       <ChangelogEntry date="2026-03-31" title="Transformation + Bug Fixes">
         <li>
           <p>

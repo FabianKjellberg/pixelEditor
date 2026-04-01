@@ -126,6 +126,9 @@ export class TransformTool implements ITool {
           invertVertically(original.croppedLayer, originalRect);
         });
         break;
+
+      default:
+        break;
     }
 
     this.updateLayers(this.lastTransformRect);
@@ -165,6 +168,7 @@ export class TransformTool implements ITool {
       properties,
       PropertyType.TransformInterpolation,
     );
+
     if (!rendering) return;
 
     const originalRect = this.originalRect;

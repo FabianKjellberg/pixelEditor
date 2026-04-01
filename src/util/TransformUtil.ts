@@ -275,12 +275,15 @@ export function invertHorizontally(layer: LayerEntity, boundary: Rectangle): voi
       result[dstIndex] = pixels[srcIndex];
     }
   }
+  const x2 = x + width;
+  const xM = boundary.x + boundary.width / 2;
+  const x2f = 2 * xM - x2;
 
   layer.layer = {
     pixels: result,
     rect: {
       ...layer.layer.rect,
-      x: x === boundary.x ? x + boundary.width - width : x,
+      x: x2f,
     },
   };
 }
@@ -305,11 +308,15 @@ export function invertVertically(layer: LayerEntity, boundary: Rectangle): void 
     }
   }
 
+  const y2 = y + height;
+  const yM = boundary.y + boundary.height / 2;
+  const y2f = 2 * yM - y2;
+
   layer.layer = {
     pixels: result,
     rect: {
       ...layer.layer.rect,
-      y: y === boundary.y ? y + boundary.height - height : y,
+      y: y2f,
     },
   };
 }

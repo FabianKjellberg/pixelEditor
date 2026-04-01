@@ -75,6 +75,8 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
   const propertiesRef = useRef(propertiesMap);
   useEffect(() => {
     propertiesRef.current = propertiesMap;
+
+    activeTool.onAction?.('properties');
   }, [propertiesMap]);
 
   const getProperties = useCallback((toolKey: string) => {
