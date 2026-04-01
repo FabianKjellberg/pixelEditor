@@ -10,38 +10,76 @@ const Changelog = () => {
         Version history and what I&apos;ve been up to. Point form, but I&apos;ll keep it readable.
       </p>
       <br />
+      <ChangelogEntry date="2026-03-31" title="Transformation + Bug Fixes">
+        <li>
+          <p>
+            <b>Free Transform Tool.</b> A new “Free Transform” option has been added under the Layer
+            menu. It allows you to transform selected layers using an on-canvas overlay. The overlay
+            includes a bounding box with 8 handles for scaling and 1 for rotation, while dragging
+            the rectangle moves the selection. Transformations respect the active selection mask.
+            Press <b>Enter</b> to commit changes or <b>Escape</b> to cancel.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            <b>Transformation Rendering Modes.</b> The transform tool now supports two rendering
+            methods, selectable in the tool properties:
+            <br />
+            <b>Nearest Neighbor</b> preserves hard pixel edges and is ideal for pixel art (default).
+            <br />
+            <b>Bilinear</b> blends the 4 nearest pixels to produce smoother results.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            <b>Improved Auto-Saving.</b> Auto-save is now triggered by completed actions and
+            checkpoints instead of during ongoing layer edits. This makes saving more consistent and
+            prevents saves from happening in the middle of operations such as free transform or
+            freeform polygon creation.
+          </p>
+        </li>
+
+        <li>
+          <p>
+            <b>Zoom Bug Fix.</b> Fixed an issue where zoom would jump when first used after opening
+            the program or changing canvas size.
+          </p>
+        </li>
+      </ChangelogEntry>
       <ChangelogEntry date="2026-03-20" title="Layers, groups & multi-layer actions">
         <li>
           <p>
-            <b>Drag-and-drop layer reordering.</b> Layers and groups can now be moved directly in the
-            Layers menu using drag and drop.
+            <b>Drag-and-drop layer reordering.</b> Layers and groups can now be moved directly in
+            the Layers menu using drag and drop.
           </p>
         </li>
         <li>
           <p>
-            <b>Collapsible groups in a tree.</b> Added nested layer groups that can be collapsed
-            and expanded, so you can structure your canvas with groups inside groups.
+            <b>Collapsible groups in a tree.</b> Added nested layer groups that can be collapsed and
+            expanded, so you can structure your canvas with groups inside groups.
           </p>
         </li>
         <li>
           <p>
-            <b>Multi-layer activation.</b> You can activate multiple layers at the same time and
-            run layer actions on all active layers together (for example selection-related actions
-            and moving multiple layers).
+            <b>Multi-layer activation.</b> You can activate multiple layers at the same time and run
+            layer actions on all active layers together (for example selection-related actions and
+            moving multiple layers).
           </p>
         </li>
         <li>
           <p>
-            <b>Unified layer/group context menu.</b> Right-click now opens a shared context menu
-            for both layers and groups, with common actions like <b>Delete</b>, <b>Rename</b>,{" "}
+            <b>Unified layer/group context menu.</b> Right-click now opens a shared context menu for
+            both layers and groups, with common actions like <b>Delete</b>, <b>Rename</b>,{' '}
             <b>Add layer below</b>, and <b>Add group below</b>.
           </p>
         </li>
         <li>
           <p>
-            <b>Layer actions: duplicate, merge & opacity.</b> Reworked <b>Duplicate</b>. Added{" "}
-            <b>Merge down</b> (merge the clicked layer into the one below) and <b>Merge selected</b>{" "}
-            (merge all selected layers into the bottom-most layer). Also added an <b>Opacity</b>{" "}
+            <b>Layer actions: duplicate, merge & opacity.</b> Reworked <b>Duplicate</b>. Added{' '}
+            <b>Merge down</b> (merge the clicked layer into the one below) and <b>Merge selected</b>{' '}
+            (merge all selected layers into the bottom-most layer). Also added an <b>Opacity</b>{' '}
             slider for changing the opacity of a whole layer.
           </p>
         </li>
@@ -83,8 +121,8 @@ const Changelog = () => {
         <li>
           <p>
             <b>Freeform shape tool.</b> Draw your own polygons and irregular shapes by clicking to
-            place points on the canvas. Each click adds a corner, and you see the outline as you
-            go. To finish the shape, click near the first point (within the stroke width). If{' '}
+            place points on the canvas. Each click adds a corner, and you see the outline as you go.
+            To finish the shape, click near the first point (within the stroke width). If{' '}
             <b>Fill shape</b> is on, the inside gets filled with your secondary color. You get the
             same options as the other shape tools: <b>Stroke width</b> (1 to 64), <b>Opacity</b> (1
             to 255), and <b>Fill shape</b>. Left click uses your primary color for the outline (and
@@ -101,9 +139,9 @@ const Changelog = () => {
             <b>secondary</b> at the end, or right click to swap. <b>Opacity</b> (1 to 255) controls
             how see-through it is. <b>Gradient type</b> can be <b>Linear</b> (smooth blend),{' '}
             <b>Random</b> (noisy, speckly look), or <b>Dithering</b> (pattern-based, with sizes 1×1,
-            2×2, 4×4, or 8×8). <b>Single color</b> fades from your chosen color to transparent instead
-            of a second color. You see the gradient update as you drag, and when you release the
-            mouse it&apos;s saved so you can undo if you want. With a selection active, only the
+            2×2, 4×4, or 8×8). <b>Single color</b> fades from your chosen color to transparent
+            instead of a second color. You see the gradient update as you drag, and when you release
+            the mouse it&apos;s saved so you can undo if you want. With a selection active, only the
             selected area is filled.
           </p>
         </li>
@@ -123,9 +161,9 @@ const Changelog = () => {
             The AI can use the same tools you do: pen strokes, lines, rectangles, ellipses, fill
             bucket, gradient, and freeform. It can draw on a specific layer so your other layers
             stay untouched. It keeps its own colors and settings when it draws, so your current tool
-            and colors don&apos;t change. There&apos;s a short pause between each action so the canvas
-            and undo history stay in sync. The system is set up so new tools can be hooked in later,
-            and the AI can also suggest or apply a change to the canvas size if needed.
+            and colors don&apos;t change. There&apos;s a short pause between each action so the
+            canvas and undo history stay in sync. The system is set up so new tools can be hooked in
+            later, and the AI can also suggest or apply a change to the canvas size if needed.
           </p>
         </li>
       </ChangelogEntry>
@@ -133,34 +171,35 @@ const Changelog = () => {
       <ChangelogEntry date="2026-02-18" title="Shape tools, bucket fill & multi-tool selection">
         <li>
           <p>
-            <b>Rectangle and Ellipse shape tools.</b> Draw perfect rectangles and ellipses by clicking
-            and dragging on the canvas. Both tools share the same set of properties: <b>Stroke width</b>{' '}
-            controls the thickness of the outline (1–64 pixels), <b>Opacity</b> sets transparency (1–255),
+            <b>Rectangle and Ellipse shape tools.</b> Draw perfect rectangles and ellipses by
+            clicking and dragging on the canvas. Both tools share the same set of properties:{' '}
+            <b>Stroke width</b> controls the thickness of the outline (1–64 pixels), <b>Opacity</b>{' '}
+            sets transparency (1–255),
             <b>Fill shape</b> toggles whether the shape is filled with your secondary color, and{' '}
             <b>Align stroke</b> lets you position the stroke inside, centered, or outside the shape
-            boundary. Left-click uses your primary color for the stroke (and secondary for fill if enabled);
-            right-click swaps them. When a selection is active, shapes only draw within the selected area.
-            Shapes work with undo/redo.
+            boundary. Left-click uses your primary color for the stroke (and secondary for fill if
+            enabled); right-click swaps them. When a selection is active, shapes only draw within
+            the selected area. Shapes work with undo/redo.
           </p>
         </li>
         <li>
           <p>
-            <b>Bucket fill tool.</b> Click anywhere on the canvas to flood-fill connected pixels with
-            your primary color (or secondary color with right-click). The <b>Tolerance</b> property (0–255)
-            controls how similar colors need to be to get filled—higher values fill more varied colors,
-            useful for filling areas with slight color variations. <b>Opacity</b> (1–255) sets the
-            transparency of the fill. The tool uses a scanline flood-fill algorithm for efficient filling
-            of large areas. When a selection is active, the bucket only fills pixels within the selected
-            area and won&apos;t fill outside it.
+            <b>Bucket fill tool.</b> Click anywhere on the canvas to flood-fill connected pixels
+            with your primary color (or secondary color with right-click). The <b>Tolerance</b>{' '}
+            property (0–255) controls how similar colors need to be to get filled—higher values fill
+            more varied colors, useful for filling areas with slight color variations.{' '}
+            <b>Opacity</b> (1–255) sets the transparency of the fill. The tool uses a scanline
+            flood-fill algorithm for efficient filling of large areas. When a selection is active,
+            the bucket only fills pixels within the selected area and won&apos;t fill outside it.
           </p>
         </li>
         <li>
           <p>
-            <b>Multi-tool selection.</b> Some tools now support multiple variants accessible through a
-            right-click menu. Right-click on the shape tools button (marked with an arrow indicator) to
-            see all available shape tools: Line, Rectangle, and Ellipse. Click any tool in the menu to
-            switch to it. The button icon updates to show the currently selected tool. This keeps the
-            toolbar compact while giving quick access to related tools.
+            <b>Multi-tool selection.</b> Some tools now support multiple variants accessible through
+            a right-click menu. Right-click on the shape tools button (marked with an arrow
+            indicator) to see all available shape tools: Line, Rectangle, and Ellipse. Click any
+            tool in the menu to switch to it. The button icon updates to show the currently selected
+            tool. This keeps the toolbar compact while giving quick access to related tools.
           </p>
         </li>
       </ChangelogEntry>
@@ -168,43 +207,44 @@ const Changelog = () => {
       <ChangelogEntry date="2026-02-12" title="Eyedropper tool & undo/redo">
         <li>
           <p>
-            <b>Eyedropper tool.</b> Click anywhere on the canvas to pick up the color from that pixel.
-            The color gets set as your primary color, so you can quickly grab colors you&apos;re already
-            using in your artwork. The tool reads directly from the rendered canvas, so it works with
-            layers, transparency, and whatever you see on screen.
+            <b>Eyedropper tool.</b> Click anywhere on the canvas to pick up the color from that
+            pixel. The color gets set as your primary color, so you can quickly grab colors
+            you&apos;re already using in your artwork. The tool reads directly from the rendered
+            canvas, so it works with layers, transparency, and whatever you see on screen.
           </p>
         </li>
         <li>
           <p>
-            <b>Undo and redo.</b> Made a mistake? Hit Undo (Ctrl+Z or Edit menu) to step back through
-            your changes. Redo (Ctrl+Y or Edit menu) brings them back. The system tracks checkpoints
-            for pen strokes, eraser actions, and move operations, so you can undo individual tool
-            actions. Each checkpoint saves the state of the layer that changed, so undoing restores
-            exactly how things were before that edit.
+            <b>Undo and redo.</b> Made a mistake? Hit Undo (Ctrl+Z or Edit menu) to step back
+            through your changes. Redo (Ctrl+Y or Edit menu) brings them back. The system tracks
+            checkpoints for pen strokes, eraser actions, and move operations, so you can undo
+            individual tool actions. Each checkpoint saves the state of the layer that changed, so
+            undoing restores exactly how things were before that edit.
           </p>
         </li>
         <li>
           <p>
-            Undo/redo is built as a generic framework (<code>UndoRedoContext</code>) that any tool can
-            hook into. Tools create checkpoints when you start an action (like clicking to start a pen
-            stroke) and record the layer state when you finish (like releasing the mouse). The context
-            manages the undo/redo stack and provides <code>checkPoint</code> and <code>hasBaseline</code>
+            Undo/redo is built as a generic framework (<code>UndoRedoContext</code>) that any tool
+            can hook into. Tools create checkpoints when you start an action (like clicking to start
+            a pen stroke) and record the layer state when you finish (like releasing the mouse). The
+            context manages the undo/redo stack and provides <code>checkPoint</code> and{' '}
+            <code>hasBaseline</code>
             APIs so tools know when they can safely create checkpoints.
           </p>
         </li>
         <li>
           <p>
-            Pen, Eraser, and Move tools all create checkpoints now. The system tracks which layer was
-            last changed so it can restore the right one when you undo. Preview provider logic moved
-            from <code>LayerContext</code> to <code>CanvasContext</code> to support the eyedropper
-            reading colors from the canvas.
+            Pen, Eraser, and Move tools all create checkpoints now. The system tracks which layer
+            was last changed so it can restore the right one when you undo. Preview provider logic
+            moved from <code>LayerContext</code> to <code>CanvasContext</code> to support the
+            eyedropper reading colors from the canvas.
           </p>
         </li>
         <li>
           <p>
-            Mouse event handling got some cleanup: better pointer capture management and pointer event
-            handling so tools respond more reliably when you drag across the canvas. Top menu now has
-            Edit entries for Undo and Redo alongside the keyboard shortcuts.
+            Mouse event handling got some cleanup: better pointer capture management and pointer
+            event handling so tools respond more reliably when you drag across the canvas. Top menu
+            now has Edit entries for Undo and Redo alongside the keyboard shortcuts.
           </p>
         </li>
       </ChangelogEntry>
