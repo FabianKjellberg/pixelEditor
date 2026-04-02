@@ -10,6 +10,15 @@ const Changelog = () => {
         Version history and what I&apos;ve been up to. Point form, but I&apos;ll keep it readable.
       </p>
       <br />
+      <ChangelogEntry date="2026-04-02" title="Ellipse Selection Tool">
+        <li>
+          <p>
+            <b>Ellipse selection tool.</b> Another selection tool is accessible when right clicking
+            the selection tools which lets the user make a selection formed as an ellipse. It works
+            the same as rectnagle selector with the same properties
+          </p>
+        </li>
+      </ChangelogEntry>
       <ChangelogEntry date="2026-04-01" title="Transformation Flip">
         <li>
           <p>

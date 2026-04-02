@@ -1,7 +1,7 @@
 import { getPixelPositions } from '@/util/LayerUtil';
-import { Cordinate, SelectionLayer } from '../Layer';
-import { getProperty, PropertyType, ReplaceProperty } from '../properties/Properties';
-import { ITool, IToolDeps } from './Tools';
+import { Cordinate, SelectionLayer } from '../../Layer';
+import { getProperty, PropertyType, ReplaceProperty } from '../../properties/Properties';
+import { ITool, IToolDeps } from '../Tools';
 import { combinedSelections, createSelectionRectangleLayer } from '@/util/SelectionUtil';
 
 export class RectangleSelector implements ITool {
@@ -63,8 +63,8 @@ export class RectangleSelector implements ITool {
     const combinedSelection: SelectionLayer = replace
       ? newSelection
       : this.oldSelection === undefined
-        ? newSelection
-        : combinedSelections(this.oldSelection, newSelection);
+      ? newSelection
+      : combinedSelections(this.oldSelection, newSelection);
 
     setSelectionLayer(combinedSelection);
   };

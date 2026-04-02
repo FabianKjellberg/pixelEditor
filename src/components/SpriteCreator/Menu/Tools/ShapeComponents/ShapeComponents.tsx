@@ -3,7 +3,7 @@
 import ToolButton from '../ToolButton/ToolButton';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useContextMenuContext } from '@/context/ContextMenuContext/ContextMenuContext';
-import { ITool } from '@/models/Tools/Tools';
+import { ITool, toolWithImage } from '@/models/Tools/Tools';
 import { LineTool } from '@/models/Tools/ShapeTools/LineTool';
 import { RectangleTool } from '@/models/Tools/ShapeTools/RectangleTool';
 import { OvalTool } from '@/models/Tools/ShapeTools/OvalTool';
@@ -23,11 +23,6 @@ import {
 } from '@/models/properties/Properties';
 import { FreeformTool } from '@/models/Tools/ShapeTools/Freeform';
 import { useToastContext } from '@/context/ToastContext/ToastContext';
-
-type toolWithImage = {
-  icon: string;
-  tool: ITool;
-};
 
 const ShapeComponents = () => {
   const { onShow, onHide } = useContextMenuContext();
@@ -256,8 +251,6 @@ const ShapeComponents = () => {
     },
     [onShow, onClickCallbackItem, selectedIndex],
   );
-
-  useEffect(() => {}, [selectedIndex, setActiveTool]);
 
   const selectedTool = useMemo((): toolWithImage => {
     switch (selectedIndex) {

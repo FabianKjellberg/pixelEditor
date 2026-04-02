@@ -9,6 +9,7 @@ import EyedropperComponent from './Tools/EyedropperComponent/EyedropperComponent
 import ShapeComponents from './Tools/ShapeComponents/ShapeComponents';
 import AreaComponents from './Tools/AreaComponents/AreaComponents';
 import UndoRedoButtons from './UndoRedoButtons';
+import SelectionComponents from './Tools/SelectionComponents/SelectionComponents';
 
 const LeftMenu = () => {
   return (
@@ -26,13 +27,14 @@ const LeftMenu = () => {
               <PanToolComponent />
             </div>
             <div className={menuStyles.toolIconRow}>
-              <RectangleSelectorComponent />
+              <SelectionComponents />
               <EyedropperComponent />
             </div>
             <div className={menuStyles.toolIconRow}>
               <ShapeComponents />
               <AreaComponents />
             </div>
+            <div className={menuStyles.toolIconRow}></div>
           </div>
         </div>
         <div className={menuStyles.toolContainer}>

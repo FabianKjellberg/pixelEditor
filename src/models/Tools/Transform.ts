@@ -156,6 +156,7 @@ export class TransformTool implements ITool {
     this.originalRect = originalRect;
     this.originalLayers = originalLayers;
     this.lastRect = originalRect;
+    this.lastTransformRect = originalCRect;
   }
 
   private updateLayers(transformRect: CenteredRectangle) {

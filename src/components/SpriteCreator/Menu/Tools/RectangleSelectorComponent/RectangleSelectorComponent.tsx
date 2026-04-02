@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import ToolButton from '../ToolButton/ToolButton';
 import { useToolContext } from '@/context/ToolContext';
 import { ReplaceProperty } from '@/models/properties/Properties';
-import { RectangleSelector } from '@/models/Tools/RectangleSelector';
+import { RectangleSelector } from '@/models/Tools/SelectionTools/RectangleSelector';
 import { useCanvasContext } from '@/context/CanvasContext';
 
 const RectangleSelectorComponent = () => {

@@ -36,3 +36,8 @@ export interface ITool {
   onCommit?(): void;
   onCancel?(): void;
 }
+
+export type toolWithImage = {
+  icon: string;
+  tool: ITool;
+};

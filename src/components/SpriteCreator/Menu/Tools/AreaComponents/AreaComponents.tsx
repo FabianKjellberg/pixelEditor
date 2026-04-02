@@ -3,7 +3,7 @@
 import ToolButton from '../ToolButton/ToolButton';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useContextMenuContext } from '@/context/ContextMenuContext/ContextMenuContext';
-import { ITool } from '@/models/Tools/Tools';
+import { ITool, toolWithImage } from '@/models/Tools/Tools';
 import { LineTool } from '@/models/Tools/ShapeTools/LineTool';
 import { RectangleTool } from '@/models/Tools/ShapeTools/RectangleTool';
 import { OvalTool } from '@/models/Tools/ShapeTools/OvalTool';
@@ -28,11 +28,6 @@ import {
 import { FillBucket } from '@/models/Tools/AreaTools/FillBucket';
 import { GradientTool } from '@/models/Tools/AreaTools/GradientTool';
 import { useToastContext } from '@/context/ToastContext/ToastContext';
-
-type toolWithImage = {
-  icon: string;
-  tool: ITool;
-};
 
 const AreaComponents = () => {
   const { onShow, onHide } = useContextMenuContext();
