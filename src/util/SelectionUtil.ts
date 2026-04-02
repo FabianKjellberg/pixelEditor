@@ -150,6 +150,47 @@ export function createSelectionRectangleLayer(
 
 /**
  *
+ * @param x1
+ * @param y1
+ * @param x2
+ * @param y2
+ */
+export function createSelectionCircleLayer(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): SelectionLayer {
+  const x: number = Math.min(x1, x2);
+  const y: number = Math.min(y1, y2);
+
+  const width = Math.max(x1, x2) - x + 1;
+  const height = Math.max(y1, y2) - y + 1;
+
+  const out = createSelectionLayer({ x, y, width, height }, false);
+
+  const aSqr = Math.pow(width / 2, 2);
+  const bSqr = Math.pow(height / 2, 2);
+  const h = width / 2;
+  const k = height / 2;
+
+  for (let i = 0; i < height; i++) {
+    for (let j = 0; j < width; j++) {
+      const inside = Math.pow(j - h, 2) / aSqr + Math.pow(i - k, 2) / bSqr;
+
+      if (inside < 1) {
+        const index = getPixelIndex(i, width, j);
+
+        out.pixels[index] = 1;
+      }
+    }
+  }
+
+  return out;
+}
+
+/**
+ *
  * @param sl1
  * @param sl2
  * @returns
@@ -187,6 +228,8 @@ export function combinedSelections(sl1: SelectionLayer, sl2: SelectionLayer): Se
       const destX = x + (sl2.rect.x - minX);
       const destY = y + (sl2.rect.y - minY);
       const destIdx = getPixelIndex(destY, combinedLayers.rect.width, destX);
+
+      if (combinedLayers.pixels[destIdx] === 1) continue;
 
       combinedLayers.pixels[destIdx] = sl2.pixels[getPixelIndex(y, sl2.rect.width, x)];
     }

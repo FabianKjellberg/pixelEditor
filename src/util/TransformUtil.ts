@@ -1,32 +1,14 @@
 import {
   CenteredRectangle,
   Cordinate,
-  Layer,
   LayerEntity,
   Rectangle,
   SelectionLayer,
 } from '@/models/Layer';
-import {
-  blendPixels,
-  chunkArray,
-  combineRectangles,
-  createLayer,
-  createLayerEntity,
-  rectangleIntersection,
-  replacePixels,
-  stampLayer,
-} from './LayerUtil';
-import {
-  getGlobalCordinate,
-  getLocalPixelIndex,
-  getPixelIndex,
-  intToRGB,
-  rgbaToInt,
-} from '@/helpers/color';
-import { degToRad, rectangleFromCenteredRect } from '@/helpers/transform';
+import { combineRectangles, createLayer, rectangleIntersection, replacePixels } from './LayerUtil';
+import { getGlobalCordinate, getLocalPixelIndex, intToRGB, rgbaToInt } from '@/helpers/color';
+import { degToRad } from '@/helpers/transform';
 import { blendColor } from './ColorUtil';
-import { writeFileSync } from 'fs';
-import { FillBucket } from '@/models/Tools/AreaTools/FillBucket';
 
 export type CropLayer = {
   croppedLayer: LayerEntity;
