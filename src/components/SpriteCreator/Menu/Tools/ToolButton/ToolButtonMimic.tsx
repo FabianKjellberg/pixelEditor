@@ -3,6 +3,7 @@
 import styles from './ToolButton.module.css';
 import { useCallback, useMemo } from 'react';
 import Image from 'next/image';
+import { useTransformContext } from '@/context/TransformContext';
 
 type ToolButtonProps = {
   icon: string;
@@ -12,6 +13,8 @@ type ToolButtonProps = {
 };
 
 const ToolButtonMimic = ({ icon, onClickCallback, index, selectedIndex }: ToolButtonProps) => {
+  const { transforming, setTransforming } = useTransformContext();
+
   const onContextmenu = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
@@ -21,6 +24,10 @@ const ToolButtonMimic = ({ icon, onClickCallback, index, selectedIndex }: ToolBu
   );
 
   const onClick = useCallback(() => {
+    if (transforming) {
+      setTransforming(false);
+    }
+
     onClickCallback(index);
   }, [onClickCallback, index]);
 

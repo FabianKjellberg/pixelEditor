@@ -11,11 +11,14 @@ import { RectangleSelector } from '@/models/Tools/SelectionTools/RectangleSelect
 import { useCanvasContext } from '@/context/CanvasContext';
 import { CircleSelector } from '@/models/Tools/SelectionTools/CircleSelector';
 import { ReplaceProperty } from '@/models/properties/Properties';
+import { LassoSelector } from '@/models/Tools/SelectionTools/LassoSelector';
+import { FreeformSelector } from '@/models/Tools/SelectionTools/FreeformSelector';
 
 const SelectionComponents = () => {
   const { onShow, onHide } = useContextMenuContext();
   const { setActiveTool, getProperties, ensureProperties } = useToolContext();
-  const { setSelectionLayer, getSelectionLayer } = useCanvasContext();
+  const { setSelectionLayer, getSelectionLayer, setSelectionOverlay, getSelectionOverlay } =
+    useCanvasContext();
 
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
@@ -23,6 +26,10 @@ const SelectionComponents = () => {
     ensureProperties('circleSelector', [new ReplaceProperty(true)]);
 
     ensureProperties('rectangleSelector', [new ReplaceProperty(true)]);
+
+    ensureProperties('lassoSelector', [new ReplaceProperty(true)]);
+
+    ensureProperties('freeformSelector', [new ReplaceProperty(true)]);
   }, []);
 
   const rectangleSelection = useMemo(
@@ -35,6 +42,30 @@ const SelectionComponents = () => {
     [setSelectionLayer, getSelectionLayer, getProperties],
   );
 
+  const lassoSelector = useMemo(
+    () =>
+      new LassoSelector({
+        setSelectionLayer,
+        getSelectionLayer,
+        getProperties,
+        getSelectionOverlay,
+        setSelectionOverlay,
+      }),
+    [setSelectionLayer, getSelectionLayer, getProperties, getSelectionOverlay, setSelectionOverlay],
+  );
+
+  const freeformSelector = useMemo(
+    () =>
+      new FreeformSelector({
+        setSelectionLayer,
+        getSelectionLayer,
+        getProperties,
+        getSelectionOverlay,
+        setSelectionOverlay,
+      }),
+    [setSelectionLayer, getSelectionLayer, getProperties, getSelectionOverlay, setSelectionOverlay],
+  );
+
   const onClickCallbackItem = useCallback(
     (index: number) => {
       switch (index) {
@@ -43,6 +74,12 @@ const SelectionComponents = () => {
           break;
         case 1:
           setActiveTool(circleSelection);
+          break;
+        case 2:
+          setActiveTool(lassoSelector);
+          break;
+        case 3:
+          setActiveTool(freeformSelector);
           break;
       }
 
@@ -68,6 +105,18 @@ const SelectionComponents = () => {
             onClickCallback={onClickCallbackItem}
             selectedIndex={selectedIndex}
           />
+          <ToolButtonMimic
+            icon="icons/lassoSelector.png"
+            index={2}
+            onClickCallback={onClickCallbackItem}
+            selectedIndex={selectedIndex}
+          />
+          <ToolButtonMimic
+            icon="icons/freeformSelector.png"
+            index={3}
+            onClickCallback={onClickCallbackItem}
+            selectedIndex={selectedIndex}
+          />
         </div>
       );
 
@@ -88,6 +137,16 @@ const SelectionComponents = () => {
         return {
           icon: '/icons/circleSelection.png',
           tool: circleSelection,
+        };
+      case 2:
+        return {
+          icon: '/icons/lassoSelector.png',
+          tool: lassoSelector,
+        };
+      case 3:
+        return {
+          icon: '/icons/freeformSelector.png',
+          tool: freeformSelector,
         };
     }
   }, [selectedIndex]);

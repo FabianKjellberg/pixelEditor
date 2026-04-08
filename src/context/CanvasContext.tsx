@@ -41,6 +41,10 @@ type CanvasContextValue = {
   getSelectionLayer: () => SelectionLayer | undefined;
   setSelectionLayer: (selectionLayer: SelectionLayer | undefined) => void;
 
+  selectionOverlay: Cordinate[] | undefined;
+  getSelectionOverlay: () => Cordinate[] | undefined;
+  setSelectionOverlay: (points: Cordinate[] | undefined) => void;
+
   loadProject: (project: FetchedProject) => void;
 
   requestPreview: () => Promise<Blob>;
@@ -66,10 +70,12 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
   const [height, setHeight] = useState<number>(defaultHeight);
   const [pan, setPanState] = useState<Cordinate>(defaultPan);
   const [selectionLayer, setSelectionLayer] = useState<SelectionLayer | undefined>(undefined);
+  const [selectionOverlay, setSelectionOverlay] = useState<Cordinate[] | undefined>(undefined);
   const [projectName, setProjectName] = useState<string>('Untitled 1');
 
   const panRef = useRef(pan);
   const selectionLayerRef = useRef(selectionLayer);
+  const selectionOverlayRef = useRef<Cordinate[] | undefined>(selectionOverlay);
   const canvasRectRef = useRef<Rectangle>({ x: 0, y: 0, width: width, height: height });
 
   const getCanvasRect = useCallback((): Rectangle => {
@@ -79,9 +85,15 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     panRef.current = pan;
   }, [pan]);
+
   useEffect(() => {
     selectionLayerRef.current = selectionLayer;
   }, [selectionLayer]);
+
+  useEffect(() => {
+    selectionOverlayRef.current = selectionOverlay;
+  }, [selectionOverlay]);
+
   useEffect(() => {
     canvasRectRef.current = { x: 0, y: 0, width: width, height: height };
   }, [width, height]);
@@ -89,16 +101,27 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
   const getPan = useCallback((): Cordinate => {
     return panRef.current;
   }, []);
+
   const getSelectionLayer = useCallback(() => {
     return selectionLayerRef.current;
+  }, []);
+
+  const getSelectionOverlay = useCallback(() => {
+    return selectionOverlayRef.current;
   }, []);
 
   const setPan = useCallback((cor: Cordinate) => {
     setPanState(cor);
   }, []);
+
   const setSelectionLayerCallback = useCallback((selectionLayer: SelectionLayer | undefined) => {
     setSelectionLayer(selectionLayer);
   }, []);
+
+  const setSelectionOverlayCallback = useCallback((points: Cordinate[] | undefined) => {
+    setSelectionOverlay(points);
+  }, []);
+
   const setDimensions = useCallback((width: number, height: number) => {
     setHeight(height);
     setWidth(width);
@@ -175,6 +198,9 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
       selectionLayer,
       setSelectionLayer: setSelectionLayerCallback,
       getSelectionLayer,
+      selectionOverlay,
+      setSelectionOverlay: setSelectionOverlayCallback,
+      getSelectionOverlay,
       loadProject,
       requestPreview,
       registerPreviewProvider,
@@ -202,6 +228,9 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
       selectionLayer,
       setSelectionLayerCallback,
       getSelectionLayer,
+      selectionOverlay,
+      setSelectionOverlayCallback,
+      getSelectionOverlay,
       loadProject,
       requestPreview,
       registerPreviewProvider,

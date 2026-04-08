@@ -11,7 +11,8 @@ type SelectionProps = {
 };
 
 const Selection = ({ canvasHeight, canvasWidth }: SelectionProps) => {
-  const { pixelSize, selectionLayer, pan } = useCanvasContext();
+  const { pixelSize, selectionLayer, selectionOverlay, setSelectionOverlay, pan } =
+    useCanvasContext();
   const [pathOffset, setPathOffset] = useState<number>(0);
 
   //make selection move
@@ -28,6 +29,25 @@ const Selection = ({ canvasHeight, canvasWidth }: SelectionProps) => {
 
     return getPath(selectionLayer);
   }, [selectionLayer]);
+
+  const overlayPathString = useMemo((): string => {
+    const pathStringParts: string[] = [];
+
+    if (selectionOverlay && selectionOverlay.length > 0) {
+      selectionOverlay.forEach((pt, index) => {
+        const x = pt.x * pixelSize + pan.x;
+        const y = pt.y * pixelSize + pan.y;
+
+        pathStringParts.push(`${index === 0 ? 'M' : 'L'} ${x} ${y}`);
+      });
+    }
+
+    return pathStringParts.join(' ');
+  }, [pixelSize, pan, selectionOverlay]);
+
+  useEffect(() => {
+    console.log(overlayPathString);
+  }, [overlayPathString]);
 
   const pathString = useMemo((): string => {
     const pathStringParts: string[] = [];
@@ -61,6 +81,15 @@ const Selection = ({ canvasHeight, canvasWidth }: SelectionProps) => {
         <path d={pathString} fill="none" stroke="black" strokeWidth={2} />
         <path
           d={pathString}
+          fill="none"
+          stroke="white"
+          strokeWidth={2}
+          strokeDasharray="4 4"
+          strokeDashoffset={pathOffset}
+        />
+        <path d={overlayPathString} fill="none" stroke="black" strokeWidth={2} />
+        <path
+          d={overlayPathString}
           fill="none"
           stroke="white"
           strokeWidth={2}
