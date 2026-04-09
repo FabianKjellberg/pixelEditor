@@ -1,7 +1,7 @@
 'use client';
-import { hsb100ToRgb, rgbToHex } from '@/helpers/color';
+import { hsb100ToRgb, hsvToRgb, rgbaToInt, rgbToHex } from '@/helpers/color';
 import { Hsb100, RGBAobj } from '@/models/Tools/Color';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ColorPickerPointer from './ColorPickerPointer';
 const CANVAS_W = 200;
 const CANVAS_H = 200;
@@ -9,14 +9,13 @@ const PIX = 2;
 
 type ColorPickerCanvasProps = {
   hsv: Hsb100;
-  setHsv: React.Dispatch<React.SetStateAction<Hsb100>>;
+  setColor: (color: number) => void;
 };
 
-export default function ColorPickerCanvas({ hsv, setHsv }: ColorPickerCanvasProps) {
+export default function ColorPickerCanvas({ hsv, setColor }: ColorPickerCanvasProps) {
   const ref = useRef<HTMLCanvasElement | null>(null);
 
-  const [pointerX, setPointerX] = useState<number>(hsv.s * PIX);
-  const [pointerY, setPointerY] = useState<number>(Math.abs(hsv.b - 100) * PIX);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
 
   useEffect(() => {
     const canvas = ref.current;
@@ -41,16 +40,48 @@ export default function ColorPickerCanvas({ hsv, setHsv }: ColorPickerCanvasProp
     }
   }, [hsv]);
 
-  const selectedColor = useMemo((): string => {
-    const rgba: RGBAobj = hsb100ToRgb(hsv.h, pointerX / 2, 100 - pointerY / 2);
-    return rgbToHex(rgba);
-  }, [pointerX, pointerY, hsv.h]);
+  const selectedColor = useMemo(() => {
+    console.log(hsv);
+    const rgb = hsvToRgb(hsv.h, hsv.s, hsv.b);
+    return rgbToHex(rgb);
+  }, [hsv]);
 
-  useEffect(() => {
-    const s = Math.max(0, Math.min(100, pointerX / 2));
-    const b = Math.max(0, Math.min(100, 100 - pointerY / 2));
-    setHsv((prev) => (prev.s === s && prev.b === b ? prev : { ...prev, s, b }));
-  }, [pointerX, pointerY, setHsv]);
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsDragging(true);
+  }, []);
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isDragging) return;
+
+      const rect = e.currentTarget.getBoundingClientRect();
+
+      const x = Math.round(Math.max(Math.min(e.clientX - rect.left, 200), 0) / 2);
+      const y = Math.round(Math.max(Math.min(e.clientY - rect.top, 200), 0) / 2);
+
+      console.log(100 - y);
+      console.log(x);
+
+      const rgb = hsb100ToRgb(hsv.h, x, 100 - y);
+
+      setColor(rgbaToInt(rgb.r, rgb.g, rgb.b));
+    },
+    [isDragging],
+  );
+
+  const handlePointerUp = useCallback((e: React.PointerEvent) => {
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    setIsDragging(false);
+  }, []);
+
+  const pointerX = useMemo(() => {
+    return hsv.s * 2;
+  }, [hsv]);
+
+  const pointerY = useMemo(() => {
+    return (100 - hsv.b) * 2;
+  }, [hsv]);
 
   return (
     <div
@@ -66,12 +97,13 @@ export default function ColorPickerCanvas({ hsv, setHsv }: ColorPickerCanvasProp
         width={CANVAS_W}
         height={CANVAS_H}
         style={{ touchAction: 'none', outline: '4px solid #888' }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
       />
       <ColorPickerPointer
         x={pointerX}
         y={pointerY}
-        setX={setPointerX}
-        setY={setPointerY}
         selectedColor={selectedColor}
         W={CANVAS_W}
         H={CANVAS_H}

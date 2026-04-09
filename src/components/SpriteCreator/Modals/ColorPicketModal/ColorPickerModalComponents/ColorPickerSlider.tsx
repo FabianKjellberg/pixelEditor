@@ -9,10 +9,10 @@ const PIX = 2;
 
 type ColorPickerSliderProps = {
   hsv: Hsb100;
-  setHsv: React.Dispatch<React.SetStateAction<Hsb100>>;
+  setColor: (color: number) => void;
 };
 
-const ColorPickerSlider = ({ hsv, setHsv }: ColorPickerSliderProps) => {
+const ColorPickerSlider = ({ hsv, setColor }: ColorPickerSliderProps) => {
   const ref = useRef<HTMLCanvasElement | null>(null);
 
   const [pointerY, setPointerY] = useState<number>(hsv.h * 2);
@@ -43,11 +43,6 @@ const ColorPickerSlider = ({ hsv, setHsv }: ColorPickerSliderProps) => {
     const rgba: RGBAobj = hsb100ToRgb(pointerY / 2, 100, 100);
     return rgbToHex(rgba);
   }, [pointerY]);
-
-  useEffect(() => {
-    const h = Math.max(0, Math.min(100, pointerY / 2));
-    setHsv((prev) => (prev.h === h ? prev : { ...prev, h }));
-  }, [pointerY, setHsv]);
 
   return (
     <div

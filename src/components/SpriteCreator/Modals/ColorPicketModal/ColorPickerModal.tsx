@@ -4,12 +4,12 @@ import ColorPickerCanvas from './ColorPickerModalComponents/ColorPickerCanvas';
 import styles from './ColorPickerModal.module.css';
 import ColorPickerSlider from './ColorPickerModalComponents/ColorPickerSlider';
 import { useEffect, useMemo, useState } from 'react';
-import { hsb100ToRgb, intToRGB, rgbaToInt, rgbToHsb100 } from '@/helpers/color';
-import { Hsb100, RGBAobj } from '@/models/Tools/Color';
+import { hsb100ToRgb, intToRGB, rgbToHsb100 } from '@/helpers/color';
+import { useToolContext } from '@/context/ToolContext';
+import { Hsb100 } from '@/models/Tools/Color';
 
 type ColorPickerModalProps = {
-  setColor: (color: number) => void;
-  color: number;
+  primary: boolean;
 };
 
 export type hsvObject = {
@@ -18,22 +18,27 @@ export type hsvObject = {
   bright: number;
 };
 
-const ColorPickerModal = ({ setColor, color }: ColorPickerModalProps) => {
-  const rgba = useMemo((): RGBAobj => intToRGB(color), [color]);
+const ColorPickerModal = ({ primary }: ColorPickerModalProps) => {
+  const {
+    setSecondaryColor,
+    setPrimaryColor,
+    getPrimaryColor,
+    getSecondaryColor,
+    secondaryColorChanged,
+    primaryColorChanged,
+  } = useToolContext();
 
-  const [hsv, setHsv] = useState<Hsb100>(rgbToHsb100(rgba));
+  const [hsv, setHsv] = useState<Hsb100>(() => {
+    const color = primary ? getPrimaryColor() : getSecondaryColor();
 
-  useEffect(() => {
-    const rgb: RGBAobj = hsb100ToRgb(hsv.h, hsv.s, hsv.b);
-
-    setColor(rgbaToInt(rgb.r, rgb.g, rgb.b, 255));
-  }, [hsv, setColor]);
+    return { h: 0, s: 0, b: 0 };
+  });
 
   return (
     <>
       <div className={styles.canvasSliderContainer}>
-        <ColorPickerCanvas hsv={hsv} setHsv={setHsv} />
-        <ColorPickerSlider hsv={hsv} setHsv={setHsv} />
+        <ColorPickerCanvas hsv={hsv} setColor={primary ? setPrimaryColor : setSecondaryColor} />
+        <ColorPickerSlider hsv={hsv} setColor={primary ? setPrimaryColor : setSecondaryColor} />
       </div>
     </>
   );

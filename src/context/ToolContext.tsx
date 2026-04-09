@@ -25,6 +25,13 @@ class NoopTool implements ITool {
   }
 }
 
+export type ColorChangeOrigin = 'pointer' | 'slider' | 'external';
+
+export type ChangeColorTick = {
+  tick: number;
+  source: ColorChangeOrigin;
+};
+
 type ToolContextValue = {
   activeTool: ITool;
   getActiveTool: () => ITool;
@@ -36,12 +43,14 @@ type ToolContextValue = {
 
   ensureProperties: (toolKey: string, defaults: AnyProperty[]) => void;
 
-  primaryColor: number;
   getPrimaryColor: () => number;
-  setPrimaryColor: (color: number) => void;
-  secondaryColor: number;
+  setPrimaryColor: (color: number, origin: ColorChangeOrigin) => void;
+  primaryColorChanged: ChangeColorTick;
+
   getSecondaryColor: () => number;
-  setSecondaryColor: (color: number) => void;
+  setSecondaryColor: (color: number, origin: ColorChangeOrigin) => void;
+  secondaryColorChanged: ChangeColorTick;
+
   flipPrimarySecondary: () => void;
 };
 
@@ -69,7 +78,15 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const [primaryColor, setPrimaryColor] = useState<number>(0x000000ff);
+  const [primaryColorChanged, setPrimaryColorChanged] = useState<ChangeColorTick>({
+    tick: 0,
+    source: 'external',
+  });
   const [secondaryColor, setSecondaryColor] = useState<number>(0xffffffff);
+  const [secondaryColorChanged, setSecondaryColorChanged] = useState<ChangeColorTick>({
+    tick: 0,
+    source: 'external',
+  });
   const [propertiesMap, setPropertiesMap] = useState<Map<string, AnyProperty[]>>(new Map());
 
   const propertiesRef = useRef(propertiesMap);
@@ -139,7 +156,27 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
 
     setPrimaryColor(secondaryColorTemp);
     setSecondaryColor(primaryColorTemp);
+    setSecondaryColorChanged((prev) => {
+      return { tick: prev.tick++, source: 'external' };
+    });
+    setPrimaryColorChanged((prev) => {
+      return { tick: prev.tick++, source: 'external' };
+    });
   }, [setPrimaryColor, setSecondaryColor]);
+
+  const setPrimaryColorCallback = useCallback((color: number, origin: ColorChangeOrigin) => {
+    setPrimaryColor(color);
+    setPrimaryColorChanged((prev) => {
+      return { tick: prev.tick + 1, source: origin };
+    });
+  }, []);
+
+  const setSecondaryColorCallback = useCallback((color: number, origin: ColorChangeOrigin) => {
+    setSecondaryColor(color);
+    setSecondaryColorChanged((prev) => {
+      return { tick: prev.tick + 1, source: origin };
+    });
+  }, []);
 
   const properties = useMemo(
     () => propertiesMap.get(activeTool.name) ?? [],
@@ -155,12 +192,12 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
       setProperties,
       getProperties,
       ensureProperties,
-      setPrimaryColor,
+      setPrimaryColor: setPrimaryColorCallback,
       getPrimaryColor,
-      primaryColor,
-      setSecondaryColor,
+      primaryColorChanged,
+      setSecondaryColor: setSecondaryColorCallback,
       getSecondaryColor,
-      secondaryColor,
+      secondaryColorChanged,
       flipPrimarySecondary,
     }),
     [
@@ -173,10 +210,10 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
       ensureProperties,
       setPrimaryColor,
       getPrimaryColor,
-      primaryColor,
+      primaryColorChanged,
       setSecondaryColor,
       getSecondaryColor,
-      secondaryColor,
+      secondaryColorChanged,
       flipPrimarySecondary,
     ],
   );
