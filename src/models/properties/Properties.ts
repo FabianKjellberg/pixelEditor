@@ -4,7 +4,7 @@ import { IDithering, IMultiChoice, INone, ISlider, IToggle, UIControlSpec } from
 export enum PropertyType {
   Size = 0,
   SmoothEdgeProperty = 1,
-  Replace = 2,
+  SelectionMode = 2,
   Opacity = 3,
   StrokeWidth = 4,
   FillProperty = 5,
@@ -60,18 +60,23 @@ export class SmoothEdgeProperty implements IProperty {
   }
 }
 
-export class ReplaceProperty implements IProperty {
-  propertyType: PropertyType = PropertyType.Replace;
-  spec: IToggle = {
-    type: 'toggle',
-    label: 'Replace existing',
+export class SelectionModeProperty implements IProperty {
+  propertyType: PropertyType = PropertyType.SelectionMode;
+  spec: IMultiChoice = {
+    type: 'multiChoice',
+    label: 'Selection Mode',
+    allowEmpty: false,
+    choices: ['Replace', 'Add', 'Subtract'],
   };
-  constructor(private _value: boolean = true) {}
+  constructor(private _value: string | null = 'Replace') {}
   get value() {
     return this._value;
   }
-  set value(v: boolean) {
-    this._value = !!v;
+  set value(v: string | null) {
+    if (!this.spec.choices.some((c) => c === v)) {
+      if (this.spec.allowEmpty) this._value = null;
+      else this.value = this.spec.choices[0];
+    } else this._value = v;
   }
 }
 

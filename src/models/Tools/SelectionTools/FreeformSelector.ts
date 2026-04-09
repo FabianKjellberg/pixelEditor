@@ -1,18 +1,29 @@
-import { AnyProperty } from '@/models/properties/Properties';
+import {
+  AnyProperty,
+  getProperty,
+  PropertyType,
+  SelectionModeProperty,
+} from '@/models/properties/Properties';
 import { ITool, IToolDeps } from '../Tools';
-import { Cordinate } from '@/models/Layer';
+import { Cordinate, SelectionLayer } from '@/models/Layer';
+import { combinedSelections, fillSelectionPolygon, subtractSelection } from '@/util/SelectionUtil';
 
 export class FreeformSelector implements ITool {
   deps: IToolDeps;
   name: string = 'freeformSelector';
   selecting: boolean = false;
   points: Cordinate[] = [];
+  oldSelection: SelectionLayer | undefined = undefined;
 
   constructor(deps: IToolDeps) {
     this.deps = deps;
   }
 
   onDown(x: number, y: number, pixelSize: number, mouseButton: number): void {
+    if (!this.selecting) {
+      this.oldSelection = this.deps.getSelectionLayer?.();
+    }
+
     this.selecting = true;
 
     if (this.points.length > 0) {
@@ -59,8 +70,38 @@ export class FreeformSelector implements ITool {
   }
 
   private finalise(setSelection: boolean) {
+    if (setSelection && this.points.length > 0) {
+      const properties = this.deps.getProperties?.(this.name) ?? [];
+      const replaceProp = getProperty<SelectionModeProperty>(
+        properties,
+        PropertyType.SelectionMode,
+      );
+      if (!replaceProp) return;
+
+      this.points = [...this.points, this.points[0]];
+
+      const selectionLayer = fillSelectionPolygon(this.points);
+
+      let outSelection: SelectionLayer = selectionLayer;
+
+      switch (replaceProp.value) {
+        case 'Replace':
+        default:
+          break;
+        case 'Add':
+          outSelection = combinedSelections(this.oldSelection, selectionLayer);
+          break;
+        case 'Subtract':
+          outSelection = subtractSelection(this.oldSelection, selectionLayer);
+          break;
+      }
+
+      this.deps.setSelectionLayer?.(outSelection);
+    }
+
     this.selecting = false;
     this.points = [];
     this.deps.setSelectionOverlay?.(undefined);
+    this.oldSelection = undefined;
   }
 }

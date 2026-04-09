@@ -1,9 +1,4 @@
-import {
-  AnyProperty,
-  getProperty,
-  PropertyType,
-  ReplaceProperty,
-} from '@/models/properties/Properties';
+import { getProperty, PropertyType, SelectionModeProperty } from '@/models/properties/Properties';
 import { ITool, IToolDeps } from '../Tools';
 import { Cordinate, SelectionLayer } from '@/models/Layer';
 import { getPixelPositions } from '@/util/LayerUtil';
@@ -11,6 +6,7 @@ import {
   combinedSelections,
   createSelectionCircleLayer,
   createSelectionRectangleLayer,
+  subtractSelection,
 } from '@/util/SelectionUtil';
 
 export class CircleSelector implements ITool {
@@ -57,9 +53,8 @@ export class CircleSelector implements ITool {
     }
 
     const properties = this.toolDeps.getProperties?.(this.name) ?? [];
-    const replaceProp = getProperty<ReplaceProperty>(properties, PropertyType.Replace);
-
-    const replace = replaceProp?.value ?? false;
+    const replaceProp = getProperty<SelectionModeProperty>(properties, PropertyType.SelectionMode);
+    if (!replaceProp) return;
 
     const newSelection: SelectionLayer = createSelectionCircleLayer(
       pixelPos.x,
@@ -68,13 +63,20 @@ export class CircleSelector implements ITool {
       this.originY ?? pixelPos.y,
     );
 
-    //if replace, only use the new layer
-    const combinedSelection: SelectionLayer = replace
-      ? newSelection
-      : this.oldSelection === undefined
-      ? newSelection
-      : combinedSelections(this.oldSelection, newSelection);
+    let outSelection: SelectionLayer = newSelection;
 
-    setSelectionLayer(combinedSelection);
+    switch (replaceProp.value) {
+      case 'Replace':
+      default:
+        break;
+      case 'Add':
+        outSelection = combinedSelections(this.oldSelection, newSelection);
+        break;
+      case 'Subtract':
+        outSelection = subtractSelection(this.oldSelection, newSelection);
+        break;
+    }
+
+    setSelectionLayer(outSelection);
   };
 }

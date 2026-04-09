@@ -87,6 +87,8 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
   }, [pan]);
 
   useEffect(() => {
+    console.log(selectionLayer);
+
     selectionLayerRef.current = selectionLayer;
   }, [selectionLayer]);
 

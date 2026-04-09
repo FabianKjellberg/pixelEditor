@@ -45,10 +45,6 @@ const Selection = ({ canvasHeight, canvasWidth }: SelectionProps) => {
     return pathStringParts.join(' ');
   }, [pixelSize, pan, selectionOverlay]);
 
-  useEffect(() => {
-    console.log(overlayPathString);
-  }, [overlayPathString]);
-
   const pathString = useMemo((): string => {
     const pathStringParts: string[] = [];
     if (paths && paths.length > 0 && selectionLayer) {

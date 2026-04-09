@@ -10,6 +10,7 @@ import {
   SelectionLayer,
 } from '@/models/Layer';
 import { blendColor } from './ColorUtil';
+import { createSelectionLayer } from './SelectionUtil';
 /**
  *
  * @param width
@@ -1255,7 +1256,6 @@ export type Edge = {
   c0: Cordinate;
   c1: Cordinate;
 };
-
 export function fillPolygon(points: Cordinate[], out: Layer, c: number): void {
   const edges: Edge[] = [];
 
