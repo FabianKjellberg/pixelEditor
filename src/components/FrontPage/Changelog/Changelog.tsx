@@ -10,6 +10,32 @@ const Changelog = () => {
         Version history and what I&apos;ve been up to. Point form, but I&apos;ll keep it readable.
       </p>
       <br />
+      <ChangelogEntry date="2026-04-09" title="More selection tools">
+        <li>
+          <p>
+            <b>Lasso selection tool.</b> The selection tools now include a lasso option, so you can
+            draw a loose freehand selection by clicking and dragging around the area you want. This
+            is useful when a rectangle or ellipse feels too rigid and you want to follow the shape
+            of what you&apos;re selecting more closely.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Freeform selection tool.</b> There is now also a point-by-point freeform selection
+            tool. Click to place points around the area you want, and close the shape when you are
+            done. This gives more control than the lasso tool when you want to build a selection
+            carefully with straight edges or more exact corners.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Selection mode property.</b> The selection tools now have a <b>Selection Mode</b>{' '}
+            option. You can choose whether a new selection should replace what you already have, add
+            onto the previous selection, or subtract from it. That makes it much easier to build up
+            or refine a selection without having to start over each time.
+          </p>
+        </li>
+      </ChangelogEntry>
       <ChangelogEntry date="2026-04-02" title="Ellipse Selection Tool">
         <li>
           <p>
