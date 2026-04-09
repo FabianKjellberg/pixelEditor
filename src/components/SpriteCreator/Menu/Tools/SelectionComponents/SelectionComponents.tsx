@@ -10,19 +10,26 @@ import styles from '../ShapeComponents/ShapeComponents.module.css';
 import { RectangleSelector } from '@/models/Tools/SelectionTools/RectangleSelector';
 import { useCanvasContext } from '@/context/CanvasContext';
 import { CircleSelector } from '@/models/Tools/SelectionTools/CircleSelector';
-import { ReplaceProperty } from '@/models/properties/Properties';
+import { LassoSelector } from '@/models/Tools/SelectionTools/LassoSelector';
+import { FreeformSelector } from '@/models/Tools/SelectionTools/FreeformSelector';
+import { SelectionModeProperty } from '@/models/properties/Properties';
 
 const SelectionComponents = () => {
   const { onShow, onHide } = useContextMenuContext();
   const { setActiveTool, getProperties, ensureProperties } = useToolContext();
-  const { setSelectionLayer, getSelectionLayer } = useCanvasContext();
+  const { setSelectionLayer, getSelectionLayer, setSelectionOverlay, getSelectionOverlay } =
+    useCanvasContext();
 
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   useEffect(() => {
-    ensureProperties('circleSelector', [new ReplaceProperty(true)]);
+    ensureProperties('circleSelector', [new SelectionModeProperty()]);
 
-    ensureProperties('rectangleSelector', [new ReplaceProperty(true)]);
+    ensureProperties('rectangleSelector', [new SelectionModeProperty()]);
+
+    ensureProperties('lassoSelector', [new SelectionModeProperty()]);
+
+    ensureProperties('freeformSelector', [new SelectionModeProperty()]);
   }, []);
 
   const rectangleSelection = useMemo(
@@ -35,13 +42,43 @@ const SelectionComponents = () => {
     [setSelectionLayer, getSelectionLayer, getProperties],
   );
 
+  const lassoSelector = useMemo(
+    () =>
+      new LassoSelector({
+        setSelectionLayer,
+        getSelectionLayer,
+        getProperties,
+        getSelectionOverlay,
+        setSelectionOverlay,
+      }),
+    [setSelectionLayer, getSelectionLayer, getProperties, getSelectionOverlay, setSelectionOverlay],
+  );
+
+  const freeformSelector = useMemo(
+    () =>
+      new FreeformSelector({
+        setSelectionLayer,
+        getSelectionLayer,
+        getProperties,
+        getSelectionOverlay,
+        setSelectionOverlay,
+      }),
+    [setSelectionLayer, getSelectionLayer, getProperties, getSelectionOverlay, setSelectionOverlay],
+  );
+
   const onClickCallbackItem = useCallback(
     (index: number) => {
       switch (index) {
         case 0:
-          setActiveTool(rectangleSelection);
+          setActiveTool(lassoSelector);
           break;
         case 1:
+          setActiveTool(freeformSelector);
+          break;
+        case 2:
+          setActiveTool(rectangleSelection);
+          break;
+        case 3:
           setActiveTool(circleSelection);
           break;
       }
@@ -57,14 +94,27 @@ const SelectionComponents = () => {
       const menu = (
         <div className={styles.contextMenu}>
           <ToolButtonMimic
-            icon="icons/selection.png"
+            icon="icons/lassoSelector.png"
             index={0}
             onClickCallback={onClickCallbackItem}
             selectedIndex={selectedIndex}
           />
           <ToolButtonMimic
-            icon="icons/circleSelection.png"
+            icon="icons/freeformSelector.png"
             index={1}
+            onClickCallback={onClickCallbackItem}
+            selectedIndex={selectedIndex}
+          />
+
+          <ToolButtonMimic
+            icon="icons/selection.png"
+            index={2}
+            onClickCallback={onClickCallbackItem}
+            selectedIndex={selectedIndex}
+          />
+          <ToolButtonMimic
+            icon="icons/circleSelection.png"
+            index={3}
             onClickCallback={onClickCallbackItem}
             selectedIndex={selectedIndex}
           />
@@ -81,10 +131,21 @@ const SelectionComponents = () => {
       case 0:
       default:
         return {
+          icon: '/icons/lassoSelector.png',
+          tool: lassoSelector,
+        };
+      case 1:
+        return {
+          icon: '/icons/freeformSelector.png',
+          tool: freeformSelector,
+        };
+
+      case 2:
+        return {
           icon: '/icons/selection.png',
           tool: rectangleSelection,
         };
-      case 1:
+      case 3:
         return {
           icon: '/icons/circleSelection.png',
           tool: circleSelection,

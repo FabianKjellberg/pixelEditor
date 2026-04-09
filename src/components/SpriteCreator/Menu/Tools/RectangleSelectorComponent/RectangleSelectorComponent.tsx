@@ -3,9 +3,9 @@
 import React, { useEffect } from 'react';
 import ToolButton from '../ToolButton/ToolButton';
 import { useToolContext } from '@/context/ToolContext';
-import { ReplaceProperty } from '@/models/properties/Properties';
 import { RectangleSelector } from '@/models/Tools/SelectionTools/RectangleSelector';
 import { useCanvasContext } from '@/context/CanvasContext';
+import { SelectionModeProperty } from '@/models/properties/Properties';
 
 const RectangleSelectorComponent = () => {
   const { getProperties, setProperties } = useToolContext();
@@ -14,7 +14,7 @@ const RectangleSelectorComponent = () => {
   useEffect(() => {
     const existing = getProperties('rectangleSelector');
     if (!existing.length) {
-      setProperties('rectangleSelector', [new ReplaceProperty(true)]);
+      setProperties('rectangleSelector', [new SelectionModeProperty()]);
     }
   }, [getProperties, setProperties]);
 

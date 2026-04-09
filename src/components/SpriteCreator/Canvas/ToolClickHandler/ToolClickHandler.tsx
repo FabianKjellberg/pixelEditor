@@ -96,7 +96,11 @@ const ToolClickHandler = () => {
       activeTool.name == 'rectangleTool' ||
       activeTool.name == 'ovalTool' ||
       activeTool.name == 'lineTool' ||
-      activeTool.name == 'fillBucket'
+      activeTool.name == 'fillBucket' ||
+      activeTool.name == 'freeformTool' ||
+      activeTool.name == 'cicrcleSelector' ||
+      activeTool.name == 'freeformSelector' ||
+      activeTool.name == 'lassoSelector'
     )
       setCursorType({ cursor: 'crosshair' });
     else if (activeTool.name == 'rectangleSelector' || activeTool.name == 'eyedropper')

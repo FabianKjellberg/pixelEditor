@@ -1,7 +1,8 @@
-import { getLocalPixelIndex, getPixelIndex, intToRGB } from '@/helpers/color';
-import { Layer, LayerEntity, Rectangle, SelectionLayer } from '@/models/Layer';
+import { getGlobalCordinate, getLocalPixelIndex, getPixelIndex, intToRGB } from '@/helpers/color';
+import { Cordinate, Layer, LayerEntity, Rectangle, SelectionLayer } from '@/models/Layer';
 import { edge, point } from '@/models/Selection';
-import { createLayer } from './LayerUtil';
+import { createLayer, Edge, rectangleIntersection } from './LayerUtil';
+import { sl } from 'zod/locales';
 
 function pointKey(p: point): string {
   return `${p.x},${p.y}`;
@@ -195,7 +196,12 @@ export function createSelectionCircleLayer(
  * @param sl2
  * @returns
  */
-export function combinedSelections(sl1: SelectionLayer, sl2: SelectionLayer): SelectionLayer {
+export function combinedSelections(
+  sl1: SelectionLayer | undefined,
+  sl2: SelectionLayer,
+): SelectionLayer {
+  if (sl1 === undefined) return sl2;
+
   // world coordinates
   const minX = Math.min(sl1.rect.x, sl2.rect.x);
   const minY = Math.min(sl1.rect.y, sl2.rect.y);
@@ -236,6 +242,35 @@ export function combinedSelections(sl1: SelectionLayer, sl2: SelectionLayer): Se
   }
 
   return combinedLayers;
+}
+
+export function subtractSelection(
+  sl1: SelectionLayer | undefined,
+  sl2: SelectionLayer,
+): SelectionLayer {
+  if (!sl1) return createSelectionLayer({ x: 0, y: 0, width: 0, height: 0 }, false);
+
+  const intersectingRect = rectangleIntersection(sl1.rect, sl2.rect);
+
+  const out: SelectionLayer = {
+    pixels: structuredClone(sl1.pixels),
+    rect: structuredClone(sl1.rect),
+  };
+
+  for (let y = 0; y < intersectingRect.height; y++) {
+    for (let x = 0; x < intersectingRect.width; x++) {
+      const globalCord = getGlobalCordinate(x, y, intersectingRect);
+
+      const sl1Index = getLocalPixelIndex(globalCord.x, globalCord.y, sl1.rect);
+      const sl2Index = getLocalPixelIndex(globalCord.x, globalCord.y, sl2.rect);
+
+      if (sl1.pixels[sl1Index] === 1 && sl2.pixels[sl2Index] === 1) {
+        out.pixels[sl1Index] = 0;
+      }
+    }
+  }
+
+  return cleanSelectionLayerEdges(out);
 }
 
 /**
@@ -321,4 +356,148 @@ export function addVisibleLayerToSelection(layer: LayerEntity, sl: SelectionLaye
       sl.pixels[toIndex] = 1;
     }
   }
+}
+
+export function fillSelectionPolygon(points: Cordinate[]) {
+  const uniquePoints: Cordinate[] = [];
+  const seen = new Set<string>();
+
+  points.forEach((point) => {
+    const x = Math.round(point.x);
+    const y = Math.round(point.y);
+
+    const key = `${x},${y}`;
+
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniquePoints.push({ x, y });
+    }
+  });
+
+  const rx1 = Math.min(...uniquePoints.map((p) => p.x));
+  const ry1 = Math.min(...uniquePoints.map((p) => p.y));
+  const rx2 = Math.max(...uniquePoints.map((p) => p.x));
+  const ry2 = Math.max(...uniquePoints.map((p) => p.y));
+
+  const r: Rectangle = {
+    x: rx1,
+    y: ry1,
+    width: rx2 - rx1 + 1,
+    height: ry2 - ry1 + 1,
+  };
+
+  const out = createSelectionLayer(r, false);
+
+  const edges: Edge[] = [];
+
+  for (let i = 0; i < uniquePoints.length; i++) {
+    const p1 = uniquePoints[i];
+    const p2 = uniquePoints[(i + 1) % uniquePoints.length];
+
+    edges.push({
+      c0: { x: p1.x - out.rect.x, y: p1.y - out.rect.y },
+      c1: { x: p2.x - out.rect.x, y: p2.y - out.rect.y },
+    });
+  }
+
+  for (let y = 0.5; y < out.rect.height; y++) {
+    const intersectX: number[] = [];
+
+    for (const edge of edges) {
+      const outVer = Math.min(edge.c0.y, edge.c1.y) > y || Math.max(edge.c0.y, edge.c1.y) < y;
+
+      const horizontal = edge.c0.y === edge.c1.y;
+
+      if (outVer || horizontal) continue;
+
+      const x0 = edge.c0.x;
+      const y0 = edge.c0.y;
+      const x1 = edge.c1.x;
+      const y1 = edge.c1.y;
+
+      const x = x0 + ((y - y0) * (x1 - x0)) / (y1 - y0);
+      intersectX.push(x);
+    }
+
+    intersectX.sort((a, b) => a - b);
+
+    for (let i = 1; i < intersectX.length; i += 2) {
+      const row = Math.floor(y) * out.rect.width;
+
+      const xStart = Math.ceil(intersectX[i - 1]);
+      const xEnd = Math.floor(intersectX[i]);
+
+      if (xEnd < xStart) continue;
+
+      const start = Math.max(0, Math.min(out.rect.width - 1, xStart));
+      const end = Math.max(0, Math.min(out.rect.width - 1, xEnd));
+
+      out.pixels.fill(1, row + start, row + end + 1);
+    }
+  }
+
+  return out;
+}
+
+export function cleanSelectionLayerEdges(sl: SelectionLayer): SelectionLayer {
+  const { pixels, rect } = sl;
+  const { x, y, width, height } = rect;
+
+  if (width === 0 || height === 0 || pixels.length === 0) {
+    return {
+      pixels: new Uint8Array(0),
+      rect: { x, y, width: 0, height: 0 },
+    };
+  }
+
+  let minX = width;
+  let minY = height;
+  let maxX = -1;
+  let maxY = -1;
+
+  for (let py = 0; py < height; py++) {
+    for (let px = 0; px < width; px++) {
+      const index = py * width + px;
+
+      if (pixels[index] !== 1) continue;
+
+      if (px < minX) minX = px;
+      if (py < minY) minY = py;
+      if (px > maxX) maxX = px;
+      if (py > maxY) maxY = py;
+    }
+  }
+
+  if (maxX === -1 || maxY === -1) {
+    return {
+      pixels: new Uint8Array(0),
+      rect: { x: 0, y: 0, width: 0, height: 0 },
+    };
+  }
+
+  const newWidth = maxX - minX + 1;
+  const newHeight = maxY - minY + 1;
+  const newPixels = new Uint8Array(newWidth * newHeight);
+
+  for (let py = 0; py < newHeight; py++) {
+    for (let px = 0; px < newWidth; px++) {
+      const oldX = minX + px;
+      const oldY = minY + py;
+
+      const oldIndex = oldY * width + oldX;
+      const newIndex = py * newWidth + px;
+
+      newPixels[newIndex] = pixels[oldIndex];
+    }
+  }
+
+  return {
+    pixels: newPixels,
+    rect: {
+      x: x + minX,
+      y: y + minY,
+      width: newWidth,
+      height: newHeight,
+    },
+  };
 }
