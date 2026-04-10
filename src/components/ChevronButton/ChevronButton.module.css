@@ -1,0 +1,12 @@
+.chevronButton {
+  border: none;
+}
+.rotatedChevron {
+  transform: rotate(-90deg);
+}
+
+.buttonIcon {
+  image-rendering: pixelated;
+  filter: var(--invert-icon-color);
+  transition: transform var(--transition-fast);
+}

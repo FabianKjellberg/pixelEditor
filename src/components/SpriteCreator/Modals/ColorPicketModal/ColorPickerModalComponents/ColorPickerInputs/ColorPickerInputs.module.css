@@ -1,0 +1,15 @@
+.grid {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 20px minmax(0, 1fr) 20px minmax(0, 1fr);
+  gap: 4px;
+}
+
+.hex {
+  display: flex;
+}
+
+.wrapper {
+  width: 100%;
+  border: 2px solid red;
+  padding: 5px;
+}
