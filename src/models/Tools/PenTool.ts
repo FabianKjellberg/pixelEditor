@@ -1,4 +1,4 @@
-import { intToRGB, rgbaToInt } from '@/helpers/color';
+import { setAlpha } from '@/helpers/color';
 import { Cordinate, Layer, LayerEntity, Rectangle } from '../Layer';
 import {
   getProperty,
@@ -18,6 +18,7 @@ import {
   isRectanglesIntersecting,
   stampToCanvasLayer,
 } from '@/util/LayerUtil';
+import { Color } from './Color';
 
 export class PenTool implements ITool {
   //variable to know if the pen is "held down" on the canvas
@@ -62,16 +63,14 @@ export class PenTool implements ITool {
     this.originalLayer = layers[0];
 
     //get color and opacity
-    const color: number =
-      mouseButton == 0
-        ? (this.toolDeps.getPrimaryColor?.() ?? config.defaultColor)
-        : (this.toolDeps.getSecondaryColor?.() ?? config.defaultColor);
+    const color: Color | undefined =
+      mouseButton == 0 ? this.toolDeps.getPrimaryColor?.() : this.toolDeps.getSecondaryColor?.();
     const properties: IProperty[] = this.toolDeps.getProperties?.('pencil') ?? [];
     const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
 
-    //add Opacity to color
-    const rgba = intToRGB(color);
-    this.color = rgbaToInt(rgba.r, rgba.g, rgba.b, opacityProperty?.value ?? 255);
+    if (!color) return;
+
+    this.color = setAlpha(color.int, opacityProperty?.value ?? 255);
 
     //Draw
     this.draw(pixelPos.x, pixelPos.y);

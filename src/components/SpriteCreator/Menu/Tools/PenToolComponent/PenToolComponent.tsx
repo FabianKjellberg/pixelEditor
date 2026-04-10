@@ -9,11 +9,12 @@ import { OpacityProperty, SizeProperty, SmoothEdgeProperty } from '@/models/prop
 import { useCanvasContext } from '@/context/CanvasContext';
 import { useUndoRedoContext } from '@/context/UndoRedoContext';
 import { useToastContext } from '@/context/ToastContext/ToastContext';
+import { useColorContext } from '@/context/ColorContext';
 
 const PenToolComponent = () => {
   const { getActiveLayers, setActiveLayers } = useLayerContext();
-  const { setActiveTool, getPrimaryColor, getProperties, setProperties, getSecondaryColor } =
-    useToolContext();
+  const { setActiveTool, getProperties, setProperties } = useToolContext();
+  const { getSColor, getPColor } = useColorContext();
   const { getSelectionLayer, getCanvasRect } = useCanvasContext();
   const { checkPoint } = useUndoRedoContext();
   const { onToast } = useToastContext();
@@ -34,15 +35,15 @@ const PenToolComponent = () => {
       new PenTool({
         setLayers: setActiveLayers,
         getLayers: getActiveLayers,
-        getPrimaryColor,
-        getSecondaryColor,
+        getPrimaryColor: getPColor,
+        getSecondaryColor: getSColor,
         getProperties,
         getSelectionLayer,
         getCanvasRect,
         checkPoint,
         onToast,
       }),
-    [getActiveLayers, setActiveLayers, getPrimaryColor, getProperties],
+    [getActiveLayers, setActiveLayers, getSColor, getPColor, getProperties],
   );
 
   useEffect(() => {

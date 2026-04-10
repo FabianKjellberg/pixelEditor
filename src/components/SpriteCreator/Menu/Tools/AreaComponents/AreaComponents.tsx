@@ -28,12 +28,14 @@ import {
 import { FillBucket } from '@/models/Tools/AreaTools/FillBucket';
 import { GradientTool } from '@/models/Tools/AreaTools/GradientTool';
 import { useToastContext } from '@/context/ToastContext/ToastContext';
+import { useColorContext } from '@/context/ColorContext';
 
 const AreaComponents = () => {
   const { onShow, onHide } = useContextMenuContext();
   const { setActiveTool } = useToolContext();
   const { setActiveLayers, getActiveLayers } = useLayerContext();
-  const { getPrimaryColor, ensureProperties, getProperties, getSecondaryColor } = useToolContext();
+  const { ensureProperties, getProperties } = useToolContext();
+  const { getPColor, getSColor } = useColorContext();
   const { getSelectionLayer, getCanvasRect } = useCanvasContext();
   const { checkPoint } = useUndoRedoContext();
   const { onToast } = useToastContext();
@@ -96,12 +98,12 @@ const AreaComponents = () => {
         getProperties,
         getCanvasRect,
         getSelectionLayer,
-        getPrimaryColor,
-        getSecondaryColor,
+        getPrimaryColor: getPColor,
+        getSecondaryColor: getSColor,
         checkPoint,
         onToast,
       }),
-    [getActiveLayers, setActiveLayers, getPrimaryColor, getProperties, onToast],
+    [getActiveLayers, setActiveLayers, getPColor, getSColor, getProperties, onToast],
   );
 
   const gradientTool: GradientTool = useMemo(
@@ -109,15 +111,15 @@ const AreaComponents = () => {
       new GradientTool({
         setLayers: setActiveLayers,
         getLayers: getActiveLayers,
-        getPrimaryColor,
-        getSecondaryColor,
+        getPrimaryColor: getPColor,
+        getSecondaryColor: getSColor,
         getProperties,
         getSelectionLayer,
         getCanvasRect,
         checkPoint,
         onToast,
       }),
-    [getActiveLayers, setActiveLayers, getPrimaryColor, getProperties, onToast],
+    [getActiveLayers, setActiveLayers, getPColor, getSColor, getProperties, onToast],
   );
 
   const [selectedIndex, setSelectedIndex] = useState<number>(0);

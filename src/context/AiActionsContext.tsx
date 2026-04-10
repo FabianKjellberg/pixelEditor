@@ -16,7 +16,7 @@ import {
   StrokeAlignProperty,
   StrokeWidthProperty,
 } from '@/models/properties/Properties';
-import { rgbaToInt } from '@/helpers/color';
+import { rgbaToInt, rgbToColor, rgbToInt } from '@/helpers/color';
 import { OvalTool } from '@/models/Tools/ShapeTools/OvalTool';
 import { FillBucket } from '@/models/Tools/AreaTools/FillBucket';
 import { GradientTool } from '@/models/Tools/AreaTools/GradientTool';
@@ -26,11 +26,12 @@ import { FreeformTool } from '@/models/Tools/ShapeTools/Freeform';
 import { LayerEntity } from '@/models/Layer';
 import { createLayerEntity } from '@/util/LayerUtil';
 import { useLayerSelectorContext } from './LayerSelectorContext';
+import { BLACK, Color, WHITE } from '@/models/Tools/Color';
 
 type AiActionsContextValue = {
   excecuteActions: (actions: AiToolCall[]) => void | Promise<void>;
-  getAiPrimaryColor: () => number;
-  setAiPrimaryColor: (color: number) => void;
+  getAiPrimaryColor: () => Color;
+  setAiPrimaryColor: (color: Color) => void;
   getAiProperties: (toolKey: string) => IProperty[];
   setAiProperties: (toolKey: string, properties: IProperty[]) => void;
 };
@@ -50,9 +51,8 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
   const { getSelectionLayer, getCanvasRect, setDimensions, pixelSize } = useCanvasContext();
   const { checkPoint } = useUndoRedoContext();
 
-  // AI-specific properties - isolated from user's ToolContext
-  const [aiPrimaryColor, setAiPrimaryColorState] = useState<number>(DEFAULT_AI_COLOR);
-  const [aiSecondaryColor, setAiSecondaryColorState] = useState<number>(DEFAULT_AI_COLOR);
+  const [aiPrimaryColor, setAiPrimaryColorState] = useState<Color>(BLACK);
+  const [aiSecondaryColor, setAiSecondaryColorState] = useState<Color>(WHITE);
   const [aiPropertiesMap, setAiPropertiesMapState] = useState<Map<string, IProperty[]>>(new Map());
 
   const aiPrimaryColorRef = useRef(aiPrimaryColor);
@@ -63,10 +63,10 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
   aiPropertiesRef.current = aiPropertiesMap;
 
   const getAiPrimaryColor = useCallback(() => aiPrimaryColorRef.current, []);
-  const setAiPrimaryColor = useCallback((color: number) => setAiPrimaryColorState(color), []);
+  const setAiPrimaryColor = useCallback((color: Color) => setAiPrimaryColorState(color), []);
 
   const getAiSecondaryColor = useCallback(() => aiSecondaryColorRef.current, []);
-  const setAiSecondaryColor = useCallback((color: number) => setAiSecondaryColorState(color), []);
+  const setAiSecondaryColor = useCallback((color: Color) => setAiSecondaryColorState(color), []);
 
   const getAiProperties = useCallback(
     (toolKey: string) => aiPropertiesRef.current.get(toolKey) ?? [],
@@ -89,9 +89,7 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
       if (args.points.length < 1) console.log('no points to draw');
 
       setAiProperties('pencil', [new SizeProperty(args.size)]);
-      const color = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
-
-      setAiPrimaryColor(color);
+      const color = rgbToColor({ r: args.color.r, g: args.color.g, b: args.color.b });
 
       const strokeSize = new SizeProperty(args.size);
       const strokePen = new PenTool({
@@ -114,7 +112,6 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     },
     [
       setAiProperties,
-      setAiPrimaryColor,
       getAiProperties,
       setActiveLayers,
       getActiveLayers,
@@ -135,14 +132,12 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     const fillProp = new FillProperty(args.fill);
     const strokeAlignProp = new StrokeAlignProperty('Centered');
 
-    const primaryColor = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
-
-    const secondaryColor = rgbaToInt(
-      args.fillColor.r,
-      args.fillColor.g,
-      args.fillColor.b,
-      args.opacity,
-    );
+    const primaryColor = rgbToColor({ r: args.color.r, g: args.color.g, b: args.color.b });
+    const secondaryColor = rgbToColor({
+      r: args.fillColor.r,
+      g: args.fillColor.g,
+      b: args.fillColor.b,
+    });
 
     const tool = new OvalTool({
       setLayers: setActiveLayers,
@@ -169,7 +164,7 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
 
     const opacityProp = new OpacityProperty(args.opacity);
 
-    const color = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
+    const color = rgbToColor({ r: args.color.r, g: args.color.g, b: args.color.b });
 
     const tool = new FillBucket({
       setLayers: setActiveLayers,
@@ -194,7 +189,7 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     const strokeWidthProp = new StrokeWidthProperty(args.strokeWidth);
     const opacityProp = new OpacityProperty(args.opacity);
 
-    const color = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
+    const color = rgbToColor({ r: args.color.r, g: args.color.g, b: args.color.b });
 
     const tool = new LineTool({
       setLayers: setActiveLayers,
@@ -223,14 +218,12 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     const fillProp = new FillProperty(args.fill);
     const strokeAlignProp = new StrokeAlignProperty('Centered');
 
-    const primaryColor = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
-
-    const secondaryColor = rgbaToInt(
-      args.fillColor.r,
-      args.fillColor.g,
-      args.fillColor.b,
-      args.opacity,
-    );
+    const primaryColor = rgbToColor({ r: args.color.r, g: args.color.g, b: args.color.b });
+    const secondaryColor = rgbToColor({
+      r: args.fillColor.r,
+      g: args.fillColor.g,
+      b: args.fillColor.b,
+    });
 
     const tool = new RectangleTool({
       setLayers: setActiveLayers,
@@ -259,8 +252,8 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     const singleColorProp = new SingleColor(args.singleColor);
     const gradientTypeProp = new GradientTypeProperty(args.gradientType);
 
-    const primaryColor = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
-    const secondaryColor = rgbaToInt(args.toColor.r, args.toColor.g, args.toColor.b, args.opacity);
+    const primaryColor = rgbToColor({ r: args.color.r, g: args.color.g, b: args.color.b });
+    const secondaryColor = rgbToColor({ r: args.toColor.r, g: args.toColor.g, b: args.toColor.b });
 
     const tool = new GradientTool({
       setLayers: setActiveLayers,
@@ -288,13 +281,12 @@ export const AiActionsContextProvider = ({ children }: { children: React.ReactNo
     const opacityProp = new OpacityProperty(args.opacity);
     const fillProp = new FillProperty(args.fill);
 
-    const primaryColor = rgbaToInt(args.color.r, args.color.g, args.color.b, args.opacity);
-    const secondaryColor = rgbaToInt(
-      args.fillColor.r,
-      args.fillColor.g,
-      args.fillColor.b,
-      args.opacity,
-    );
+    const primaryColor = rgbToColor({ r: args.color.r, g: args.color.g, b: args.color.b });
+    const secondaryColor = rgbToColor({
+      r: args.fillColor.r,
+      g: args.fillColor.g,
+      b: args.fillColor.b,
+    });
 
     const tool = new FreeformTool({
       setLayers: setActiveLayers,

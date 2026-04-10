@@ -1,18 +1,5 @@
 import { Cordinate, Rectangle } from '@/models/Layer';
-import { Hsb100, Hsv, RGBAobj } from '@/models/Tools/Color';
-
-export const rgbaToInt = (r: number, g: number, b: number, a = 255): number =>
-  (((r & 0xff) << 24) | ((g & 0xff) << 16) | ((b & 0xff) << 8) | (a & 0xff)) >>> 0;
-
-export const intToRGB = (rgba: number): RGBAobj => {
-  const n = rgba >>> 0;
-  return {
-    r: (n >>> 24) & 0xff,
-    g: (n >>> 16) & 0xff,
-    b: (n >>> 8) & 0xff,
-    a: n & 0xff,
-  };
-};
+import { Color, HSV, RGB, RGBA } from '@/models/Tools/Color';
 
 export const intToCssRgba = (v: number) => {
   const r = (v >>> 24) & 0xff;
@@ -42,88 +29,147 @@ export const getGlobalCordinate = (localX: number, localY: number, rect: Rectang
   };
 };
 
-export function hsvToRgb(h: number, s: number, v: number): RGBAobj {
-  const hh = ((h % 360) + 360) % 360; // normalize
-  const ss = Math.max(0, Math.min(1, s));
-  const vv = Math.max(0, Math.min(1, v));
+export const hsvToRgb = (hsv: HSV): RGB => {
+  const { h, s, v } = hsv;
 
-  const c = vv * ss;
-  const x = c * (1 - Math.abs(((hh / 60) % 2) - 1));
-  const m = vv - c;
+  const c = v * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = v - c;
 
-  let r1 = 0,
-    g1 = 0,
-    b1 = 0;
-  if (hh < 60) [r1, g1, b1] = [c, x, 0];
-  else if (hh < 120) [r1, g1, b1] = [x, c, 0];
-  else if (hh < 180) [r1, g1, b1] = [0, c, x];
-  else if (hh < 240) [r1, g1, b1] = [0, x, c];
-  else if (hh < 300) [r1, g1, b1] = [x, 0, c];
-  else [r1, g1, b1] = [c, 0, x];
+  let r = 0,
+    g = 0,
+    b = 0;
+
+  if (h >= 0 && h < 60) {
+    r = c;
+    g = x;
+    b = 0;
+  } else if (h < 120) {
+    r = x;
+    g = c;
+    b = 0;
+  } else if (h < 180) {
+    r = 0;
+    g = c;
+    b = x;
+  } else if (h < 240) {
+    r = 0;
+    g = x;
+    b = c;
+  } else if (h < 300) {
+    r = x;
+    g = 0;
+    b = c;
+  } else {
+    r = c;
+    g = 0;
+    b = x;
+  }
 
   return {
-    r: Math.round((r1 + m) * 255),
-    g: Math.round((g1 + m) * 255),
-    b: Math.round((b1 + m) * 255),
-    a: 255,
+    r: Math.round((r + m) * 255),
+    g: Math.round((g + m) * 255),
+    b: Math.round((b + m) * 255),
   };
-}
+};
 
-export function hsb100ToRgb(h: number, s: number, b: number): RGBAobj {
-  const hDeg = (Math.max(0, Math.min(100, h)) / 100) * 360;
-  const s01 = Math.max(0, Math.min(100, s)) / 100;
-  const v01 = Math.max(0, Math.min(100, b)) / 100;
-  return hsvToRgb(hDeg, s01, v01);
-}
+export const rgbToHsv = (rgb: RGB): HSV => {
+  const r = rgb.r / 255;
+  const g = rgb.g / 255;
+  const b = rgb.b / 255;
 
-export function rgbToHsv({ r, g, b, a }: RGBAobj): Hsv {
-  const R = Math.min(255, Math.max(0, r)) / 255;
-  const G = Math.min(255, Math.max(0, g)) / 255;
-  const B = Math.min(255, Math.max(0, b)) / 255;
-
-  const max = Math.max(R, G, B);
-  const min = Math.min(R, G, B);
-  const d = max - min;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
 
   let h = 0;
-  if (d !== 0) {
-    switch (max) {
-      case R:
-        h = ((G - B) / d) % 6;
-        break;
-      case G:
-        h = (B - R) / d + 2;
-        break;
-      case B:
-        h = (R - G) / d + 4;
-        break;
+
+  if (delta !== 0) {
+    if (max === r) {
+      h = 60 * (((g - b) / delta) % 6);
+    } else if (max === g) {
+      h = 60 * ((b - r) / delta + 2);
+    } else {
+      h = 60 * ((r - g) / delta + 4);
     }
-    h *= 60;
-    if (h < 0) h += 360;
   }
-  const s = max === 0 ? 0 : d / max;
+
+  if (h < 0) h += 360;
+
+  const s = max === 0 ? 0 : delta / max;
   const v = max;
 
-  return { h, s, v, a };
-}
+  return { h, s, v };
+};
 
-export function rgbToHsb100(rgba: RGBAobj): Hsb100 {
-  const { h, s, v, a } = rgbToHsv(rgba);
+export const intToRgb = (color: number): RGB => {
   return {
-    h: Math.round((h / 360) * 100), // 0..100
-    s: Math.round(s * 100), // 0..100
-    b: Math.round(v * 100), // 0..100
-    a,
+    r: (color >>> 24) & 255,
+    g: (color >>> 16) & 255,
+    b: (color >>> 8) & 255,
   };
-}
+};
 
-export function rgbToHex({ r, g, b, a }: RGBAobj): string {
-  const to2 = (n: number) => n.toString(16).padStart(2, '0');
-  return `#${to2(r)}${to2(g)}${to2(b)}`.toUpperCase();
-}
+export const rgbToInt = (rgb: RGB): number => {
+  return rgbaToInt(rgb.r, rgb.g, rgb.b, 255);
+};
+
+export const rgbToHex = (rgb: RGB): string => {
+  return `#${[rgb.r, rgb.g, rgb.b].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+};
+
+export const hsvToColor = (hsv: HSV): Color => {
+  const rgb = hsvToRgb(hsv);
+
+  return {
+    rgb,
+    hsv,
+    int: rgbToInt(rgb),
+    hex: rgbToHex(rgb),
+  };
+};
+
+export const rgbToColor = (rgb: RGB): Color => {
+  return {
+    rgb,
+    hsv: rgbToHsv(rgb),
+    int: rgbToInt(rgb),
+    hex: rgbToHex(rgb),
+  };
+};
+
+export const intToColor = (int: number): Color => {
+  const rgb = intToRgb(int);
+
+  return {
+    rgb,
+    hsv: rgbToHsv(rgb),
+    int,
+    hex: rgbToHex(rgb),
+  };
+};
+
+export const hsvToHex = (hsv: HSV): string => {
+  const rgb = hsvToRgb(hsv);
+
+  return rgbToHex(rgb);
+};
 
 export function setAlpha(color: number, newAlpha: number): number {
   const a = newAlpha & 0xff;
   const rgb = color & 0xffffff00;
   return (rgb | a) >>> 0;
+}
+
+export function intToRgba(color: number): RGBA {
+  return {
+    r: (color >>> 24) & 255,
+    g: (color >>> 16) & 255,
+    b: (color >>> 8) & 255,
+    a: color & 255,
+  };
+}
+
+export function rgbaToInt(r: number, g: number, b: number, a: number = 255): number {
+  return (((r & 255) << 24) | ((g & 255) << 16) | ((b & 255) << 8) | (a & 255)) >>> 0;
 }

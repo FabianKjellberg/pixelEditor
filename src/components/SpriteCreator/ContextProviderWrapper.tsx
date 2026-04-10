@@ -1,6 +1,7 @@
 import { AiActionsContextProvider } from '@/context/AiActionsContext';
 import { AutoSaveProvider } from '@/context/AutoSaveContext';
 import { CanvasProvider } from '@/context/CanvasContext';
+import { ColorContextProvider } from '@/context/ColorContext';
 import { ContextMenuProvider } from '@/context/ContextMenuContext/ContextMenuContext';
 import { LayerProvider } from '@/context/LayerContext';
 import { LayerSelectorProvider } from '@/context/LayerSelectorContext';
@@ -20,17 +21,19 @@ const ContextProviderWrapper = ({ children }: { children: React.ReactNode }) => 
           <LayerProvider>
             <MetaDataAutoSaveProvider>
               <UndoRedoContextProvider>
-                <ToolProvider>
-                  <TransformContextProvider>
-                    <LayerSelectorProvider>
-                      <AiActionsContextProvider>
-                        <ModalProvider>
-                          <ContextMenuProvider>{children}</ContextMenuProvider>
-                        </ModalProvider>
-                      </AiActionsContextProvider>
-                    </LayerSelectorProvider>
-                  </TransformContextProvider>
-                </ToolProvider>
+                <ColorContextProvider>
+                  <ToolProvider>
+                    <TransformContextProvider>
+                      <LayerSelectorProvider>
+                        <AiActionsContextProvider>
+                          <ModalProvider>
+                            <ContextMenuProvider>{children}</ContextMenuProvider>
+                          </ModalProvider>
+                        </AiActionsContextProvider>
+                      </LayerSelectorProvider>
+                    </TransformContextProvider>
+                  </ToolProvider>
+                </ColorContextProvider>
               </UndoRedoContextProvider>
             </MetaDataAutoSaveProvider>
           </LayerProvider>

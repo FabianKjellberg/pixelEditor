@@ -3,10 +3,9 @@
 import ColorPickerCanvas from './ColorPickerModalComponents/ColorPickerCanvas';
 import styles from './ColorPickerModal.module.css';
 import ColorPickerSlider from './ColorPickerModalComponents/ColorPickerSlider';
-import { useEffect, useMemo, useState } from 'react';
-import { hsb100ToRgb, intToRGB, rgbToHsb100 } from '@/helpers/color';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { useToolContext } from '@/context/ToolContext';
-import { Hsb100 } from '@/models/Tools/Color';
+import { useColorContext } from '@/context/ColorContext';
 
 type ColorPickerModalProps = {
   primary: boolean;
@@ -19,13 +18,21 @@ export type hsvObject = {
 };
 
 const ColorPickerModal = ({ primary }: ColorPickerModalProps) => {
-  const { getPrimaryColor, getSecondaryColor } = useToolContext();
+  const { pColor, sColor, setPColor, setSColor } = useColorContext();
+
+  const color = useMemo(() => {
+    return primary ? pColor : sColor;
+  }, [primary, pColor, sColor]);
+
+  const setColor = useMemo(() => {
+    return primary ? setPColor : setSColor;
+  }, []);
 
   return (
     <>
       <div className={styles.canvasSliderContainer}>
-        <ColorPickerCanvas primary={primary} />
-        <ColorPickerSlider primary={primary} />
+        <ColorPickerCanvas color={color} setColor={setColor} />
+        <ColorPickerSlider color={color} setColor={setColor} />
       </div>
     </>
   );

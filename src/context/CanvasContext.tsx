@@ -2,7 +2,7 @@
 
 import { FetchedProject } from '@/models/apiModels/projectModels';
 import { Cordinate, Rectangle, SelectionLayer } from '@/models/Layer';
-import { RGBAobj } from '@/models/Tools/Color';
+import { RGBA } from '@/models/Tools/Color';
 import {
   createContext,
   useCallback,
@@ -50,8 +50,8 @@ type CanvasContextValue = {
   requestPreview: () => Promise<Blob>;
   registerPreviewProvider: (fn: () => Promise<Blob>) => void;
 
-  registerGetColorFromCordinateProvider: (fn: (x: number, y: number) => RGBAobj) => void;
-  getColorFromCanvas: (x: number, y: number) => RGBAobj;
+  registerGetColorFromCordinateProvider: (fn: (x: number, y: number) => RGBA) => void;
+  getColorFromCanvas: (x: number, y: number) => RGBA;
 
   registerDownloadPng: (fn: (projectName: string) => void) => void;
   downloadPng: () => void;
@@ -154,13 +154,13 @@ export const CanvasProvider = ({ children }: { children: React.ReactNode }) => {
     throw new Error('no preview function provided');
   };
 
-  const getColorFromCanvasProviderRef = useRef<((x: number, y: number) => RGBAobj) | null>(null);
+  const getColorFromCanvasProviderRef = useRef<((x: number, y: number) => RGBA) | null>(null);
 
-  const registerGetColorFromCordinateProvider = (fn: (x: number, y: number) => RGBAobj) => {
+  const registerGetColorFromCordinateProvider = (fn: (x: number, y: number) => RGBA) => {
     getColorFromCanvasProviderRef.current = fn;
   };
 
-  const getColorFromCanvas = (x: number, y: number): RGBAobj => {
+  const getColorFromCanvas = (x: number, y: number): RGBA => {
     if (getColorFromCanvasProviderRef.current) {
       return getColorFromCanvasProviderRef.current(x, y);
     }

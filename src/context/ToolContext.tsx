@@ -43,16 +43,6 @@ type ToolContextValue = {
   properties: IProperty[];
 
   ensureProperties: (toolKey: string, defaults: AnyProperty[]) => void;
-
-  getPrimaryColor: () => number;
-  setPrimaryColor: (color: number, origin: ColorChangeOrigin) => void;
-  primaryColorChanged: ChangeColorTick;
-
-  getSecondaryColor: () => number;
-  setSecondaryColor: (color: number, origin: ColorChangeOrigin) => void;
-  secondaryColorChanged: ChangeColorTick;
-
-  flipPrimarySecondary: () => void;
 };
 
 const ToolContext = createContext<ToolContextValue | undefined>(undefined);
@@ -78,18 +68,6 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
     return activeToolRef.current;
   }, []);
 
-  const [primaryColor, setPrimaryColor] = useState<number>(0x000000ff);
-  const [primaryColorChanged, setPrimaryColorChanged] = useState<ChangeColorTick>({
-    tick: 0,
-    source: 'external',
-    color: primaryColor,
-  });
-  const [secondaryColor, setSecondaryColor] = useState<number>(0xffffffff);
-  const [secondaryColorChanged, setSecondaryColorChanged] = useState<ChangeColorTick>({
-    tick: 0,
-    source: 'external',
-    color: secondaryColor,
-  });
   const [propertiesMap, setPropertiesMap] = useState<Map<string, AnyProperty[]>>(new Map());
 
   const propertiesRef = useRef(propertiesMap);
@@ -142,47 +120,6 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-  const primaryColorRef = useRef(primaryColor);
-  const secondaryColorRef = useRef(secondaryColor);
-  useEffect(() => {
-    primaryColorRef.current = primaryColor;
-  }, [primaryColor]);
-  useEffect(() => {
-    secondaryColorRef.current = secondaryColor;
-  }, [secondaryColor]);
-  const getPrimaryColor = useCallback(() => primaryColorRef.current, []);
-  const getSecondaryColor = useCallback(() => secondaryColorRef.current, []);
-
-  const flipPrimarySecondary = useCallback(() => {
-    const primaryColorTemp = primaryColorRef.current;
-    const secondaryColorTemp = secondaryColorRef.current;
-
-    setPrimaryColor(secondaryColorTemp);
-    setSecondaryColor(primaryColorTemp);
-    setSecondaryColorChanged((prev) => {
-      return { tick: prev.tick++, source: 'external', color: primaryColorTemp };
-    });
-    setPrimaryColorChanged((prev) => {
-      return { tick: prev.tick++, source: 'external', color: secondaryColorTemp };
-    });
-  }, [setPrimaryColor, setSecondaryColor]);
-
-  const setPrimaryColorCallback = useCallback((color: number, origin: ColorChangeOrigin) => {
-    primaryColorRef.current = color;
-    setPrimaryColor(color);
-    setPrimaryColorChanged((prev) => {
-      return { tick: prev.tick + 1, source: origin, color };
-    });
-  }, []);
-
-  const setSecondaryColorCallback = useCallback((color: number, origin: ColorChangeOrigin) => {
-    secondaryColorRef.current = color;
-    setSecondaryColor(color);
-    setSecondaryColorChanged((prev) => {
-      return { tick: prev.tick + 1, source: origin, color };
-    });
-  }, []);
-
   const properties = useMemo(
     () => propertiesMap.get(activeTool.name) ?? [],
     [propertiesMap, activeTool.name],
@@ -197,13 +134,6 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
       setProperties,
       getProperties,
       ensureProperties,
-      setPrimaryColor: setPrimaryColorCallback,
-      getPrimaryColor,
-      primaryColorChanged,
-      setSecondaryColor: setSecondaryColorCallback,
-      getSecondaryColor,
-      secondaryColorChanged,
-      flipPrimarySecondary,
     }),
     [
       activeTool,
@@ -213,13 +143,6 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
       setProperties,
       getProperties,
       ensureProperties,
-      setPrimaryColor,
-      getPrimaryColor,
-      primaryColorChanged,
-      setSecondaryColor,
-      getSecondaryColor,
-      secondaryColorChanged,
-      flipPrimarySecondary,
     ],
   );
 

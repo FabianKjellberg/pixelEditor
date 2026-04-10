@@ -2,6 +2,7 @@ import { ToastType } from '@/context/ToastContext/ToastContext';
 import { Cordinate, LayerEntity, Rectangle, SelectionLayer } from '../Layer';
 import { AnyProperty, IProperty } from '../properties/Properties';
 import { HistoryAction } from '@/context/UndoRedoContext';
+import { Color } from './Color';
 
 export type IToolDeps = {
   getLayers?: () => LayerEntity[] | undefined;
@@ -12,10 +13,10 @@ export type IToolDeps = {
   setSelectionLayer?: (selectionLayer: SelectionLayer) => void;
   getSelectionOverlay?: () => Cordinate[] | undefined;
   setSelectionOverlay?: (points: Cordinate[] | undefined) => void;
-  getPrimaryColor?: () => number | undefined;
-  setPrimaryColor?: (color: number) => void;
-  getSecondaryColor?: () => number | undefined;
-  setSecondaryColor?: (color: number) => void;
+  getPrimaryColor?: () => Color;
+  setPrimaryColor?: (color: Color) => void;
+  getSecondaryColor?: () => Color;
+  setSecondaryColor?: (color: Color) => void;
   getProperties?: (toolKey: string) => IProperty[];
   setProperties?: (properties: IProperty[] | ((prev: IProperty[]) => IProperty[])) => void;
   getPan?: () => Cordinate | undefined;
