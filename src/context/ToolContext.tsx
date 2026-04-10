@@ -29,6 +29,7 @@ export type ColorChangeOrigin = 'pointer' | 'slider' | 'external';
 
 export type ChangeColorTick = {
   tick: number;
+  color: number;
   source: ColorChangeOrigin;
 };
 
@@ -81,11 +82,13 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
   const [primaryColorChanged, setPrimaryColorChanged] = useState<ChangeColorTick>({
     tick: 0,
     source: 'external',
+    color: primaryColor,
   });
   const [secondaryColor, setSecondaryColor] = useState<number>(0xffffffff);
   const [secondaryColorChanged, setSecondaryColorChanged] = useState<ChangeColorTick>({
     tick: 0,
     source: 'external',
+    color: secondaryColor,
   });
   const [propertiesMap, setPropertiesMap] = useState<Map<string, AnyProperty[]>>(new Map());
 
@@ -157,24 +160,26 @@ export const ToolProvider = ({ children }: { children: React.ReactNode }) => {
     setPrimaryColor(secondaryColorTemp);
     setSecondaryColor(primaryColorTemp);
     setSecondaryColorChanged((prev) => {
-      return { tick: prev.tick++, source: 'external' };
+      return { tick: prev.tick++, source: 'external', color: primaryColorTemp };
     });
     setPrimaryColorChanged((prev) => {
-      return { tick: prev.tick++, source: 'external' };
+      return { tick: prev.tick++, source: 'external', color: secondaryColorTemp };
     });
   }, [setPrimaryColor, setSecondaryColor]);
 
   const setPrimaryColorCallback = useCallback((color: number, origin: ColorChangeOrigin) => {
+    primaryColorRef.current = color;
     setPrimaryColor(color);
     setPrimaryColorChanged((prev) => {
-      return { tick: prev.tick + 1, source: origin };
+      return { tick: prev.tick + 1, source: origin, color };
     });
   }, []);
 
   const setSecondaryColorCallback = useCallback((color: number, origin: ColorChangeOrigin) => {
+    secondaryColorRef.current = color;
     setSecondaryColor(color);
     setSecondaryColorChanged((prev) => {
-      return { tick: prev.tick + 1, source: origin };
+      return { tick: prev.tick + 1, source: origin, color };
     });
   }, []);
 

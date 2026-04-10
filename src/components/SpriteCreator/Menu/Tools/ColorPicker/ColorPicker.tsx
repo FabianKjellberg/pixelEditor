@@ -8,17 +8,22 @@ import { useModalContext } from '@/context/ModalContext/ModalContext';
 import ColorPickerModal from '../../../Modals/ColorPicketModal/ColorPickerModal';
 
 const ColorPicker = () => {
-  const { setPrimaryColor, setSecondaryColor, primaryColor, secondaryColor, flipPrimarySecondary } =
-    useToolContext();
+  const {
+    flipPrimarySecondary,
+    getPrimaryColor,
+    getSecondaryColor,
+    primaryColorChanged,
+    secondaryColorChanged,
+  } = useToolContext();
   const { onShow } = useModalContext();
 
   const primaryColorStyle = useMemo(
-    (): CSSProperties => ({ backgroundColor: intToCssRgba(primaryColor) }),
-    [primaryColor],
+    (): CSSProperties => ({ backgroundColor: intToCssRgba(primaryColorChanged.color) }),
+    [primaryColorChanged],
   );
   const secondaryColorStyle = useMemo(
-    (): CSSProperties => ({ backgroundColor: intToCssRgba(secondaryColor) }),
-    [secondaryColor],
+    (): CSSProperties => ({ backgroundColor: intToCssRgba(secondaryColorChanged.color) }),
+    [secondaryColorChanged],
   );
 
   return (
@@ -28,22 +33,14 @@ const ColorPicker = () => {
           className={styles.secondaryColor}
           style={secondaryColorStyle}
           onClick={() =>
-            onShow(
-              'secondaryColor',
-              <ColorPickerModal setColor={setSecondaryColor} color={secondaryColor} />,
-              'Change secondary color',
-            )
+            onShow('secondaryColor', <ColorPickerModal primary={false} />, 'Change secondary color')
           }
         />
         <div
           className={styles.primaryColor}
           style={primaryColorStyle}
           onClick={() =>
-            onShow(
-              'primaryColor',
-              <ColorPickerModal setColor={setPrimaryColor} color={primaryColor} />,
-              'Change primary color',
-            )
+            onShow('primaryColor', <ColorPickerModal primary={true} />, 'Change primary color')
           }
         />
         <button className={styles.flipButton} onClick={() => flipPrimarySecondary()}>

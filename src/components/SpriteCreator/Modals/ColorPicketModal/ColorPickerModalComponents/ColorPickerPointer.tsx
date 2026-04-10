@@ -3,6 +3,9 @@
 import { useRef } from 'react';
 
 type Props = {
+  onPointerDown: (e: React.PointerEvent) => void;
+  onPointerMove: (e: React.PointerEvent) => void;
+  onPointerUp: (e: React.PointerEvent) => void;
   x: number;
   y: number;
   selectedColor: string;
@@ -10,8 +13,16 @@ type Props = {
   W: number;
 };
 
-export default function ColorPickerPointer({ x, y, selectedColor, H, W }: Props) {
-  const draggingRef = useRef(false);
+export default function ColorPickerPointer({
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  x,
+  y,
+  selectedColor,
+  H,
+  W,
+}: Props) {
   return (
     <div
       style={{
@@ -21,8 +32,10 @@ export default function ColorPickerPointer({ x, y, selectedColor, H, W }: Props)
         touchAction: 'none',
         inset: 0,
         cursor: 'pointer',
-        pointerEvents: 'none',
       }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
     >
       <div
         style={{
@@ -34,8 +47,11 @@ export default function ColorPickerPointer({ x, y, selectedColor, H, W }: Props)
           background: selectedColor,
           outline: '3px solid gray',
           transform: 'translate(-50%, -50%)',
-          pointerEvents: 'none',
+          cursor: 'pointer',
         }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
       />
     </div>
   );

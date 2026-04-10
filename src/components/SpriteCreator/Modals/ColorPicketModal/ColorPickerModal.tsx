@@ -19,26 +19,13 @@ export type hsvObject = {
 };
 
 const ColorPickerModal = ({ primary }: ColorPickerModalProps) => {
-  const {
-    setSecondaryColor,
-    setPrimaryColor,
-    getPrimaryColor,
-    getSecondaryColor,
-    secondaryColorChanged,
-    primaryColorChanged,
-  } = useToolContext();
-
-  const [hsv, setHsv] = useState<Hsb100>(() => {
-    const color = primary ? getPrimaryColor() : getSecondaryColor();
-
-    return { h: 0, s: 0, b: 0 };
-  });
+  const { getPrimaryColor, getSecondaryColor } = useToolContext();
 
   return (
     <>
       <div className={styles.canvasSliderContainer}>
-        <ColorPickerCanvas hsv={hsv} setColor={primary ? setPrimaryColor : setSecondaryColor} />
-        <ColorPickerSlider hsv={hsv} setColor={primary ? setPrimaryColor : setSecondaryColor} />
+        <ColorPickerCanvas primary={primary} />
+        <ColorPickerSlider primary={primary} />
       </div>
     </>
   );
