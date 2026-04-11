@@ -38,17 +38,17 @@ const ColorPickerModal = ({ primary }: ColorPickerModalProps) => {
   }, []);
 
   return (
-    <>
+    <div className={styles.container}>
       <div className={styles.canvasSliderContainer}>
         <ColorPickerCanvas color={color} setColor={setColor} />
         <ColorPickerSlider color={color} setColor={setColor} />
       </div>
-      <div>
+      <div className={styles.row}>
         <p>More Controlls</p>
         <ChevronButton onClick={toggleExtra} collapsed={collapsed} />
       </div>
-      {!collapsed && <ColorPickerInputs />}
-    </>
+      {!collapsed && <ColorPickerInputs color={color} setColor={setColor} />}
+    </div>
   );
 };
 

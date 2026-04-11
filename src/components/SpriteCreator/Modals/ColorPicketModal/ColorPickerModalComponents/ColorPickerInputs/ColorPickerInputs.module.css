@@ -1,15 +1,43 @@
 .grid {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) 20px minmax(0, 1fr) 20px minmax(0, 1fr);
+  grid-template-columns: 15px minmax(0, 1fr) 15px minmax(0, 1fr) 15px minmax(0, 1fr);
   gap: 4px;
+  align-items: center;
 }
 
 .hex {
   display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.title {
+  text-align: center;
 }
 
 .wrapper {
   width: 100%;
-  border: 2px solid red;
-  padding: 5px;
+  box-sizing: border-box;
+}
+
+.inputWithSuffix {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.inputWithSuffix input {
+  width: 100%;
+  padding-right: 20px;
+  box-sizing: border-box;
+}
+
+.suffix {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  pointer-events: none;
 }

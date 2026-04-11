@@ -6,4 +6,14 @@
 
 .row {
   display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.container {
+  width: 290px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }

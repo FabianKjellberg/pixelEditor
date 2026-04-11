@@ -20,9 +20,8 @@
   bottom: 10px;
   right: 10px;
   cursor: pointer;
-  transition: border-color var(--transition-fast),
-              box-shadow var(--transition-fast),
-              transform var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .secondaryColor:hover {
@@ -39,9 +38,8 @@
   top: 10px;
   left: 10px;
   cursor: pointer;
-  transition: border-color var(--transition-fast),
-              box-shadow var(--transition-fast),
-              transform var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .primaryColor:hover {
