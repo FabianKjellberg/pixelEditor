@@ -2,7 +2,7 @@
 
 import { useColorContext } from '@/context/ColorContext';
 import styles from './ColorPickerInputs.module.css';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Color } from '@/models/Tools/Color';
 import {
   expandHex,
@@ -24,6 +24,7 @@ const ColorPickerInputs = ({ color, setColor }: ColorPickerInputProps) => {
   const bright = useMemo(() => Math.round(color.hsv.v * 100), [color]);
 
   const [hex, setHex] = useState<string>(color.hex);
+  const [hexFocus, setHexFocus] = useState<boolean>(false);
 
   const setR = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,9 +160,19 @@ const ColorPickerInputs = ({ color, setColor }: ColorPickerInputProps) => {
     setColor(color);
   }, []);
 
+  useEffect(() => {
+    if (!hexFocus) {
+      setHex(color.hex);
+    }
+  }, [hexFocus, color]);
+
   const onHexBlur = useCallback(() => {
-    setHex(color.hex);
+    setHexFocus(false);
   }, [color]);
+
+  const onHexFocus = useCallback(() => {
+    setHexFocus(true);
+  }, []);
 
   return (
     <div className={styles.wrapper}>
@@ -188,7 +199,7 @@ const ColorPickerInputs = ({ color, setColor }: ColorPickerInputProps) => {
       </div>
       <div className={styles.hex}>
         <p className={styles.title}>Hex:</p>
-        <input value={hex} onChange={setHexCallback} onBlur={onHexBlur} />
+        <input value={hex} onChange={setHexCallback} onBlur={onHexBlur} onFocus={onHexFocus} />
       </div>
     </div>
   );
