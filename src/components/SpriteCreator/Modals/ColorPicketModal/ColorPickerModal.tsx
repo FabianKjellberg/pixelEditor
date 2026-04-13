@@ -3,13 +3,15 @@
 import ColorPickerCanvas from './ColorPickerModalComponents/ColorPickerCanvas';
 import styles from './ColorPickerModal.module.css';
 import ColorPickerSlider from './ColorPickerModalComponents/ColorPickerSlider';
-import { useEffect, useMemo, useState } from 'react';
-import { hsb100ToRgb, intToRGB, rgbaToInt, rgbToHsb100 } from '@/helpers/color';
-import { Hsb100, RGBAobj } from '@/models/Tools/Color';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useToolContext } from '@/context/ToolContext';
+import { useColorContext } from '@/context/ColorContext';
+import { CollapseButton } from '@/components/FileTree/Branch/CollapseButton/CollapseButton';
+import ChevronButton from '@/components/ChevronButton/ChevronButton';
+import ColorPickerInputs from './ColorPickerModalComponents/ColorPickerInputs/ColorPickerInputs';
 
 type ColorPickerModalProps = {
-  setColor: (color: number) => void;
-  color: number;
+  primary: boolean;
 };
 
 export type hsvObject = {
@@ -18,24 +20,35 @@ export type hsvObject = {
   bright: number;
 };
 
-const ColorPickerModal = ({ setColor, color }: ColorPickerModalProps) => {
-  const rgba = useMemo((): RGBAobj => intToRGB(color), [color]);
+const ColorPickerModal = ({ primary }: ColorPickerModalProps) => {
+  const { pColor, sColor, setPColor, setSColor } = useColorContext();
 
-  const [hsv, setHsv] = useState<Hsb100>(rgbToHsb100(rgba));
+  const [collapsed, setCollapsed] = useState<boolean>(true);
 
-  useEffect(() => {
-    const rgb: RGBAobj = hsb100ToRgb(hsv.h, hsv.s, hsv.b);
+  const color = useMemo(() => {
+    return primary ? pColor : sColor;
+  }, [primary, pColor, sColor]);
 
-    setColor(rgbaToInt(rgb.r, rgb.g, rgb.b, 255));
-  }, [hsv, setColor]);
+  const setColor = useMemo(() => {
+    return primary ? setPColor : setSColor;
+  }, []);
+
+  const toggleExtra = useCallback(() => {
+    setCollapsed((prev) => !prev);
+  }, []);
 
   return (
-    <>
+    <div className={styles.container}>
       <div className={styles.canvasSliderContainer}>
-        <ColorPickerCanvas hsv={hsv} setHsv={setHsv} />
-        <ColorPickerSlider hsv={hsv} setHsv={setHsv} />
+        <ColorPickerCanvas color={color} setColor={setColor} />
+        <ColorPickerSlider color={color} setColor={setColor} />
       </div>
-    </>
+      <div className={styles.row}>
+        <p>More Controlls</p>
+        <ChevronButton onClick={toggleExtra} collapsed={collapsed} />
+      </div>
+      {!collapsed && <ColorPickerInputs color={color} setColor={setColor} />}
+    </div>
   );
 };
 

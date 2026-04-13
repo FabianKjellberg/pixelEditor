@@ -1,4 +1,4 @@
-import { getLocalPixelIndex, getPixelIndex, intToRGB, rgbaToInt } from '@/helpers/color';
+import { getLocalPixelIndex, getPixelIndex, intToRgba, rgbaToInt } from '@/helpers/color';
 import {
   Cordinate,
   Direction,
@@ -708,8 +708,8 @@ export function subtractAlphaPixels(to: Layer, mask: Layer) {
  * Preserves the destination's RGB values.
  */
 function subtractAlpha(maskPixel: number, destPixel: number): number {
-  const mask = intToRGB(maskPixel);
-  const dest = intToRGB(destPixel);
+  const mask = intToRgba(maskPixel);
+  const dest = intToRgba(destPixel);
 
   // Keep destination RGB, reduce alpha by mask's alpha
   const newAlpha = Math.max(0, dest.a - mask.a);
@@ -1230,8 +1230,8 @@ function ditherGradient(
 }
 
 function linearGradient(fromColor: number, toColor: number, t: number): number {
-  const from = intToRGB(fromColor); // must include .a (0..255)
-  const to = toColor !== 0 ? intToRGB(toColor) : { r: 0, g: 0, b: 0, a: 0 };
+  const from = intToRgba(fromColor); // must include .a (0..255)
+  const to = toColor !== 0 ? intToRgba(toColor) : { r: 0, g: 0, b: 0, a: 0 };
 
   if (toColor === 0) {
     const a = Math.round(lerp(from.a, 0, t));

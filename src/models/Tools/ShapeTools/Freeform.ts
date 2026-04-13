@@ -58,10 +58,10 @@ export class FreeformTool implements ITool {
     if (!pColor || !sColor) throw new Error('unable to fetch primary or secondary color');
 
     this.strokeColor =
-      mouseButton === 0 ? setAlpha(pColor, opacity.value) : setAlpha(sColor, opacity.value);
+      mouseButton === 0 ? setAlpha(pColor.int, opacity.value) : setAlpha(sColor.int, opacity.value);
 
     this.fillColor =
-      mouseButton === 0 ? setAlpha(sColor, opacity.value) : setAlpha(pColor, opacity.value);
+      mouseButton === 0 ? setAlpha(sColor.int, opacity.value) : setAlpha(pColor.int, opacity.value);
 
     if (!this.originalLayer) {
       const getLayers = this.deps.getLayers?.();

@@ -6,19 +6,19 @@ import { useToolContext } from '@/context/ToolContext';
 import { intToCssRgba } from '@/helpers/color';
 import { useModalContext } from '@/context/ModalContext/ModalContext';
 import ColorPickerModal from '../../../Modals/ColorPicketModal/ColorPickerModal';
+import { useColorContext } from '@/context/ColorContext';
 
 const ColorPicker = () => {
-  const { setPrimaryColor, setSecondaryColor, primaryColor, secondaryColor, flipPrimarySecondary } =
-    useToolContext();
+  const { flipPrimarySecondary, pColor, sColor } = useColorContext();
   const { onShow } = useModalContext();
 
   const primaryColorStyle = useMemo(
-    (): CSSProperties => ({ backgroundColor: intToCssRgba(primaryColor) }),
-    [primaryColor],
+    (): CSSProperties => ({ backgroundColor: intToCssRgba(pColor.int) }),
+    [pColor],
   );
   const secondaryColorStyle = useMemo(
-    (): CSSProperties => ({ backgroundColor: intToCssRgba(secondaryColor) }),
-    [secondaryColor],
+    (): CSSProperties => ({ backgroundColor: intToCssRgba(sColor.int) }),
+    [sColor],
   );
 
   return (
@@ -28,22 +28,14 @@ const ColorPicker = () => {
           className={styles.secondaryColor}
           style={secondaryColorStyle}
           onClick={() =>
-            onShow(
-              'secondaryColor',
-              <ColorPickerModal setColor={setSecondaryColor} color={secondaryColor} />,
-              'Change secondary color',
-            )
+            onShow('secondaryColor', <ColorPickerModal primary={false} />, 'Change secondary color')
           }
         />
         <div
           className={styles.primaryColor}
           style={primaryColorStyle}
           onClick={() =>
-            onShow(
-              'primaryColor',
-              <ColorPickerModal setColor={setPrimaryColor} color={primaryColor} />,
-              'Change primary color',
-            )
+            onShow('primaryColor', <ColorPickerModal primary={true} />, 'Change primary color')
           }
         />
         <button className={styles.flipButton} onClick={() => flipPrimarySecondary()}>

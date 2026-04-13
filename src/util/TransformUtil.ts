@@ -6,7 +6,7 @@ import {
   SelectionLayer,
 } from '@/models/Layer';
 import { combineRectangles, createLayer, rectangleIntersection, replacePixels } from './LayerUtil';
-import { getGlobalCordinate, getLocalPixelIndex, intToRGB, rgbaToInt } from '@/helpers/color';
+import { getGlobalCordinate, getLocalPixelIndex, intToRgba, rgbaToInt } from '@/helpers/color';
 import { degToRad } from '@/helpers/transform';
 import { blendColor } from './ColorUtil';
 
@@ -205,10 +205,10 @@ function bilinear(srcX: number, srcY: number, stampRect: Rectangle, stamp: Layer
   const fx = ix - x1;
   const fy = iy - y1;
 
-  const x1y1 = intToRGB(x1y1n);
-  const x1y2 = intToRGB(x1y2n);
-  const x2y1 = intToRGB(x2y1n);
-  const x2y2 = intToRGB(x2y2n);
+  const x1y1 = intToRgba(x1y1n);
+  const x1y2 = intToRgba(x1y2n);
+  const x2y1 = intToRgba(x2y1n);
+  const x2y2 = intToRgba(x2y2n);
 
   const a1 = x1y1.a / 255;
   const a2 = x2y1.a / 255;

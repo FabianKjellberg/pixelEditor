@@ -1,9 +1,9 @@
-import { intToRGB, rgbaToInt } from '@/helpers/color';
-import { RGBAobj } from '@/models/Tools/Color';
+import { intToRgba, rgbaToInt } from '@/helpers/color';
+import { RGBA } from '@/models/Tools/Color';
 
 export function blendColor(top: number, bottom: number): number {
-  const t = intToRGB(top);
-  const b = intToRGB(bottom);
+  const t = intToRgba(top);
+  const b = intToRgba(bottom);
 
   if (b.a === 0) return top;
   if (t.a === 0) return bottom;
@@ -34,8 +34,8 @@ export function blendColor(top: number, bottom: number): number {
 }
 
 function blendOverOpaque(top: number, bottom: number): number {
-  const t = intToRGB(top);
-  const b = intToRGB(bottom);
+  const t = intToRgba(top);
+  const b = intToRgba(bottom);
 
   const aT = t.a / 255; // 0–1
   const invA = 1 - aT;
@@ -47,11 +47,7 @@ function blendOverOpaque(top: number, bottom: number): number {
   return rgbaToInt(r, g, bl, 255);
 }
 
-export function getColorFromBackingRef(
-  x: number,
-  y: number,
-  backingRef: HTMLCanvasElement,
-): RGBAobj {
+export function getColorFromBackingRef(x: number, y: number, backingRef: HTMLCanvasElement): RGBA {
   const ctx = backingRef.getContext('2d');
 
   if (!ctx) throw new Error('no context provided');

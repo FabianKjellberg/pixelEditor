@@ -15,9 +15,9 @@ import {
   PropertyType,
   ToleranceProperty,
 } from '../../properties/Properties';
-import { intToRGB, rgbaToInt } from '@/helpers/color';
-import { RGBAobj } from '../Color';
 import { LayerEntity } from '../../Layer';
+import { Color } from '../Color';
+import { setAlpha } from '@/helpers/color';
 
 export class FillBucket implements ITool {
   deps: IToolDeps;
@@ -56,18 +56,16 @@ export class FillBucket implements ITool {
 
     this.originalLayer = getLayers[0];
 
-    const color: number =
-      mouseButton == 0
-        ? (this.deps.getPrimaryColor?.() ?? config.defaultColor)
-        : (this.deps.getSecondaryColor?.() ?? config.defaultColor);
+    const color: Color | undefined =
+      mouseButton == 0 ? this.deps.getPrimaryColor?.() : this.deps.getSecondaryColor?.();
+
+    if (!color) return;
 
     const properties: IProperty[] = this.deps.getProperties?.('fillBucket') ?? [];
     const toleranceProp = getProperty<ToleranceProperty>(properties, PropertyType.Tolerance);
     const opacityProp = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
 
-    const rgb: RGBAobj = intToRGB(color);
-
-    const colorWithOpacity = rgbaToInt(rgb.r, rgb.g, rgb.b, opacityProp?.value ?? 255);
+    const colorWithOpacity = setAlpha(color.int, opacityProp?.value ?? 255);
 
     const tolerance = toleranceProp?.value ?? 0;
 

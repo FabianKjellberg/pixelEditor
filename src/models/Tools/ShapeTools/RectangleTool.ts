@@ -19,7 +19,7 @@ import {
   StrokeAlignProperty,
   StrokeWidthProperty,
 } from '../../properties/Properties';
-import { intToRGB, rgbaToInt } from '@/helpers/color';
+import { setAlpha } from '@/helpers/color';
 
 export class RectangleTool implements ITool {
   deps: IToolDeps;
@@ -71,27 +71,18 @@ export class RectangleTool implements ITool {
     this.originalLayer = layers[0];
 
     //get color and opacity
-    const primaryColor = this.deps.getPrimaryColor?.() ?? config.defaultColor;
-    const secondaryColor = this.deps.getSecondaryColor?.() ?? config.defaultColor;
+    const primaryColor = this.deps.getPrimaryColor?.();
+    const secondaryColor = this.deps.getSecondaryColor?.();
+
+    if (!primaryColor || !secondaryColor) return;
 
     const properties: IProperty[] = this.deps.getProperties?.('rectangleTool') ?? [];
     const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
 
     //add Opacity to color
-    const primaryRgba = intToRGB(primaryColor);
-    const secondaryRgba = intToRGB(secondaryColor);
-    const primaryColorWithOpacity = rgbaToInt(
-      primaryRgba.r,
-      primaryRgba.g,
-      primaryRgba.b,
-      opacityProperty?.value ?? 255,
-    );
-    const secondaryColorWithOpacity = rgbaToInt(
-      secondaryRgba.r,
-      secondaryRgba.g,
-      secondaryRgba.b,
-      opacityProperty?.value ?? 255,
-    );
+
+    const primaryColorWithOpacity = setAlpha(primaryColor.int, opacityProperty?.value ?? 255);
+    const secondaryColorWithOpacity = setAlpha(secondaryColor.int, opacityProperty?.value ?? 255);
 
     this.color = mouseButton === 0 ? primaryColorWithOpacity : secondaryColorWithOpacity;
     this.fillColor = mouseButton === 0 ? secondaryColorWithOpacity : primaryColorWithOpacity;

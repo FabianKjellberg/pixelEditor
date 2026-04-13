@@ -10,8 +10,8 @@ import {
   PropertyType,
   SingleColor,
 } from '../../properties/Properties';
-import { intToRGB, rgbaToInt } from '@/helpers/color';
 import { Layer, LayerEntity, Rectangle } from '@/models/Layer';
+import { setAlpha } from '@/helpers/color';
 
 export class GradientTool implements ITool {
   deps: IToolDeps;
@@ -54,28 +54,18 @@ export class GradientTool implements ITool {
     this.originalLayer = layers[0];
 
     //get color and opacity
-    const primaryColor = this.deps.getPrimaryColor?.() ?? config.defaultColor;
-    const secondaryColor = this.deps.getSecondaryColor?.() ?? config.defaultColor;
+    const primaryColor = this.deps.getPrimaryColor?.();
+    const secondaryColor = this.deps.getSecondaryColor?.();
+
+    if (!primaryColor || !secondaryColor) return;
 
     const properties: IProperty[] = this.deps.getProperties?.('gradientTool') ?? [];
     const opacityProperty = getProperty<OpacityProperty>(properties, PropertyType.Opacity);
     const singleColorProperty = getProperty<SingleColor>(properties, PropertyType.SingleColor);
 
     //add Opacity to color
-    const primaryRgba = intToRGB(primaryColor);
-    const secondaryRgba = intToRGB(secondaryColor);
-    const primaryColorWithOpacity = rgbaToInt(
-      primaryRgba.r,
-      primaryRgba.g,
-      primaryRgba.b,
-      opacityProperty?.value ?? 255,
-    );
-    const secondaryColorWithOpacity = rgbaToInt(
-      secondaryRgba.r,
-      secondaryRgba.g,
-      secondaryRgba.b,
-      opacityProperty?.value ?? 255,
-    );
+    const primaryColorWithOpacity = setAlpha(primaryColor.int, opacityProperty?.value ?? 255);
+    const secondaryColorWithOpacity = setAlpha(secondaryColor.int, opacityProperty?.value ?? 255);
 
     this.fromColor = mouseButton === 0 ? primaryColorWithOpacity : secondaryColorWithOpacity;
     this.toColor = singleColorProperty?.value
@@ -96,6 +86,8 @@ export class GradientTool implements ITool {
 
     const originalLayer = this.originalLayer;
     if (!originalLayer) return;
+
+    console.log(this.toColor, this.fromColor);
 
     const properties: IProperty[] = this.deps.getProperties?.('gradientTool') ?? [];
     const gradientTypeProperty = getProperty<GradientTypeProperty>(

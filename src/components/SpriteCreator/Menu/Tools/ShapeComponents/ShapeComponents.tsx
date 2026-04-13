@@ -23,12 +23,14 @@ import {
 } from '@/models/properties/Properties';
 import { FreeformTool } from '@/models/Tools/ShapeTools/Freeform';
 import { useToastContext } from '@/context/ToastContext/ToastContext';
+import { useColorContext } from '@/context/ColorContext';
 
 const ShapeComponents = () => {
   const { onShow, onHide } = useContextMenuContext();
   const { setActiveTool } = useToolContext();
   const { setActiveLayers, getActiveLayers } = useLayerContext();
-  const { getPrimaryColor, ensureProperties, getProperties, getSecondaryColor } = useToolContext();
+  const { ensureProperties, getProperties } = useToolContext();
+  const { getPColor, getSColor } = useColorContext();
   const { getSelectionLayer, getCanvasRect } = useCanvasContext();
   const { checkPoint } = useUndoRedoContext();
   const { onToast } = useToastContext();
@@ -132,15 +134,15 @@ const ShapeComponents = () => {
       new LineTool({
         setLayers: setActiveLayers,
         getLayers: getActiveLayers,
-        getPrimaryColor,
-        getSecondaryColor,
+        getPrimaryColor: getPColor,
+        getSecondaryColor: getSColor,
         getProperties,
         getSelectionLayer,
         getCanvasRect,
         checkPoint,
         onToast,
       }),
-    [getActiveLayers, setActiveLayers, getPrimaryColor, getProperties, onToast],
+    [getActiveLayers, setActiveLayers, getPColor, getSColor, getProperties, onToast],
   );
 
   const rectangleTool: RectangleTool = useMemo(
@@ -148,15 +150,15 @@ const ShapeComponents = () => {
       new RectangleTool({
         setLayers: setActiveLayers,
         getLayers: getActiveLayers,
-        getPrimaryColor,
-        getSecondaryColor,
+        getPrimaryColor: getPColor,
+        getSecondaryColor: getSColor,
         getProperties,
         getSelectionLayer,
         getCanvasRect,
         checkPoint,
         onToast,
       }),
-    [getActiveLayers, setActiveLayers, getPrimaryColor, getProperties, onToast],
+    [getActiveLayers, setActiveLayers, getPColor, getSColor, getProperties, onToast],
   );
 
   const ovalTool: OvalTool = useMemo(
@@ -164,15 +166,15 @@ const ShapeComponents = () => {
       new OvalTool({
         setLayers: setActiveLayers,
         getLayers: getActiveLayers,
-        getPrimaryColor,
-        getSecondaryColor,
+        getPrimaryColor: getPColor,
+        getSecondaryColor: getSColor,
         getProperties,
         getSelectionLayer,
         getCanvasRect,
         checkPoint,
         onToast,
       }),
-    [getActiveLayers, setActiveLayers, getPrimaryColor, getProperties, onToast],
+    [getActiveLayers, setActiveLayers, getPColor, getSColor, getProperties, onToast],
   );
 
   const freeFormTool: FreeformTool = useMemo(
@@ -180,15 +182,15 @@ const ShapeComponents = () => {
       new FreeformTool({
         setLayers: setActiveLayers,
         getLayers: getActiveLayers,
-        getPrimaryColor,
-        getSecondaryColor,
+        getPrimaryColor: getPColor,
+        getSecondaryColor: getSColor,
         getProperties,
         getSelectionLayer,
         getCanvasRect,
         checkPoint,
         onToast,
       }),
-    [getActiveLayers, setActiveLayers, getPrimaryColor, getProperties, onToast],
+    [getActiveLayers, setActiveLayers, getPColor, getSColor, getProperties, onToast],
   );
 
   const [selectedIndex, setSelectedIndex] = useState<number>(0);

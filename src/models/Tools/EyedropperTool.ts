@@ -1,17 +1,17 @@
 import { getPixelPositions } from '@/util/LayerUtil';
 import { ITool, IToolDeps } from './Tools';
-import { RGBAobj } from './Color';
-import { rgbaToInt } from '@/helpers/color';
+import { intToColor, rgbaToInt } from '@/helpers/color';
 import { blendColor } from '@/util/ColorUtil';
+import { RGBA } from './Color';
 
 export class EyedropperTool implements ITool {
   deps: IToolDeps;
   name: string = 'eyedropper';
 
   dropping: boolean = false;
-  getColorFromCanvas: (x: number, y: number) => RGBAobj;
+  getColorFromCanvas: (x: number, y: number) => RGBA;
 
-  constructor(tooldeps: IToolDeps, getColorFromCanvas: (x: number, y: number) => RGBAobj) {
+  constructor(tooldeps: IToolDeps, getColorFromCanvas: (x: number, y: number) => RGBA) {
     this.deps = tooldeps;
     this.getColorFromCanvas = getColorFromCanvas;
   }
@@ -32,7 +32,7 @@ export class EyedropperTool implements ITool {
   }
 
   private selectColor(x: number, y: number) {
-    const color: RGBAobj = this.getColorFromCanvas(x, y);
+    const color: RGBA = this.getColorFromCanvas(x, y);
 
     if (color.a === 0) {
       return;
@@ -42,6 +42,8 @@ export class EyedropperTool implements ITool {
 
     const blendedToWhite = blendColor(top, -1);
 
-    this.deps.setPrimaryColor?.(blendedToWhite);
+    const c = intToColor(blendedToWhite);
+
+    this.deps.setPrimaryColor?.(c);
   }
 }

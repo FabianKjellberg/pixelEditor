@@ -1,21 +1,28 @@
-import { hsb100ToRgb, rgbToHex } from '@/helpers/color';
-import { Hsb100, RGBAobj } from '@/models/Tools/Color';
-import { useEffect, useMemo, useRef, useState } from 'react';
+'use client';
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ColorPickerSliderPointer from './ColorPickerSliderPointer';
+import { ColorChangeOrigin, useToolContext } from '@/context/ToolContext';
+import { Color } from '@/models/Tools/Color';
+import { hsvToColor, hsvToHex } from '@/helpers/color';
 
 const CANVAS_H = 200;
 const CANVAS_W = 30;
 const PIX = 2;
 
 type ColorPickerSliderProps = {
-  hsv: Hsb100;
-  setHsv: React.Dispatch<React.SetStateAction<Hsb100>>;
+  color: Color;
+  setColor: (color: Color) => void;
 };
 
-const ColorPickerSlider = ({ hsv, setHsv }: ColorPickerSliderProps) => {
+const ColorPickerSlider = ({ color, setColor }: ColorPickerSliderProps) => {
   const ref = useRef<HTMLCanvasElement | null>(null);
 
-  const [pointerY, setPointerY] = useState<number>(hsv.h * 2);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+
+  const pointerY = useMemo(() => {
+    return (color.hsv.h / 360) * CANVAS_H;
+  }, [color]);
 
   useEffect(() => {
     const canvas = ref.current;
@@ -23,7 +30,6 @@ const ColorPickerSlider = ({ hsv, setHsv }: ColorPickerSliderProps) => {
 
     const dpr = window.devicePixelRatio || 1;
 
-    // Set CSS size (logical) and backing store size (device pixels)
     canvas.style.width = `${CANVAS_W}px`;
     canvas.style.height = `${CANVAS_H}px`;
     canvas.width = CANVAS_W * dpr;
@@ -33,21 +39,60 @@ const ColorPickerSlider = ({ hsv, setHsv }: ColorPickerSliderProps) => {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     for (let y = 0; y < 100; y++) {
-      const rgba: RGBAobj = hsb100ToRgb(y, 100, 100);
-      ctx.fillStyle = rgbToHex(rgba);
+      const h = y * 3.6;
+      const s = 1;
+      const v = 1;
+
+      const hex = hsvToHex({ h, s, v });
+
+      ctx.fillStyle = hex;
       ctx.fillRect(0, y * PIX, CANVAS_W, PIX);
     }
-  }, [hsv]);
+  }, [color]);
 
   const pointerColor = useMemo((): string => {
-    const rgba: RGBAobj = hsb100ToRgb(pointerY / 2, 100, 100);
-    return rgbToHex(rgba);
-  }, [pointerY]);
+    return hsvToHex({ h: color.hsv.h, s: 1, v: 1 });
+  }, [color]);
 
-  useEffect(() => {
-    const h = Math.max(0, Math.min(100, pointerY / 2));
-    setHsv((prev) => (prev.h === h ? prev : { ...prev, h }));
-  }, [pointerY, setHsv]);
+  const updatePos = useCallback(
+    (e: React.PointerEvent) => {
+      const r = e.currentTarget.getBoundingClientRect();
+      const ny = Math.max(0, Math.min(e.clientY - r.top, r.height));
+
+      const h = (ny / CANVAS_H) * 360;
+      const s = color.hsv.s;
+      const v = color.hsv.v;
+
+      const c = hsvToColor({ h, s, v });
+
+      setColor(c);
+    },
+    [color],
+  );
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      e.currentTarget.setPointerCapture(e.pointerId);
+      setIsDragging(true);
+
+      updatePos(e);
+    },
+    [updatePos],
+  );
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isDragging) return;
+
+      updatePos(e);
+    },
+    [isDragging, updatePos],
+  );
+
+  const handlePointerUp = useCallback((e: React.PointerEvent) => {
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    setIsDragging(false);
+  }, []);
 
   return (
     <div
@@ -65,8 +110,10 @@ const ColorPickerSlider = ({ hsv, setHsv }: ColorPickerSliderProps) => {
         style={{ touchAction: 'none', outline: '4px solid #888', display: 'block' }}
       />
       <ColorPickerSliderPointer
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
         y={pointerY}
-        setY={setPointerY}
         W={CANVAS_W}
         pointerColor={pointerColor}
       />

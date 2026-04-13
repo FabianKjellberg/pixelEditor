@@ -1,4 +1,4 @@
-import { getGlobalCordinate, getLocalPixelIndex, getPixelIndex, intToRGB } from '@/helpers/color';
+import { getGlobalCordinate, getLocalPixelIndex, getPixelIndex, intToRgba } from '@/helpers/color';
 import { Cordinate, Layer, LayerEntity, Rectangle, SelectionLayer } from '@/models/Layer';
 import { edge, point } from '@/models/Selection';
 import { createLayer, Edge, rectangleIntersection } from './LayerUtil';
@@ -347,7 +347,7 @@ export function addVisibleLayerToSelection(layer: LayerEntity, sl: SelectionLaye
 
       const fromIndex = getPixelIndex(layerY, layer.layer.rect.width, layerX);
 
-      const layerColor = intToRGB(layer.layer.pixels[fromIndex]);
+      const layerColor = intToRgba(layer.layer.pixels[fromIndex]);
 
       if (layerColor.a === 0) continue;
 

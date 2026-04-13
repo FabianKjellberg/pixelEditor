@@ -1,25 +1,25 @@
 type ColorPickerSliderPointerProps = {
+  onPointerDown: (e: React.PointerEvent) => void;
+  onPointerMove: (e: React.PointerEvent) => void;
+  onPointerUp: (e: React.PointerEvent) => void;
   y: number;
-  setY: React.Dispatch<React.SetStateAction<number>>;
   W: number;
   pointerColor: string;
 };
 
-const ColorPickerSliderPointer = ({ y, setY, W, pointerColor }: ColorPickerSliderPointerProps) => {
-  const getPos = (e: React.PointerEvent<HTMLDivElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    const ny = Math.max(0, Math.min(e.clientY - r.top, r.height));
-    setY((prev) => (prev === ny ? prev : ny));
-  };
-
+const ColorPickerSliderPointer = ({
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  y,
+  W,
+  pointerColor,
+}: ColorPickerSliderPointerProps) => {
   return (
     <div
-      onPointerDown={(e) => {
-        e.currentTarget.setPointerCapture(e.pointerId);
-        getPos(e);
-      }}
-      onPointerMove={(e) => e.buttons && getPos(e)}
-      onPointerUp={(e) => e.currentTarget.releasePointerCapture(e.pointerId)}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
       style={{
         position: 'absolute',
         inset: 0,
@@ -37,8 +37,11 @@ const ColorPickerSliderPointer = ({ y, setY, W, pointerColor }: ColorPickerSlide
           background: pointerColor,
           outline: '3px solid gray',
           transform: 'translate(-50%, -50%)',
-          pointerEvents: 'none',
+          cursor: 'pointer',
         }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
       />
     </div>
   );
