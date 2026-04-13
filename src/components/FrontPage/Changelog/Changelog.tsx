@@ -10,6 +10,30 @@ const Changelog = () => {
         Version history and what I&apos;ve been up to. Point form, but I&apos;ll keep it readable.
       </p>
       <br />
+      <ChangelogEntry date="2026-04-13" title="Color system rework">
+        <li>
+          <p>
+            <b>Expanded color inputs.</b> The color picker now supports direct input in <b>RGB</b>,{' '}
+            <b>HSV</b>, and <b>HEX</b> formats. This makes it easier to work with colors in
+            whichever format you prefer.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Unified color model.</b> Colors are no longer handled as a single number internally.
+            A new <b>Color object</b> has been introduced, storing values in RGB, HSV, HEX, and
+            numeric formats simultaneously. This makes color handling more consistent and flexible
+            across the app.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Conversion helpers.</b> Added helper methods to convert between all supported color
+            formats. These are used internally by the color system and can also be reused wherever
+            color conversion is needed.
+          </p>
+        </li>
+      </ChangelogEntry>
       <ChangelogEntry date="2026-04-09" title="More selection tools">
         <li>
           <p>

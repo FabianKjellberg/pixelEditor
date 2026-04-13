@@ -65,7 +65,7 @@ export class GradientTool implements ITool {
 
     //add Opacity to color
     const primaryColorWithOpacity = setAlpha(primaryColor.int, opacityProperty?.value ?? 255);
-    const secondaryColorWithOpacity = setAlpha(primaryColor.int, opacityProperty?.value ?? 255);
+    const secondaryColorWithOpacity = setAlpha(secondaryColor.int, opacityProperty?.value ?? 255);
 
     this.fromColor = mouseButton === 0 ? primaryColorWithOpacity : secondaryColorWithOpacity;
     this.toColor = singleColorProperty?.value
@@ -86,6 +86,8 @@ export class GradientTool implements ITool {
 
     const originalLayer = this.originalLayer;
     if (!originalLayer) return;
+
+    console.log(this.toColor, this.fromColor);
 
     const properties: IProperty[] = this.deps.getProperties?.('gradientTool') ?? [];
     const gradientTypeProperty = getProperty<GradientTypeProperty>(
