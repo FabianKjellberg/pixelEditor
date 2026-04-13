@@ -9,6 +9,7 @@ import { MetaDataAutoSaveProvider } from '@/context/MetaDataAutoSaveContext';
 import { ModalProvider } from '@/context/ModalContext/ModalContext';
 import { SettingsProvider } from '@/context/SettingsContext';
 import { ToolProvider } from '@/context/ToolContext';
+import { ToolTipContextProvider } from '@/context/TooltipContext';
 import { TransformContextProvider } from '@/context/TransformContext';
 import { UndoRedoContextProvider } from '@/context/UndoRedoContext';
 import { UserContextProvider } from '@/context/UserContextProvider';
@@ -22,17 +23,19 @@ const ContextProviderWrapper = ({ children }: { children: React.ReactNode }) => 
             <MetaDataAutoSaveProvider>
               <UndoRedoContextProvider>
                 <ColorContextProvider>
-                  <ToolProvider>
-                    <TransformContextProvider>
-                      <LayerSelectorProvider>
-                        <AiActionsContextProvider>
-                          <ModalProvider>
-                            <ContextMenuProvider>{children}</ContextMenuProvider>
-                          </ModalProvider>
-                        </AiActionsContextProvider>
-                      </LayerSelectorProvider>
-                    </TransformContextProvider>
-                  </ToolProvider>
+                  <ToolTipContextProvider>
+                    <ToolProvider>
+                      <TransformContextProvider>
+                        <LayerSelectorProvider>
+                          <AiActionsContextProvider>
+                            <ModalProvider>
+                              <ContextMenuProvider>{children}</ContextMenuProvider>
+                            </ModalProvider>
+                          </AiActionsContextProvider>
+                        </LayerSelectorProvider>
+                      </TransformContextProvider>
+                    </ToolProvider>
+                  </ToolTipContextProvider>
                 </ColorContextProvider>
               </UndoRedoContextProvider>
             </MetaDataAutoSaveProvider>

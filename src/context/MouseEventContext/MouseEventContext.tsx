@@ -17,6 +17,7 @@ import { Cordinate } from '@/models/Layer';
 import { getCanvasPosition } from '@/helpers/canvas';
 import { useCanvasContext } from '../CanvasContext';
 import { useToolContext } from '../ToolContext';
+import { useToolTipContext } from '../TooltipContext';
 
 type MouseEventContextValue = {
   cursorType: CSSProperties;
@@ -75,8 +76,9 @@ function isTypingTarget(target: EventTarget | null): boolean {
 }
 
 export const MouseEventContextProvider = ({ children }: { children: ReactNode }) => {
-  const { pan } = useCanvasContext();
+  const { pan, pixelSize } = useCanvasContext();
   const { activeTool } = useToolContext();
+  const { setCanvasPos } = useToolTipContext();
 
   const [cursorType, setCursorType] = useState<CSSProperties>({ cursor: 'pointer' });
   const [mouseDown, setMouseDown] = useState<boolean>(false);
@@ -159,6 +161,14 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
   const onPointerMove: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       const c = getCanvasPosition(e, pan);
+
+      const pixelPos: Cordinate = {
+        x: Math.round(c.x / pixelSize),
+        y: Math.round(c.y / pixelSize),
+      };
+
+      setCanvasPos(pixelPos);
+
       setOnPointerMoveEvent((prev) => ({
         pos: c,
         trigger: prev ? prev.trigger + 1 : 0,
@@ -167,7 +177,7 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
         shiftDown: e.shiftKey,
       }));
     },
-    [pan],
+    [pan, pixelSize],
   );
 
   const onPointerUp: React.PointerEventHandler<HTMLDivElement> = useCallback(
@@ -191,6 +201,7 @@ export const MouseEventContextProvider = ({ children }: { children: ReactNode })
 
   const onPointerLeave: React.PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
+      setCanvasPos(undefined);
       const c = getCanvasPosition(e, pan);
       setOnPointerLeaveEvent((prev) => ({
         pos: c,

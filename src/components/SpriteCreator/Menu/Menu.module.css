@@ -1,6 +1,8 @@
 .menu {
   height: 100%;
   display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .menuContainer {
@@ -67,4 +69,9 @@
   display: flex;
   gap: 8px;
   padding: 8px;
+}
+
+.bottom {
+  display: flex;
+  bottom: 0;
 }

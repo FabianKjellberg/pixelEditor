@@ -1,11 +1,11 @@
 'use client';
 
 import ColorPicker from './Tools/ColorPicker/ColorPicker';
-import RedrawEverything from './Tools/redrawEverythingDEV/RedrawEverything';
 
 import menuStyles from './Menu.module.css';
 import LayerMenu from './LayerMenu/LayerMenu';
 import { LayerSelectorProvider } from '@/context/LayerSelectorContext';
+import ToolTip from './ToolTip/ToolTip';
 
 const RightMenu = () => {
   return (
@@ -20,7 +20,9 @@ const RightMenu = () => {
           <p className={menuStyles.toolsHeader}>Color Picker</p>
           <ColorPicker />
         </div>
-        {/*<RedrawEverything />*/}
+      </div>
+      <div className={`${menuStyles.toolContainer} ${menuStyles.bottom}`}>
+        <ToolTip />
       </div>
     </div>
   );

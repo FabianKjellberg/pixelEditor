@@ -24,6 +24,7 @@ import {
 import { FreeformTool } from '@/models/Tools/ShapeTools/Freeform';
 import { useToastContext } from '@/context/ToastContext/ToastContext';
 import { useColorContext } from '@/context/ColorContext';
+import { useToolTipContext } from '@/context/TooltipContext';
 
 const ShapeComponents = () => {
   const { onShow, onHide } = useContextMenuContext();
@@ -34,6 +35,7 @@ const ShapeComponents = () => {
   const { getSelectionLayer, getCanvasRect } = useCanvasContext();
   const { checkPoint } = useUndoRedoContext();
   const { onToast } = useToastContext();
+  const { setToolTipValues } = useToolTipContext();
 
   useEffect(() => {
     /* LINE COMPONENT */
@@ -140,6 +142,7 @@ const ShapeComponents = () => {
         getSelectionLayer,
         getCanvasRect,
         checkPoint,
+        setToolTipValues,
         onToast,
       }),
     [getActiveLayers, setActiveLayers, getPColor, getSColor, getProperties, onToast],
