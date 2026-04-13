@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { ensureCanvas2D } from '@/helpers/canvas';
 import { createPreview } from '@/util/BlobUtil';
 import { getColorFromBackingRef } from '@/util/ColorUtil';
-import { RGBAobj } from '@/models/Tools/Color';
+import { RGBA } from '@/models/Tools/Color';
 
 type LayerCanvasProps = {
   canvasWidth: number;
@@ -225,7 +225,7 @@ const LayerCanvas = ({ canvasHeight, canvasWidth }: LayerCanvasProps) => {
     return await createPreview(backing);
   }, []);
 
-  const getColorFromCanvas = useCallback((x: number, y: number): RGBAobj => {
+  const getColorFromCanvas = useCallback((x: number, y: number): RGBA => {
     const backing = backingRef.current;
     if (!backing) {
       throw new Error('backing canvas not ready');
