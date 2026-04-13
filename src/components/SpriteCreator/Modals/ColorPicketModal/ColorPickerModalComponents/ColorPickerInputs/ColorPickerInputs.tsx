@@ -2,9 +2,16 @@
 
 import { useColorContext } from '@/context/ColorContext';
 import styles from './ColorPickerInputs.module.css';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Color } from '@/models/Tools/Color';
-import { rgbToColor } from '@/helpers/color';
+import {
+  expandHex,
+  hexToColor,
+  hsvToColor,
+  intToColor,
+  isValidHex,
+  rgbToColor,
+} from '@/helpers/color';
 
 type ColorPickerInputProps = {
   color: Color;
@@ -16,12 +23,15 @@ const ColorPickerInputs = ({ color, setColor }: ColorPickerInputProps) => {
   const sat = useMemo(() => Math.round(color.hsv.s * 100), [color]);
   const bright = useMemo(() => Math.round(color.hsv.v * 100), [color]);
 
+  const [hex, setHex] = useState<string>(color.hex);
+
   const setR = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       let r = Number(e.target.value);
 
       if (Number.isNaN(r)) return;
 
+      //cannot be 4 character, early return rather than adjusting value
       if (r > 999) return;
 
       r = Math.max(0, Math.min(r, 255));
@@ -39,6 +49,7 @@ const ColorPickerInputs = ({ color, setColor }: ColorPickerInputProps) => {
 
       if (Number.isNaN(g)) return;
 
+      //cannot be 4 character, early return rather than adjusting value
       if (g > 999) return;
 
       g = Math.max(0, Math.min(g, 255));
@@ -56,6 +67,7 @@ const ColorPickerInputs = ({ color, setColor }: ColorPickerInputProps) => {
 
       if (Number.isNaN(b)) return;
 
+      //cannot be 4 character, early return rather than adjusting value
       if (b > 999) return;
 
       b = Math.max(0, Math.min(b, 255));
@@ -66,6 +78,90 @@ const ColorPickerInputs = ({ color, setColor }: ColorPickerInputProps) => {
     },
     [color],
   );
+
+  const setHue = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      let h = Number(e.target.value);
+
+      if (Number.isNaN(h)) return;
+
+      //cannot be 4 character, early return rather than adjusting value
+      if (h > 999) return;
+
+      h = Math.max(0, Math.min(h, 360));
+
+      const c = hsvToColor({ h, s: color.hsv.s, v: color.hsv.v });
+
+      setColor(c);
+    },
+    [color],
+  );
+
+  const setSat = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      let s = Number(e.target.value);
+
+      if (Number.isNaN(s)) return;
+
+      //cannot be 4 character, early return rather than adjusting value
+      if (s > 999) return;
+
+      s = Math.max(0, Math.min(s, 100));
+
+      s /= 100;
+
+      const c = hsvToColor({ h: color.hsv.h, s, v: color.hsv.v });
+
+      setColor(c);
+    },
+    [color],
+  );
+
+  const setBright = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      let v = Number(e.target.value);
+
+      if (Number.isNaN(v)) return;
+
+      //cannot be 4 character, early return rather than adjusting value
+      if (v > 999) return;
+
+      v = Math.max(0, Math.min(v, 100));
+
+      v /= 100;
+
+      const c = hsvToColor({ h: color.hsv.h, s: color.hsv.s, v });
+
+      setColor(c);
+    },
+    [color],
+  );
+
+  const setHexCallback = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    let c = e.target.value;
+
+    setHex(c);
+
+    if (!c.startsWith('#')) {
+      c = '#' + c;
+    }
+
+    c.toLocaleLowerCase();
+
+    const isHex = isValidHex(c);
+
+    if (!isHex) return;
+
+    c = expandHex(c);
+
+    const color = hexToColor(c);
+
+    setColor(color);
+  }, []);
+
+  const onHexBlur = useCallback(() => {
+    setHex(color.hex);
+  }, [color]);
 
   return (
     <div className={styles.wrapper}>
@@ -78,21 +174,21 @@ const ColorPickerInputs = ({ color, setColor }: ColorPickerInputProps) => {
         <input value={color.rgb.b} onChange={setB} />
 
         <p className={styles.title}>H:</p>
-        <input value={hue} />
+        <input value={hue} onChange={setHue} />
         <p className={styles.title}>S:</p>
         <div className={styles.inputWithSuffix}>
-          <input value={sat} />
+          <input value={sat} onChange={setSat} />
           <span className={styles.suffix}>%</span>
         </div>
         <p className={styles.title}>V:</p>
         <div className={styles.inputWithSuffix}>
-          <input value={bright} />
+          <input value={bright} onChange={setBright} />
           <span className={styles.suffix}>%</span>
         </div>
       </div>
       <div className={styles.hex}>
         <p className={styles.title}>Hex:</p>
-        <input value={color.hex} />
+        <input value={hex} onChange={setHexCallback} onBlur={onHexBlur} />
       </div>
     </div>
   );

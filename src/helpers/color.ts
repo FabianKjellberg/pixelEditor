@@ -149,6 +149,54 @@ export const intToColor = (int: number): Color => {
   };
 };
 
+export const hexToColor = (hex: string): Color => {
+  const rgb = hexToRgb(hex);
+
+  return {
+    rgb,
+    hsv: rgbToHsv(rgb),
+    int: rgbToInt(rgb),
+    hex,
+  };
+};
+
+export const hexToRgb = (hex: string): RGB => {
+  const valid = isValidHex(hex);
+
+  if (!valid) throw new Error('not a valid hex string');
+
+  let h = expandHex(hex);
+
+  h = hex.replace('#', '');
+
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+
+  return { r, g, b };
+};
+
+export const isValidHex = (value: string): boolean => {
+  const clean = value.replace('#', '').toLowerCase();
+  return (clean.length === 3 || clean.length === 6) && /^[0-9a-f]+$/.test(clean);
+};
+
+export const expandHex = (hex: string): string => {
+  const clean = hex.replace('#', '').toLowerCase();
+
+  if (clean.length === 3) {
+    return (
+      '#' +
+      clean
+        .split('')
+        .map((char) => char + char)
+        .join('')
+    );
+  }
+
+  return '#' + clean;
+};
+
 export const hsvToHex = (hsv: HSV): string => {
   const rgb = hsvToRgb(hsv);
 
