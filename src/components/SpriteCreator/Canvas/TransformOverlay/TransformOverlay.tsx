@@ -26,7 +26,7 @@ type TransformOverlayProps = {
 const TransformOverlay = ({ width, height }: TransformOverlayProps) => {
   const { activeLayerIds, layerTreeItems } = useLayerContext();
   const { selectionLayer, pixelSize, pan } = useCanvasContext();
-  const { activeTool, setProperties } = useToolContext();
+  const { activeTool } = useToolContext();
 
   const [transformArea, setTransformArea] = useState<CenteredRectangle>(() => {
     const activeLayers: LayerEntity[] = layerTreeItems.filter((layer): layer is LayerEntity =>

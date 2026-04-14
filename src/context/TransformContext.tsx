@@ -14,6 +14,7 @@ import {
   FlipVertically,
   TransformInterpolation,
 } from '@/models/properties/transformProperties';
+import { useToolTipContext } from './TooltipContext';
 
 type TransformContextValue = {
   transforming: boolean;
@@ -28,6 +29,7 @@ export const TransformContextProvider = ({ children }: { children: React.ReactNo
   const { getCanvasRect, getSelectionLayer } = useCanvasContext();
   const { checkPoint } = useUndoRedoContext();
   const { onToast } = useToastContext();
+  const { setToolTipValues } = useToolTipContext();
 
   const [transforming, setTransforming] = useState<boolean>(false);
 
@@ -59,6 +61,7 @@ export const TransformContextProvider = ({ children }: { children: React.ReactNo
             getCanvasRect,
             checkPoint,
             onToast,
+            setToolTipValues,
           }),
         );
       } else if (lastToolRef.current) {

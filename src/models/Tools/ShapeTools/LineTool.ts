@@ -18,6 +18,13 @@ import {
 } from '../../properties/Properties';
 import { setAlpha } from '@/helpers/color';
 import { Color } from '../Color';
+import {
+  createToolTipAngle,
+  createToolTipDelta,
+  createToolTipLength,
+  ToolTipValues,
+} from '@/models/ToolTipValues';
+import { getAngle } from '@/util/TransformUtil';
 
 export class LineTool implements ITool {
   deps: IToolDeps;
@@ -73,11 +80,21 @@ export class LineTool implements ITool {
     if (!color) return;
 
     this.color = setAlpha(color.int, opacityProperty?.value ?? 255);
+
+    const toolTipValues: ToolTipValues[] = [];
+
+    toolTipValues.push(createToolTipDelta(undefined, undefined));
+    toolTipValues.push(createToolTipAngle(undefined));
+    toolTipValues.push(createToolTipLength(undefined));
+
+    this.deps.setToolTipValues?.(toolTipValues);
   }
   onMove(x: number, y: number, pixelSize: number): void {
     if (this.downX === null || this.downY === null || this.color === null) return;
 
     const pos = getPixelPositions(x, y, pixelSize);
+
+    if (this.lastX === pos.x && this.lastY === pos.y) return;
 
     const lastX = this.lastX ?? this.downX;
     const lastY = this.lastY ?? this.downY;
@@ -95,6 +112,22 @@ export class LineTool implements ITool {
     //get Props
     const selectedLayer = this.deps.getSelectionLayer?.();
     const size = strokeWidth?.value ?? 0;
+
+    //Set tool tip values
+    const toolTipValues: ToolTipValues[] = [];
+
+    const dx = pos.x - this.downX;
+    const dy = pos.y - this.downY;
+
+    const length = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) + size;
+
+    const angle = getAngle(dx, dy);
+
+    toolTipValues.push(createToolTipDelta(dx, dy));
+    toolTipValues.push(createToolTipAngle(angle));
+    toolTipValues.push(createToolTipLength(length));
+
+    this.deps.setToolTipValues?.(toolTipValues);
 
     //Return early if tool doesnt have access to getting canvas boundary
     const getCanvasRect = this.deps.getCanvasRect;
@@ -138,6 +171,8 @@ export class LineTool implements ITool {
     this.downY = null;
     this.lastX = null;
     this.lastY = null;
+
+    this.deps.setToolTipValues?.([]);
 
     const checkPoint = this.deps.checkPoint;
     if (!this.layerLastDrawn || !checkPoint || !this.originalLayer) return;

@@ -3,6 +3,7 @@ import { Cordinate, LayerEntity, Rectangle, SelectionLayer } from '../Layer';
 import { AnyProperty, IProperty } from '../properties/Properties';
 import { HistoryAction } from '@/context/UndoRedoContext';
 import { Color } from './Color';
+import { ToolTipValues } from '../ToolTipValues';
 
 export type IToolDeps = {
   getLayers?: () => LayerEntity[] | undefined;
@@ -25,6 +26,7 @@ export type IToolDeps = {
   setCanvasRect?: (rect: Rectangle) => void;
   checkPoint?: (action: HistoryAction) => void;
   onToast?: (message: string, type?: ToastType) => void;
+  setToolTipValues?: (values: ToolTipValues[]) => void;
 };
 
 export interface ITool {

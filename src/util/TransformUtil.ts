@@ -302,3 +302,9 @@ export function invertVertically(layer: LayerEntity, boundary: Rectangle): void 
     },
   };
 }
+
+export const getAngle = (dx: number, dy: number): number => {
+  const radians = Math.atan2(dy, dx);
+  const degrees = radians * (180 / Math.PI);
+  return degrees;
+};

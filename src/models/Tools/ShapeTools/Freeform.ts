@@ -20,6 +20,13 @@ import {
   stampToCanvasLayer,
 } from '@/util/LayerUtil';
 import { setAlpha } from '@/helpers/color';
+import {
+  createToolTipAngle,
+  createToolTipDelta,
+  createToolTipLength,
+  ToolTipValues,
+} from '@/models/ToolTipValues';
+import { getAngle } from '@/util/TransformUtil';
 
 export class FreeformTool implements ITool {
   deps: IToolDeps;
@@ -62,6 +69,14 @@ export class FreeformTool implements ITool {
 
     this.fillColor =
       mouseButton === 0 ? setAlpha(sColor.int, opacity.value) : setAlpha(pColor.int, opacity.value);
+
+    const toolTipValues: ToolTipValues[] = [];
+
+    toolTipValues.push(createToolTipDelta(undefined, undefined));
+    toolTipValues.push(createToolTipAngle(undefined));
+    toolTipValues.push(createToolTipLength(undefined));
+
+    this.deps.setToolTipValues?.(toolTipValues);
 
     if (!this.originalLayer) {
       const getLayers = this.deps.getLayers?.();
@@ -129,6 +144,25 @@ export class FreeformTool implements ITool {
 
     const strokeWidth = getProperty<StrokeWidthProperty>(properties, PropertyType.StrokeWidth);
     if (!strokeWidth) throw new Error('unable to fetch stroke width');
+
+    //Set tool tip values
+    const toolTipValues: ToolTipValues[] = [];
+
+    const px = this.points[this.points.length - 1].x;
+    const py = this.points[this.points.length - 1].y;
+
+    const dx = pos.x - px;
+    const dy = pos.y - py;
+
+    const length = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) + strokeWidth.value;
+
+    const angle = getAngle(dx, dy);
+
+    toolTipValues.push(createToolTipDelta(dx, dy));
+    toolTipValues.push(createToolTipAngle(angle));
+    toolTipValues.push(createToolTipLength(length));
+
+    this.deps.setToolTipValues?.(toolTipValues);
 
     const fill = getProperty<FillProperty>(properties, PropertyType.FillProperty);
     if (!fill) throw new Error('unable to fetch fill property');
@@ -202,6 +236,8 @@ export class FreeformTool implements ITool {
   }
 
   private resetValues(backToOriginal: boolean) {
+    this.deps.setToolTipValues?.([]);
+
     if (backToOriginal) {
       const setLayer = this.deps.setLayers;
       if (!setLayer) throw new Error('unable to fetch setLayer');

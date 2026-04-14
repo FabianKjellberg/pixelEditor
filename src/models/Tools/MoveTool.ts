@@ -9,6 +9,7 @@ import {
 import { ITool, IToolDeps } from './Tools';
 import { Cordinate, Layer, LayerEntity, Rectangle, SelectionLayer } from '../Layer';
 import { getPixelIndex, rgbaToInt } from '@/helpers/color';
+import { createToolTipDelta } from '../ToolTipValues';
 
 export class MoveTool implements ITool {
   name: string = 'moveTool';
@@ -17,6 +18,8 @@ export class MoveTool implements ITool {
   private moving = false;
   private lastX: number | null = null;
   private lastY: number | null = null;
+  private downX: number | null = null;
+  private downY: number | null = null;
 
   private selectionActive = false;
   private floatingLayers: Layer[] | null = null;
@@ -75,14 +78,24 @@ export class MoveTool implements ITool {
 
     this.lastX = pixelPos.x;
     this.lastY = pixelPos.y;
+    this.downX = pixelPos.x;
+    this.downY = pixelPos.y;
     this.moving = true;
+
+    this.deps.setToolTipValues?.([createToolTipDelta(undefined, undefined)]);
   }
 
   onMove(x: number, y: number, pixelSize: number): void {
     if (!this.moving) return;
     if (this.lastX === null || this.lastY === null) return;
+    if (this.downX === null || this.downY === null) return;
 
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
+
+    const dx = pixelPos.x - this.downX;
+    const dy = pixelPos.y - this.downY;
+
+    this.deps.setToolTipValues?.([createToolTipDelta(dx, dy)]);
 
     if (this.selectionActive) {
       this.moveSelection(pixelPos.x, pixelPos.y);
@@ -160,6 +173,7 @@ export class MoveTool implements ITool {
     this.movingSelectionLayer = null;
     this.originalLayers = null;
     this.lastMovedLayers = null;
+    this.deps.setToolTipValues?.([]);
   }
 
   private moveSelection(x: number, y: number): void {
