@@ -10,6 +10,29 @@ const Changelog = () => {
         Version history and what I&apos;ve been up to. Point form, but I&apos;ll keep it readable.
       </p>
       <br />
+      <ChangelogEntry date="2026-04-14" title="Canvas metrics & tool feedback">
+        <li>
+          <p>
+            <b>Mouse position indicator.</b> Added a live coordinate display in the bottom-right
+            corner of the canvas. This shows the exact position of your cursor, making precise
+            placement and alignment easier.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Dynamic tool metrics.</b> Tools now display contextual numeric feedback while in use.
+            Depending on the active tool, this can include values such as <b>delta</b>,{' '}
+            <b>length</b>, <b>size</b>, <b>scale</b>, and <b>angle</b>. This provides immediate
+            insight into your actions and improves precision during editing.
+          </p>
+        </li>
+        <li>
+          <p>
+            <b>Context-aware updates.</b> The displayed metrics adapt automatically based on the
+            selected tool, ensuring that only relevant information is shown for each interaction.
+          </p>
+        </li>
+      </ChangelogEntry>
       <ChangelogEntry date="2026-04-13" title="Color system rework">
         <li>
           <p>
