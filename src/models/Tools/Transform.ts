@@ -17,6 +17,13 @@ import {
   transformLayer,
 } from '@/util/TransformUtil';
 import { TransformInterpolation, TransformProperty } from '../properties/transformProperties';
+import {
+  createToolTipAngle,
+  createToolTipDelta,
+  createToolTipScale,
+  createToolTipSize,
+  ToolTipValues,
+} from '../ToolTipValues';
 
 export class TransformTool implements ITool {
   name: string = 'transform';
@@ -151,6 +158,16 @@ export class TransformTool implements ITool {
       splitOriginal.push(croppedLayer);
     });
 
+    // set default toolTipValues
+    const toolTipValues: ToolTipValues[] = [];
+
+    toolTipValues.push(createToolTipScale(1, 1));
+    toolTipValues.push(createToolTipAngle(0));
+    toolTipValues.push(createToolTipDelta(0, 0));
+    toolTipValues.push(createToolTipSize(originalRect.width, originalRect.height));
+
+    this.deps.setToolTipValues?.(toolTipValues);
+
     //save layers for later use
     this.splitOriginal = splitOriginal;
     this.originalRect = originalRect;
@@ -174,6 +191,22 @@ export class TransformTool implements ITool {
 
     const originalRect = this.originalRect;
     if (!originalRect) return;
+
+    // set toolTipValues
+    const toolTipValues: ToolTipValues[] = [];
+
+    const sx = transformRect.width / originalRect.width;
+    const sy = transformRect.height / originalRect.height;
+
+    const dx = transformRect.center.x - originalRect.x - originalRect.width / 2;
+    const dy = transformRect.center.y - originalRect.y - originalRect.height / 2;
+
+    toolTipValues.push(createToolTipScale(sy, sx));
+    toolTipValues.push(createToolTipAngle(transformRect.rotation));
+    toolTipValues.push(createToolTipDelta(dx, dy));
+    toolTipValues.push(createToolTipSize(transformRect.width, transformRect.height));
+
+    this.deps.setToolTipValues?.(toolTipValues);
 
     const setLayers = this.deps.setLayers;
     if (!setLayers) return;
@@ -220,6 +253,7 @@ export class TransformTool implements ITool {
   }
 
   private reset() {
+    this.deps.setToolTipValues?.([]);
     this.originalLayers = undefined;
     this.splitOriginal = undefined;
     this.originalRect = undefined;

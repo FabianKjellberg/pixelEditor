@@ -20,6 +20,10 @@ const RightMenu = () => {
           <p className={menuStyles.toolsHeader}>Color Picker</p>
           <ColorPicker />
         </div>
+        {/*<div className={menuStyles.toolContainer}>
+          <p className={menuStyles.toolsHeader}>Palette</p>
+          <ColorPalette />
+        </div>*/}
       </div>
       <div className={`${menuStyles.toolContainer} ${menuStyles.bottom}`}>
         <ToolTip />

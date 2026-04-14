@@ -102,22 +102,6 @@ export class LineTool implements ITool {
     this.lastX = pos.x;
     this.lastY = pos.y;
 
-    //Set tool tip values
-    const toolTipValues: ToolTipValues[] = [];
-
-    const dx = Math.abs(this.downX - pos.x);
-    const dy = Math.abs(this.downY - pos.y);
-
-    const length = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-
-    const angle = getAngle(pos.x - this.downX, pos.y - this.downY);
-
-    toolTipValues.push(createToolTipDelta(dx, dy));
-    toolTipValues.push(createToolTipAngle(angle));
-    toolTipValues.push(createToolTipLength(length));
-
-    this.deps.setToolTipValues?.(toolTipValues);
-
     const setLayers = this.deps.setLayers;
     if (setLayers == undefined) return;
 
@@ -128,6 +112,22 @@ export class LineTool implements ITool {
     //get Props
     const selectedLayer = this.deps.getSelectionLayer?.();
     const size = strokeWidth?.value ?? 0;
+
+    //Set tool tip values
+    const toolTipValues: ToolTipValues[] = [];
+
+    const dx = pos.x - this.downX;
+    const dy = pos.y - this.downY;
+
+    const length = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) + size;
+
+    const angle = getAngle(dx, dy);
+
+    toolTipValues.push(createToolTipDelta(dx, dy));
+    toolTipValues.push(createToolTipAngle(angle));
+    toolTipValues.push(createToolTipLength(length));
+
+    this.deps.setToolTipValues?.(toolTipValues);
 
     //Return early if tool doesnt have access to getting canvas boundary
     const getCanvasRect = this.deps.getCanvasRect;

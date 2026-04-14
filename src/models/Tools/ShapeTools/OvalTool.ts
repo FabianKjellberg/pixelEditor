@@ -19,6 +19,7 @@ import {
   stampToCanvasLayer,
 } from '@/util/LayerUtil';
 import { setAlpha } from '@/helpers/color';
+import { createToolTipSize, ToolTipValues } from '@/models/ToolTipValues';
 
 export class OvalTool implements ITool {
   deps: IToolDeps;
@@ -82,6 +83,13 @@ export class OvalTool implements ITool {
 
     this.color = mouseButton === 0 ? primaryColorWithOpacity : secondaryColorWithOpacity;
     this.fillColor = mouseButton === 0 ? secondaryColorWithOpacity : primaryColorWithOpacity;
+
+    //set initial tooltip values
+    const toolTipValues: ToolTipValues[] = [];
+
+    toolTipValues.push(createToolTipSize(undefined, undefined));
+
+    this.deps.setToolTipValues?.(toolTipValues);
   }
   onMove(x: number, y: number, pixelSize: number): void {
     if (
@@ -124,18 +132,27 @@ export class OvalTool implements ITool {
     if (!alignStrokeProperty || !alignStrokeProperty.value) return;
 
     let buffer = 0;
+    let w = Math.abs(pos.x - this.downX);
+    let h = Math.abs(pos.y - this.downY);
 
     switch (alignStrokeProperty.value) {
       case 'Outside':
         buffer = size;
+        w += size * 2;
+        h += size * 2;
         break;
       case 'Centered':
         buffer = Math.floor(size / 2);
+        w += size;
+        h += size;
         break;
       case 'Inside':
       default:
         break;
     }
+
+    // update w + h
+    this.deps.setToolTipValues?.([createToolTipSize(w, h)]);
 
     // create dirty rectangle
     const dirtyRectangle = getSmallestRectangleFromPoints(
@@ -187,6 +204,7 @@ export class OvalTool implements ITool {
     this.downY = null;
     this.lastX = null;
     this.lastY = null;
+    this.deps.setToolTipValues?.([]);
 
     const checkPoint = this.deps.checkPoint;
     if (!this.layerLastDrawn || !checkPoint) return;

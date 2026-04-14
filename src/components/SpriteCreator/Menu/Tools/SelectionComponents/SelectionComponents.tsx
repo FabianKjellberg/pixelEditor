@@ -13,12 +13,14 @@ import { CircleSelector } from '@/models/Tools/SelectionTools/CircleSelector';
 import { LassoSelector } from '@/models/Tools/SelectionTools/LassoSelector';
 import { FreeformSelector } from '@/models/Tools/SelectionTools/FreeformSelector';
 import { SelectionModeProperty } from '@/models/properties/Properties';
+import { useToolTipContext } from '@/context/TooltipContext';
 
 const SelectionComponents = () => {
   const { onShow, onHide } = useContextMenuContext();
   const { setActiveTool, getProperties, ensureProperties } = useToolContext();
   const { setSelectionLayer, getSelectionLayer, setSelectionOverlay, getSelectionOverlay } =
     useCanvasContext();
+  const { setToolTipValues } = useToolTipContext();
 
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
@@ -33,13 +35,20 @@ const SelectionComponents = () => {
   }, []);
 
   const rectangleSelection = useMemo(
-    () => new RectangleSelector({ setSelectionLayer, getSelectionLayer, getProperties }),
-    [setSelectionLayer, getSelectionLayer, getProperties],
+    () =>
+      new RectangleSelector({
+        setSelectionLayer,
+        getSelectionLayer,
+        getProperties,
+        setToolTipValues,
+      }),
+    [setSelectionLayer, getSelectionLayer, getProperties, setToolTipValues],
   );
 
   const circleSelection = useMemo(
-    () => new CircleSelector({ setSelectionLayer, getSelectionLayer, getProperties }),
-    [setSelectionLayer, getSelectionLayer, getProperties],
+    () =>
+      new CircleSelector({ setSelectionLayer, getSelectionLayer, getProperties, setToolTipValues }),
+    [setSelectionLayer, getSelectionLayer, getProperties, setToolTipValues],
   );
 
   const lassoSelector = useMemo(
@@ -62,8 +71,16 @@ const SelectionComponents = () => {
         getProperties,
         getSelectionOverlay,
         setSelectionOverlay,
+        setToolTipValues,
       }),
-    [setSelectionLayer, getSelectionLayer, getProperties, getSelectionOverlay, setSelectionOverlay],
+    [
+      setSelectionLayer,
+      getSelectionLayer,
+      getProperties,
+      getSelectionOverlay,
+      setSelectionOverlay,
+      setToolTipValues,
+    ],
   );
 
   const onClickCallbackItem = useCallback(

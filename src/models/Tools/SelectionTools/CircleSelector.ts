@@ -8,6 +8,7 @@ import {
   createSelectionRectangleLayer,
   subtractSelection,
 } from '@/util/SelectionUtil';
+import { createToolTipSize, ToolTipValues } from '@/models/ToolTipValues';
 
 export class CircleSelector implements ITool {
   name: string = 'circleSelector';
@@ -28,11 +29,25 @@ export class CircleSelector implements ITool {
     this.originX = pixelPos.x;
     this.originY = pixelPos.y;
 
+    //set initial tooltip values
+    const toolTipValues: ToolTipValues[] = [];
+
+    toolTipValues.push(createToolTipSize(undefined, undefined));
+
+    this.deps.setToolTipValues?.(toolTipValues);
+
     this.select(pixelPos);
     this.selecting = true;
   }
   onMove?(x: number, y: number, pixelSize: number): void {
     const pixelPos: Cordinate = getPixelPositions(x, y, pixelSize);
+
+    if (!this.originX || !this.originY) return;
+
+    const w = Math.abs(this.originX - pixelPos.x);
+    const h = Math.abs(this.originY - pixelPos.y);
+
+    this.deps.setToolTipValues?.([createToolTipSize(w, h)]);
 
     if (this.selecting && !(this.originX === pixelPos.x && this.originY === pixelPos.y)) {
       this.select(pixelPos);
@@ -43,6 +58,7 @@ export class CircleSelector implements ITool {
     this.selecting = false;
     this.originX = null;
     this.originY = null;
+    this.deps.setToolTipValues?.([]);
   }
 
   private select = (pixelPos: Cordinate) => {

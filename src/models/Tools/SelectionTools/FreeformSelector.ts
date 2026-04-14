@@ -7,6 +7,15 @@ import {
 import { ITool, IToolDeps } from '../Tools';
 import { Cordinate, SelectionLayer } from '@/models/Layer';
 import { combinedSelections, fillSelectionPolygon, subtractSelection } from '@/util/SelectionUtil';
+import {
+  createToolTipAngle,
+  createToolTipDelta,
+  createToolTipLength,
+  ToolTipValues,
+} from '@/models/ToolTipValues';
+import { getAngle } from '@/util/TransformUtil';
+import { getPixelIndex } from '@/helpers/color';
+import { getPixelPositions } from '@/util/LayerUtil';
 
 export class FreeformSelector implements ITool {
   deps: IToolDeps;
@@ -25,6 +34,14 @@ export class FreeformSelector implements ITool {
     }
 
     this.selecting = true;
+
+    const toolTipValues: ToolTipValues[] = [];
+
+    toolTipValues.push(createToolTipDelta(undefined, undefined));
+    toolTipValues.push(createToolTipAngle(undefined));
+    toolTipValues.push(createToolTipLength(undefined));
+
+    this.deps.setToolTipValues?.(toolTipValues);
 
     if (this.points.length > 0) {
       const firstX = this.points[0].x * pixelSize;
@@ -52,6 +69,27 @@ export class FreeformSelector implements ITool {
   onMove(x: number, y: number, pixelSize: number): void {
     if (!this.selecting) return;
 
+    const pos = getPixelPositions(x, y, pixelSize);
+
+    //Set tool tip values
+    const toolTipValues: ToolTipValues[] = [];
+
+    const px = this.points[this.points.length - 1].x;
+    const py = this.points[this.points.length - 1].y;
+
+    const dx = pos.x - px;
+    const dy = pos.y - py;
+
+    const length = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+
+    const angle = getAngle(dx, dy);
+
+    toolTipValues.push(createToolTipDelta(dx, dy));
+    toolTipValues.push(createToolTipAngle(angle));
+    toolTipValues.push(createToolTipLength(length));
+
+    this.deps.setToolTipValues?.(toolTipValues);
+
     const selectionOverlay = this.deps.getSelectionOverlay?.();
 
     if (!selectionOverlay) return;
@@ -60,7 +98,7 @@ export class FreeformSelector implements ITool {
 
     if (!setSelectionOverlay) return;
 
-    setSelectionOverlay([...this.points, { x: x / pixelSize, y: y / pixelSize }]);
+    setSelectionOverlay([...this.points, { x: pos.x, y: pos.y }]);
   }
   onCommit(): void {
     this.finalise(true);
@@ -102,6 +140,7 @@ export class FreeformSelector implements ITool {
     this.selecting = false;
     this.points = [];
     this.deps.setSelectionOverlay?.(undefined);
+    this.deps.setToolTipValues?.([]);
     this.oldSelection = undefined;
   }
 }
