@@ -6,6 +6,7 @@ import menuStyles from './Menu.module.css';
 import LayerMenu from './LayerMenu/LayerMenu';
 import { LayerSelectorProvider } from '@/context/LayerSelectorContext';
 import ToolTip from './ToolTip/ToolTip';
+import ColorPalette from './ColorPalette/ColorPalette';
 
 const RightMenu = () => {
   return (
@@ -20,10 +21,10 @@ const RightMenu = () => {
           <p className={menuStyles.toolsHeader}>Color Picker</p>
           <ColorPicker />
         </div>
-        {/*<div className={menuStyles.toolContainer}>
+        <div className={menuStyles.toolContainer}>
           <p className={menuStyles.toolsHeader}>Palette</p>
           <ColorPalette />
-        </div>*/}
+        </div>
       </div>
       <div className={`${menuStyles.toolContainer} ${menuStyles.bottom}`}>
         <ToolTip />
