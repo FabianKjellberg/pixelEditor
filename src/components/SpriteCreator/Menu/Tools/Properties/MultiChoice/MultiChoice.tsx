@@ -81,7 +81,7 @@ const MultiChoice = ({ multiChoiceProperties, value, onChange }: MultiChoiceProp
   }, [multiChoiceOpen]);
 
   return (
-    <>
+    <div className={styles.wrapper}>
       <PropertyLabel label={label} />
       <div className={styles.multiChoiceWrapper} ref={wrapperRef}>
         <button
@@ -120,7 +120,7 @@ const MultiChoice = ({ multiChoiceProperties, value, onChange }: MultiChoiceProp
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

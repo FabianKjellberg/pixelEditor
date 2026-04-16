@@ -67,7 +67,9 @@ const LayerMenu = () => {
           )}
         </div>
       </div>
-      <LayerGroup layerGroup={layerTreeItems} />
+      <div className={styles.layers}>
+        <LayerGroup layerGroup={layerTreeItems} />
+      </div>
       <div className={styles.breakLine}></div>
       <div className={styles.buttons}>
         <button onClick={addLayerCallback}>+</button>

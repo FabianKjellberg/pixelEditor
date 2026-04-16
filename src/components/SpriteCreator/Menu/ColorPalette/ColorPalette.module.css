@@ -3,10 +3,16 @@
   gap: 4px;
   padding: 4px;
 
-  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
 }
 
 .paletteWrapper {
+  border-top: 2px solid var(--border);
   max-height: 175px;
   overflow-y: scroll;
+}
+
+.dropDown {
+  padding: 4px;
+  display: flex;
 }

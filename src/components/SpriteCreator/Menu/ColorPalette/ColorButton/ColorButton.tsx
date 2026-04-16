@@ -4,6 +4,7 @@ import { Color } from '@/models/Tools/Color';
 
 import styles from './ColorButton.module.css';
 import { useCallback } from 'react';
+import { useColorContext } from '@/context/ColorContext';
 
 type ColorButtonProps = {
   hex: string;
@@ -11,16 +12,19 @@ type ColorButtonProps = {
 };
 
 const ColorButton = ({ hex, onClick }: ColorButtonProps) => {
+  const { addRecentColor } = useColorContext();
+
   const onLeftClick = useCallback(() => {
+    addRecentColor(hex);
     onClick(hex, false);
-  }, [hex]);
+  }, [hex, addRecentColor]);
   const onRightClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
-
+      addRecentColor(hex);
       onClick(hex, true);
     },
-    [hex],
+    [hex, addRecentColor],
   );
 
   return (

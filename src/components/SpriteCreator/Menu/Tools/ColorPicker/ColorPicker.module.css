@@ -6,21 +6,23 @@
 }
 
 .colorContainer {
-  width: 130px;
-  height: 130px;
+  width: 90px;
+  height: 90px;
   display: flex;
   position: relative;
 }
 
 .secondaryColor {
-  width: 70px;
-  height: 70px;
+  width: 45px;
+  height: 45px;
   border: 3px solid var(--border);
   position: absolute;
   bottom: 10px;
   right: 10px;
   cursor: pointer;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
     transform var(--transition-fast);
 }
 
@@ -31,14 +33,16 @@
 }
 
 .primaryColor {
-  width: 70px;
-  height: 70px;
+  width: 45px;
+  height: 45px;
   border: 3px solid var(--border);
   position: absolute;
   top: 10px;
   left: 10px;
   cursor: pointer;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
     transform var(--transition-fast);
 }
 
@@ -49,16 +53,22 @@
 }
 
 .flipButton {
-  height: 40px;
-  width: 40px;
+  height: 30px;
+  width: 30px;
   bottom: 0;
   left: 0;
   position: absolute;
   background: none;
   border: 2px solid var(--border);
+  justify-content: center;
+  align-items: center;
 }
 
 .flipButton:hover {
   background: var(--highlight-dim);
   border-color: var(--highlight);
+}
+
+.flipImage {
+  image-rendering: pixelated;
 }

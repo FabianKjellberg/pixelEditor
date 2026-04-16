@@ -5,6 +5,7 @@ import ColorPickerPointer from './ColorPickerPointer';
 import { ColorChangeOrigin, useToolContext } from '@/context/ToolContext';
 import { Color } from '@/models/Tools/Color';
 import { hsvToColor, hsvToHex, hsvToRgb } from '@/helpers/color';
+import { useColorContext } from '@/context/ColorContext';
 const CANVAS_W = 200;
 const CANVAS_H = 200;
 const PIX = 2;
@@ -16,6 +17,8 @@ type ColorPickerCanvasProps = {
 
 export default function ColorPickerCanvas({ color, setColor }: ColorPickerCanvasProps) {
   const ref = useRef<HTMLCanvasElement | null>(null);
+
+  const { addRecentColor } = useColorContext();
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
@@ -91,10 +94,14 @@ export default function ColorPickerCanvas({ color, setColor }: ColorPickerCanvas
     [isDragging, updatePos],
   );
 
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    e.currentTarget.releasePointerCapture(e.pointerId);
-    setIsDragging(false);
-  }, []);
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+      setIsDragging(false);
+      addRecentColor(color.hex);
+    },
+    [color],
+  );
 
   return (
     <div

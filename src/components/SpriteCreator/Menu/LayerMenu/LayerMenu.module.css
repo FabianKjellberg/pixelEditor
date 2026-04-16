@@ -174,3 +174,12 @@
   display: flex;
   right: 0;
 }
+
+.layers {
+  max-height: 265px;
+  overflow-y: auto;
+}
+.layers::-webkit-scrollbar {
+  display: block;
+  width: 8px;
+}

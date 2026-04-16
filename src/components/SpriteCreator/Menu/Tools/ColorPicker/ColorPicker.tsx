@@ -39,7 +39,7 @@ const ColorPicker = () => {
           }
         />
         <button className={styles.flipButton} onClick={() => flipPrimarySecondary()}>
-          Flip
+          <img className={styles.flipImage} src={'/icons/flip-arrow.png'} width={20} height={20} />
         </button>
       </div>
     </div>

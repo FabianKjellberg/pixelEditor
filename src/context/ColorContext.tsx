@@ -19,6 +19,10 @@ type ColorContextValue = {
   setSColor: (color: Color) => void;
   getSColor: () => Color;
 
+  recentColors: string[];
+  setRecentColors: (colors: string[]) => void;
+  addRecentColor: (color: string) => void;
+
   flipPrimarySecondary: () => void;
 };
 
@@ -27,6 +31,7 @@ const ColorContext = createContext<ColorContextValue | undefined>(undefined);
 export const ColorContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [pColor, setPColor] = useState<Color>(BLACK);
   const [sColor, setSColor] = useState<Color>(WHITE);
+  const [recentColors, setRecentColors] = useState<string[]>(['#000000', '#ffffff']);
 
   const pColorRef = useRef<Color>(pColor);
   const sColorRef = useRef<Color>(sColor);
@@ -53,6 +58,17 @@ export const ColorContextProvider = ({ children }: { children: React.ReactNode }
     setSColor(primaryColorTemp);
   }, []);
 
+  const addRecentColor = useCallback(
+    (color: string) => {
+      setRecentColors((prev) => {
+        const out = prev.filter((c) => c !== color);
+
+        return [color, ...out].slice(0, 28);
+      });
+    },
+    [setRecentColors],
+  );
+
   const value = useMemo(
     () => ({
       pColor,
@@ -61,9 +77,22 @@ export const ColorContextProvider = ({ children }: { children: React.ReactNode }
       sColor,
       setSColor,
       getSColor,
+      recentColors,
+      setRecentColors,
       flipPrimarySecondary,
+      addRecentColor,
     }),
-    [pColor, setPColor, getPColor, sColor, setSColor, getSColor],
+    [
+      pColor,
+      setPColor,
+      getPColor,
+      sColor,
+      setSColor,
+      getSColor,
+      recentColors,
+      setRecentColors,
+      addRecentColor,
+    ],
   );
 
   return <ColorContext.Provider value={value}>{children}</ColorContext.Provider>;

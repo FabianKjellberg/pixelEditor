@@ -11,7 +11,9 @@
   align-items: center;
   border: 2px solid var(--border);
   cursor: pointer;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
   padding: 4px 8px;
   background-color: var(--background);
   gap: 8px;
@@ -61,7 +63,9 @@
   padding: 4px 8px;
   cursor: pointer;
   background-color: var(--background);
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
   width: 100%;
 }
 
@@ -74,4 +78,10 @@
   background-color: var(--highlight-dim);
   color: var(--highlight);
   font-weight: bold;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
