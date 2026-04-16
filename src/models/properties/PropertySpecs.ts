@@ -19,6 +19,7 @@ export interface IMultiChoice {
   label: string;
   choices: string[];
   allowEmpty: boolean;
+  disabled?: boolean;
 }
 
 export interface IDithering {

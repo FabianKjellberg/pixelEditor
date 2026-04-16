@@ -1,8 +1,11 @@
 'use client';
 
+import { Palette } from '@/models/Palettes';
 import { BLACK, Color, HSV, RGB, WHITE } from '@/models/Tools/Color';
 import {
   createContext,
+  Dispatch,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -24,6 +27,9 @@ type ColorContextValue = {
   addRecentColor: (color: string) => void;
 
   flipPrimarySecondary: () => void;
+
+  userPallets: Palette[];
+  setUserPallets: Dispatch<SetStateAction<Palette[]>>;
 };
 
 const ColorContext = createContext<ColorContextValue | undefined>(undefined);
@@ -32,6 +38,7 @@ export const ColorContextProvider = ({ children }: { children: React.ReactNode }
   const [pColor, setPColor] = useState<Color>(BLACK);
   const [sColor, setSColor] = useState<Color>(WHITE);
   const [recentColors, setRecentColors] = useState<string[]>(['#000000', '#ffffff']);
+  const [userPallets, setUserPallets] = useState<Palette[]>([]);
 
   const pColorRef = useRef<Color>(pColor);
   const sColorRef = useRef<Color>(sColor);
@@ -81,6 +88,8 @@ export const ColorContextProvider = ({ children }: { children: React.ReactNode }
       setRecentColors,
       flipPrimarySecondary,
       addRecentColor,
+      userPallets,
+      setUserPallets,
     }),
     [
       pColor,
@@ -92,6 +101,8 @@ export const ColorContextProvider = ({ children }: { children: React.ReactNode }
       recentColors,
       setRecentColors,
       addRecentColor,
+      userPallets,
+      setUserPallets,
     ],
   );
 

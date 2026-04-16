@@ -13,9 +13,14 @@ const PIX = 2;
 type ColorPickerCanvasProps = {
   color: Color;
   setColor: (color: Color) => void;
+  setHistory?: boolean;
 };
 
-export default function ColorPickerCanvas({ color, setColor }: ColorPickerCanvasProps) {
+export default function ColorPickerCanvas({
+  color,
+  setColor,
+  setHistory = true,
+}: ColorPickerCanvasProps) {
   const ref = useRef<HTMLCanvasElement | null>(null);
 
   const { addRecentColor } = useColorContext();
@@ -98,7 +103,7 @@ export default function ColorPickerCanvas({ color, setColor }: ColorPickerCanvas
     (e: React.PointerEvent) => {
       e.currentTarget.releasePointerCapture(e.pointerId);
       setIsDragging(false);
-      addRecentColor(color.hex);
+      if (setHistory) addRecentColor(color.hex);
     },
     [color],
   );

@@ -1,0 +1,34 @@
+.currentColor {
+  width: 50px;
+  height: 150px;
+  border: 2px solid var(--border);
+}
+
+.picker {
+  display: flex;
+  gap: 20px;
+  padding: 4px;
+}
+
+.wrapper {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+}
+
+.addToPalette {
+  width: 50px;
+  height: 50px;
+  font-size: xx-large;
+}
+
+.leftWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputs {
+  padding: 8px;
+  width: 320px;
+}

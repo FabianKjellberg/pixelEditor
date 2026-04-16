@@ -10,10 +10,17 @@ export class EyedropperTool implements ITool {
 
   dropping: boolean = false;
   getColorFromCanvas: (x: number, y: number) => RGBA;
+  addRecentColor: (color: string) => void;
+  color: string | null = null;
 
-  constructor(tooldeps: IToolDeps, getColorFromCanvas: (x: number, y: number) => RGBA) {
+  constructor(
+    tooldeps: IToolDeps,
+    getColorFromCanvas: (x: number, y: number) => RGBA,
+    addRecentColor: (color: string) => void,
+  ) {
     this.deps = tooldeps;
     this.getColorFromCanvas = getColorFromCanvas;
+    this.addRecentColor = addRecentColor;
   }
 
   onDown(x: number, y: number, pixelSize: number): void {
@@ -28,6 +35,12 @@ export class EyedropperTool implements ITool {
     }
   }
   onUp(x: number, y: number, pixelSize: number): void {
+    if (this.color) {
+      this.addRecentColor(this.color);
+
+      this.color = null;
+    }
+
     this.dropping = false;
   }
 
@@ -43,6 +56,7 @@ export class EyedropperTool implements ITool {
     const blendedToWhite = blendColor(top, -1);
 
     const c = intToColor(blendedToWhite);
+    this.color = c.hex;
 
     this.deps.setPrimaryColor?.(c);
   }

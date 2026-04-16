@@ -80,6 +80,14 @@ const MultiChoice = ({ multiChoiceProperties, value, onChange }: MultiChoiceProp
     };
   }, [multiChoiceOpen]);
 
+  const disabled = useMemo(() => {
+    if (multiChoiceProperties.disabled) {
+      return multiChoiceProperties.disabled;
+    }
+
+    return false;
+  }, [multiChoiceProperties]);
+
   return (
     <div className={styles.wrapper}>
       <PropertyLabel label={label} />
@@ -88,6 +96,7 @@ const MultiChoice = ({ multiChoiceProperties, value, onChange }: MultiChoiceProp
           ref={buttonRef}
           className={styles.selectedChoiceButton}
           onClick={toggleMultiChoiceMenu}
+          disabled={disabled}
         >
           <span className={styles.choiceText}>{value || 'Select...'}</span>
           <span
@@ -96,7 +105,7 @@ const MultiChoice = ({ multiChoiceProperties, value, onChange }: MultiChoiceProp
             ▼
           </span>
         </button>
-        {multiChoiceOpen && dropdownPosition && (
+        {multiChoiceOpen && dropdownPosition && !disabled && (
           <div
             className={styles.selectButtons}
             style={{

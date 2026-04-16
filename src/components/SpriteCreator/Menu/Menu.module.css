@@ -2,24 +2,41 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .menuContainer {
-  overflow: hidden;
-  overflow-y: scroll;
+  flex: 1 1 0;
+  min-height: 0;
   min-width: 200px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .toolContainer {
   border: 2px solid var(--border);
   margin: 10px;
-  max-height: 500px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  overflow-y: scroll;
   transition: border-color var(--transition-fast);
+}
+
+.layersContainer {
+  flex: 2 1 0;
+  min-height: 0;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+.colorPickerContainer {
+  flex-shrink: 0;
+}
+
+.paletteContainer {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  margin-top: 0;
 }
 
 .toolContainer:hover {
@@ -72,6 +89,5 @@
 }
 
 .bottom {
-  display: flex;
-  bottom: 0;
+  flex-shrink: 0;
 }

@@ -1,18 +1,53 @@
 .grid {
   display: grid;
-  gap: 4px;
-  padding: 4px;
-
-  grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+  gap: 3px;
+  padding: 6px;
+  grid-template-columns: repeat(7, 29px);
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .paletteWrapper {
   border-top: 2px solid var(--border);
-  max-height: 175px;
-  overflow-y: scroll;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.paletteWrapper::-webkit-scrollbar {
+  width: 6px;
+  display: block;
+}
+.paletteWrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+.paletteWrapper::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.paletteWrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--highlight);
 }
 
 .dropDown {
   padding: 4px;
   display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.buttonIcon {
+  image-rendering: pixelated;
+  filter: var(--invert-icon-color);
+  transition: transform var(--transition-fast);
+}
+
+.editButton {
+  height: 31px;
+  width: 33px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

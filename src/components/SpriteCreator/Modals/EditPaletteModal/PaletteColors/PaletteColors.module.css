@@ -1,0 +1,30 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 29px);
+  gap: 3px;
+  flex: 1;
+  min-height: 0;
+  max-height: 100%;
+  align-content: start;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.grid::-webkit-scrollbar {
+  width: 6px;
+  display: block;
+}
+
+.grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.grid::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.grid::-webkit-scrollbar-thumb:hover {
+  background: var(--highlight);
+}

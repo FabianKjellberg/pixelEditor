@@ -14,6 +14,8 @@ import {
   PALETTE_SHADING_EXTENDED,
   PALETTE_SKIN,
 } from '@/models/Palettes';
+import { useModalContext } from '@/context/ModalContext/ModalContext';
+import EditPaletteModal from '../../Modals/EditPaletteModal/EditPaletteModal';
 
 const multiChoiceProps: IMultiChoice = {
   type: 'multiChoice',
@@ -26,6 +28,7 @@ const ColorPalette = () => {
   const [selectPaletteValue, setSelectPaletteValue] = useState<string>('general');
 
   const { setPColor, setSColor, recentColors } = useColorContext();
+  const { onShow } = useModalContext();
 
   const palette = useMemo((): string[] => {
     switch (selectPaletteValue) {
@@ -60,6 +63,10 @@ const ColorPalette = () => {
     setSelectPaletteValue(value ?? 'general');
   }, []);
 
+  const clickEditCallback = useCallback(() => {
+    onShow('edit-palette', <EditPaletteModal />, 'Edit palettes');
+  }, []);
+
   return (
     <>
       <div className={styles.dropDown}>
@@ -68,7 +75,15 @@ const ColorPalette = () => {
           value={selectPaletteValue}
           multiChoiceProperties={multiChoiceProps}
         />
-        <button>edit</button>
+        <button className={styles.editButton} onClick={clickEditCallback}>
+          <img
+            src="/icons/cog.png"
+            width={16}
+            height={16}
+            alt="edit"
+            className={styles.buttonIcon}
+          />
+        </button>
       </div>
       <div className={styles.paletteWrapper}>
         <div className={styles.grid}>

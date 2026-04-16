@@ -19,6 +19,8 @@ type ColorPickerInputProps = {
 };
 
 const ColorPickerInputs = ({ color, setColor }: ColorPickerInputProps) => {
+  const { addRecentColor } = useColorContext();
+
   const hue = useMemo(() => Math.round(color.hsv.h), [color]);
   const sat = useMemo(() => Math.round(color.hsv.s * 100), [color]);
   const bright = useMemo(() => Math.round(color.hsv.v * 100), [color]);
@@ -167,6 +169,7 @@ const ColorPickerInputs = ({ color, setColor }: ColorPickerInputProps) => {
   }, [hexFocus, color]);
 
   const onHexBlur = useCallback(() => {
+    addRecentColor(color.hex);
     setHexFocus(false);
   }, [color]);
 
@@ -174,26 +177,30 @@ const ColorPickerInputs = ({ color, setColor }: ColorPickerInputProps) => {
     setHexFocus(true);
   }, []);
 
+  const onInputBlue = useCallback(() => {
+    addRecentColor(color.hex);
+  }, [color]);
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.grid}>
         <p className={styles.title}>R:</p>
-        <input value={color.rgb.r} onChange={setR} />
+        <input value={color.rgb.r} onChange={setR} onBlur={onInputBlue} />
         <p className={styles.title}>G:</p>
-        <input value={color.rgb.g} onChange={setG} />
+        <input value={color.rgb.g} onChange={setG} onBlur={onInputBlue} />
         <p className={styles.title}>B:</p>
-        <input value={color.rgb.b} onChange={setB} />
+        <input value={color.rgb.b} onChange={setB} onBlur={onInputBlue} />
 
         <p className={styles.title}>H:</p>
-        <input value={hue} onChange={setHue} />
+        <input value={hue} onChange={setHue} onBlur={onInputBlue} />
         <p className={styles.title}>S:</p>
         <div className={styles.inputWithSuffix}>
-          <input value={sat} onChange={setSat} />
+          <input value={sat} onChange={setSat} onBlur={onInputBlue} />
           <span className={styles.suffix}>%</span>
         </div>
         <p className={styles.title}>V:</p>
         <div className={styles.inputWithSuffix}>
-          <input value={bright} onChange={setBright} />
+          <input value={bright} onChange={setBright} onBlur={onInputBlue} />
           <span className={styles.suffix}>%</span>
         </div>
       </div>

@@ -1,0 +1,76 @@
+.leftWrapper {
+  display: flex;
+  flex-direction: column;
+  border-right: 2px solid var(--border);
+  justify-content: space-between;
+  width: 250px;
+  height: 333px;
+  overflow: hidden;
+}
+
+.wrapper {
+  display: flex;
+}
+
+.buttonIcon {
+  image-rendering: pixelated;
+  filter: var(--invert-icon-color);
+  transition: transform var(--transition-fast);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  padding-left: 4px;
+  padding-bottom: 4px;
+}
+
+.buttons button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.multiChoice {
+  padding: 8px;
+  border-bottom: 2px solid var(--border);
+  flex-shrink: 0;
+}
+
+.changeName {
+  text-decoration: underline;
+}
+
+.paletteInfoWrapper {
+  padding: 8px;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.leftContent {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.paletteInfoContent {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.redBorder {
+  border-color: red !important;
+}
+.redBorder:focus {
+  border-color: red !important;
+  box-shadow:
+    0 0 0 2px rgba(255, 0, 0, 0.2),
+    0 0 8px rgba(255, 0, 0, 0.4);
+}

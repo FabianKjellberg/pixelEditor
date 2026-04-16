@@ -41,8 +41,7 @@
   --highlight-glow: rgba(84, 254, 58, 0.4);
   --invert-icon-color: brightness(0) invert(1);
   --top-menu-height: 30px;
-  
-  /* Transitions for modern retro feel */
+
   --transition-fast: 120ms ease;
   --transition-normal: 200ms ease;
 }
@@ -66,12 +65,10 @@ html {
   scrollbar-gutter: stable;
 }
 
-/* Firefox: re-enable scrollbar */
 .scrollable {
   scrollbar-width: auto;
 }
 
-/* WebKit (Chrome, Edge, Safari): re-enable scrollbar */
 .scrollable::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -125,7 +122,6 @@ p {
   font-size: large;
 }
 
-/* Global button styles with modern retro feel */
 button {
   border: 2px solid var(--border);
   font-size: large;
@@ -133,10 +129,11 @@ button {
   padding: 2px;
   padding-left: 4px;
   padding-right: 4px;
-  transition: background-color var(--transition-fast), 
-              border-color var(--transition-fast),
-              box-shadow var(--transition-fast),
-              transform var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 button:hover {
@@ -169,8 +166,9 @@ input {
   padding: 2px;
   background-color: var(--background);
   color: var(--foreground);
-  transition: border-color var(--transition-fast),
-              box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 input:hover {
@@ -180,11 +178,19 @@ input:hover {
 input:focus {
   outline: none;
   border-color: var(--highlight) !important;
-  box-shadow: 0 0 0 2px var(--highlight-dim),
-              0 0 8px var(--highlight-glow);
+  box-shadow:
+    0 0 0 2px var(--highlight-dim),
+    0 0 8px var(--highlight-glow);
 }
 
-/* Textarea: same as input, gray bg + white text */
+input:disabled {
+  background-color: var(--border);
+}
+
+input:disabled:hover {
+  border-color: var(--border);
+}
+
 textarea {
   font-size: large;
   border: 2px solid var(--border) !important;
@@ -193,8 +199,9 @@ textarea {
   color: var(--input-fg);
   resize: vertical;
   min-height: 4em;
-  transition: border-color var(--transition-fast),
-              box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
   font-family: inherit;
 }
 
@@ -205,8 +212,9 @@ textarea:hover {
 textarea:focus {
   outline: none;
   border-color: var(--highlight) !important;
-  box-shadow: 0 0 0 2px var(--highlight-dim),
-              0 0 8px var(--highlight-glow);
+  box-shadow:
+    0 0 0 2px var(--highlight-dim),
+    0 0 8px var(--highlight-glow);
 }
 
 textarea::placeholder {
@@ -258,11 +266,17 @@ textarea,
 button,
 html,
 body {
-  font-family: 'medodioca', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family:
+    'medodioca',
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    sans-serif;
 }
 
-/* Utility class for highlight glow effect */
 .glow-on-hover:hover {
-  box-shadow: 0 0 8px var(--highlight-glow),
-              0 0 16px var(--highlight-dim);
+  box-shadow:
+    0 0 8px var(--highlight-glow),
+    0 0 16px var(--highlight-dim);
 }

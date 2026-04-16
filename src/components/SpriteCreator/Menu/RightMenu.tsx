@@ -13,15 +13,15 @@ const RightMenu = () => {
     <div className={menuStyles.menu}>
       <div className={menuStyles.menuContainer}>
         <LayerSelectorProvider>
-          <div className={menuStyles.toolContainer}>
+          <div className={`${menuStyles.toolContainer} ${menuStyles.layersContainer}`}>
             <LayerMenu />
           </div>
         </LayerSelectorProvider>
-        <div className={menuStyles.toolContainer}>
+        <div className={`${menuStyles.toolContainer} ${menuStyles.colorPickerContainer}`}>
           <p className={menuStyles.toolsHeader}>Color Picker</p>
           <ColorPicker />
         </div>
-        <div className={menuStyles.toolContainer}>
+        <div className={`${menuStyles.toolContainer} ${menuStyles.paletteContainer}`}>
           <p className={menuStyles.toolsHeader}>Palette</p>
           <ColorPalette />
         </div>

@@ -1,3 +1,8 @@
+export type Palette = {
+  name: string;
+  colors: string[];
+};
+
 export const PALETTE_GENERAL = [
   //Dark
   '#000000',
