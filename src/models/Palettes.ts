@@ -1,5 +1,7 @@
+import { DropDownChoice } from './properties/PropertySpecs';
+
 export type Palette = {
-  name: string;
+  menuItem: DropDownChoice;
   colors: string[];
 };
 

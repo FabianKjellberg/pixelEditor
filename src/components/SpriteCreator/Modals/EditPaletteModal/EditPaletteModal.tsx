@@ -7,24 +7,44 @@ import { useColorContext } from '@/context/ColorContext';
 import PaletteColorPicker from './PaletteColorPicker/PaletteColorPicker';
 
 import styles from './EditPaletteModal.module.css';
-import ColorButton from '../../Menu/ColorPalette/ColorButton/ColorButton';
 import PaletteColors from './PaletteColors/PaletteColors';
-
-const NON_ALLOWED_NAMES: string[] = ['general', 'retro', 'shading', 'skin color', 'recents'];
 
 const EditPaletteModal = () => {
   const { userPallets, setUserPallets } = useColorContext();
 
-  const [selectPaletteValue, setSelectPaletteValue] = useState<string>(
-    userPallets.length < 1 ? 'you have no palette' : userPallets[0].name,
+  const [selectedPaletteId, setSelectedPaletteId] = useState<string | null>(
+    userPallets.length < 1 ? null : userPallets[0].menuItem.id,
   );
 
   const selectedPalette = useMemo(() => {
-    return userPallets.find((pallete) => pallete.name === selectPaletteValue);
-  }, [selectPaletteValue, userPallets]);
+    if (!selectedPaletteId) return undefined;
+    return userPallets.find((palette) => palette.menuItem.id === selectedPaletteId);
+  }, [selectedPaletteId, userPallets]);
+
+  useEffect(() => {
+    if (userPallets.length === 0) {
+      if (selectedPaletteId !== null) {
+        setSelectedPaletteId(null);
+      }
+      return;
+    }
+
+    if (
+      !selectedPaletteId ||
+      !userPallets.some((palette) => palette.menuItem.id === selectedPaletteId)
+    ) {
+      setSelectedPaletteId(userPallets[0].menuItem.id);
+    }
+  }, [selectedPaletteId, userPallets]);
+
+  const selectedPaletteValue = useMemo(() => {
+    return selectedPaletteId ?? 'You have no palettes';
+  }, [selectedPaletteId]);
 
   const multiChoiceProps: IMultiChoice = useMemo(() => {
-    const choices = userPallets.map((pallete) => pallete.name);
+    const choices = userPallets.map((palette) => palette.menuItem);
+
+    console.log('changed name??');
 
     return {
       type: 'multiChoice',
@@ -35,65 +55,49 @@ const EditPaletteModal = () => {
     };
   }, [userPallets]);
 
-  const onChangePalette = useCallback((value: string | null) => {
-    setSelectPaletteValue(value ?? 'none');
-  }, []);
+  const onChangePalette = useCallback(
+    (value: string | null) => {
+      setSelectedPaletteId(value);
+    },
+    [setSelectedPaletteId],
+  );
 
   const createEmptyPalette = useCallback(() => {
-    const newName = 'new palette';
-    let name = newName;
-
-    let nameTaken = userPallets.some((p) => p.name === name);
-    let counter = 1;
-    while (nameTaken) {
-      name = `${newName} (${counter})`;
-
-      nameTaken = userPallets.some((p) => p.name === name);
-      counter++;
-    }
+    const id = crypto.randomUUID();
+    const name = 'new palette';
+    const newPalette = { menuItem: { id, text: name }, colors: [] };
 
     setUserPallets((prev) => {
-      return [...prev, { name, colors: [] }];
+      return [...prev, newPalette];
     });
-    setSelectPaletteValue(name);
-  }, [userPallets]);
+    setSelectedPaletteId(id);
+  }, [setUserPallets]);
 
-  const [inputValue, setInputValue] = useState<string>(selectedPalette?.name ?? '');
+  const [inputValue, setInputValue] = useState<string>(selectedPalette?.menuItem.text ?? '');
 
   useEffect(() => {
-    setInputValue(selectedPalette?.name ?? '');
+    setInputValue(selectedPalette?.menuItem.text ?? '');
   }, [selectedPalette]);
 
   const onChangeInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   }, []);
 
-  const notAllowedName = useMemo(() => {
-    const alreadyExists = userPallets
-      .filter((p) => p.name !== selectedPalette?.name)
-      .some((p) => p.name === inputValue);
-
-    const notAllowed = NON_ALLOWED_NAMES.some((n) => n === inputValue);
-
-    return alreadyExists || notAllowed;
-  }, [inputValue, userPallets]);
-
   const tryChangeName = useCallback(() => {
-    if (!selectedPalette || selectedPalette.name === inputValue) return;
+    if (!selectedPalette) return;
 
-    if (notAllowedName) {
-      setInputValue(selectedPalette.name);
+    if (selectedPalette.menuItem.text === inputValue) {
       return;
     }
 
     setUserPallets((prev) => {
       return prev.map((p) => {
-        return p.name === selectedPalette?.name ? { ...p, name: inputValue } : p;
+        return p.menuItem.id === selectedPalette.menuItem.id
+          ? { ...p, menuItem: { ...p.menuItem, text: inputValue } }
+          : p;
       });
     });
-
-    setSelectPaletteValue(inputValue);
-  }, [userPallets, inputValue, notAllowedName]);
+  }, [inputValue, selectedPalette, setUserPallets]);
 
   const onCommitChange = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -105,14 +109,32 @@ const EditPaletteModal = () => {
     [tryChangeName],
   );
 
+  const onDeletePalette = useCallback(() => {
+    if (!selectedPalette) return;
+
+    setUserPallets((prev) => prev.filter((p) => p.menuItem.id !== selectedPalette.menuItem.id));
+  }, [selectedPalette, setUserPallets]);
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.leftWrapper}>
         <div className={styles.leftContent}>
+          <div className={styles.buttons}>
+            <button onClick={createEmptyPalette}>Create new</button>
+            <button disabled={selectedPalette === undefined} onClick={onDeletePalette}>
+              <img
+                src="/icons/bin.png"
+                width={16}
+                height={16}
+                alt="bin"
+                className={styles.buttonIcon}
+              />
+            </button>
+          </div>
           <div className={styles.multiChoice}>
             <MultiChoice
               onChange={onChangePalette}
-              value={selectPaletteValue}
+              value={selectedPaletteValue}
               multiChoiceProperties={multiChoiceProps}
             />
           </div>
@@ -120,7 +142,6 @@ const EditPaletteModal = () => {
             <div className={styles.paletteInfoContent}>
               <p className={styles.changeName}>Palette name:</p>
               <input
-                className={`${notAllowedName ? styles.redBorder : ''}`}
                 value={inputValue}
                 disabled={selectedPalette === undefined}
                 onChange={onChangeInput}
@@ -131,18 +152,6 @@ const EditPaletteModal = () => {
               <PaletteColors palette={selectedPalette} />
             </div>
           </div>
-        </div>
-        <div className={styles.buttons}>
-          <button onClick={createEmptyPalette}>+</button>
-          <button disabled={selectedPalette === undefined}>
-            <img
-              src="/icons/bin.png"
-              width={16}
-              height={16}
-              alt="bin"
-              className={styles.buttonIcon}
-            />
-          </button>
         </div>
       </div>
       <div>

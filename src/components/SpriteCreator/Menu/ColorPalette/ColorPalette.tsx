@@ -17,20 +17,33 @@ import {
 import { useModalContext } from '@/context/ModalContext/ModalContext';
 import EditPaletteModal from '../../Modals/EditPaletteModal/EditPaletteModal';
 
-const multiChoiceProps: IMultiChoice = {
-  type: 'multiChoice',
-  label: 'Select palette',
-  choices: ['general', 'retro', 'shading', 'skin color', 'recents'],
-  allowEmpty: false,
-};
-
 const ColorPalette = () => {
-  const [selectPaletteValue, setSelectPaletteValue] = useState<string>('general');
-
-  const { setPColor, setSColor, recentColors } = useColorContext();
+  const { setPColor, setSColor, recentColors, userPallets } = useColorContext();
   const { onShow } = useModalContext();
 
+  const [selectPaletteValue, setSelectPaletteValue] = useState<string>('general');
+
+  const multiChoiceProps: IMultiChoice = useMemo(() => {
+    return {
+      type: 'multiChoice',
+      label: 'Select palette',
+      choices: [
+        { id: 'general', text: 'general' },
+        { id: 'retro', text: 'retro' },
+        { id: 'shading', text: 'shading' },
+        { id: 'skin color', text: 'skin color' },
+        { id: 'recents', text: 'recents' },
+        ...userPallets.map((p) => p.menuItem),
+      ],
+      allowEmpty: false,
+    };
+  }, [userPallets]);
+
   const palette = useMemo((): string[] => {
+    const colors = userPallets.find((p) => p.menuItem.id === selectPaletteValue)?.colors;
+
+    if (colors) return colors;
+
     switch (selectPaletteValue) {
       case 'general':
         return PALETTE_GENERAL;
@@ -49,7 +62,7 @@ const ColorPalette = () => {
     }
 
     return PALETTE_GENERAL;
-  }, [selectPaletteValue, recentColors]);
+  }, [selectPaletteValue, recentColors, userPallets]);
 
   const onColorBtnClick = useCallback((hex: string, rightClick: boolean) => {
     if (rightClick) {
@@ -87,8 +100,8 @@ const ColorPalette = () => {
       </div>
       <div className={styles.paletteWrapper}>
         <div className={styles.grid}>
-          {palette.map((hex) => (
-            <div className={styles.colorButton}>
+          {palette.map((hex, index) => (
+            <div className={styles.colorButton} key={'palette' + hex + index}>
               <ColorButton hex={hex} onClick={onColorBtnClick} />
             </div>
           ))}

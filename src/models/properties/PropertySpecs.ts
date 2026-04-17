@@ -17,16 +17,21 @@ export interface IToggle {
 export interface IMultiChoice {
   type: 'multiChoice';
   label: string;
-  choices: string[];
+  choices: DropDownChoice[];
   allowEmpty: boolean;
   disabled?: boolean;
 }
+
+export type DropDownChoice = {
+  id: string;
+  text: string;
+};
 
 export interface IDithering {
   type: 'dithering';
   requiredChoice: 'Dithering';
   firstLabel: string;
-  choices: string[];
+  choices: DropDownChoice[];
 }
 
 export interface IButton {

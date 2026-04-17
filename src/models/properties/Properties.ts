@@ -66,16 +66,20 @@ export class SelectionModeProperty implements IProperty {
     type: 'multiChoice',
     label: 'Selection Mode',
     allowEmpty: false,
-    choices: ['Replace', 'Add', 'Subtract'],
+    choices: [
+      { id: 'Replace', text: 'Replace' },
+      { id: 'Add', text: 'Add' },
+      { id: 'Subtract', text: 'Subtract' },
+    ],
   };
   constructor(private _value: string | null = 'Replace') {}
   get value() {
     return this._value;
   }
   set value(v: string | null) {
-    if (!this.spec.choices.some((c) => c === v)) {
+    if (!this.spec.choices.some((c) => c.id === v)) {
       if (this.spec.allowEmpty) this._value = null;
-      else this.value = this.spec.choices[0];
+      else this.value = this.spec.choices[0].id;
     } else this._value = v;
   }
 }
@@ -139,16 +143,20 @@ export class StrokeAlignProperty implements IProperty {
     type: 'multiChoice',
     label: 'Align stroke',
     allowEmpty: false,
-    choices: ['Centered', 'Inside', 'Outside'],
+    choices: [
+      { id: 'Centered', text: 'Centered' },
+      { id: 'Inside', text: 'Inside' },
+      { id: 'Outside', text: 'Outside' },
+    ],
   };
   constructor(private _value: string | null = 'Inside') {}
   get value() {
     return this._value;
   }
   set value(v: string | null) {
-    if (!this.spec.choices.some((c) => c === v)) {
+    if (!this.spec.choices.some((c) => c.id === v)) {
       if (this.spec.allowEmpty) this._value = null;
-      else this.value = this.spec.choices[0] ?? null;
+      else this.value = this.spec.choices[0].id ?? null;
     } else this._value = v;
   }
 }
@@ -191,7 +199,11 @@ export class GradientTypeProperty implements IProperty {
   spec: IMultiChoice = {
     allowEmpty: false,
     label: 'Gradient type',
-    choices: ['Dithering', 'Random', 'Linear'],
+    choices: [
+      { text: 'Dithering', id: 'Dithering' },
+      { text: 'Random', id: 'Random' },
+      { text: 'Linear', id: 'Linear' },
+    ],
     type: 'multiChoice',
   };
   constructor(private _value: string | null = 'Dithering') {}
@@ -199,9 +211,9 @@ export class GradientTypeProperty implements IProperty {
     return this._value;
   }
   set value(v: string | null) {
-    if (!this.spec.choices.some((c) => c === v)) {
+    if (!this.spec.choices.some((c) => c.id === v)) {
       if (this.spec.allowEmpty) this._value = null;
-      else this.value = this.spec.choices[0] ?? null;
+      else this.value = this.spec.choices[0].id ?? null;
     } else this._value = v;
   }
 }
@@ -212,7 +224,12 @@ export class DitheringProperty implements IProperty {
     type: 'dithering',
     requiredChoice: 'Dithering',
     firstLabel: 'Size',
-    choices: ['1x1', '2x2', '4x4', '8x8'],
+    choices: [
+      { text: '1x1', id: '1x1' },
+      { text: '2x2', id: '2x2' },
+      { text: '4x4', id: '4x4' },
+      { text: '8x8', id: '8x8' },
+    ],
   };
   constructor(private _value: DitheringValue = default2x2DitheringValue) {}
   get value() {

@@ -16,9 +16,10 @@ import {
 type ColorPickerInputProps = {
   color: Color;
   setColor: (color: Color) => void;
+  addRecent?: boolean;
 };
 
-const ColorPickerInputs = ({ color, setColor }: ColorPickerInputProps) => {
+const ColorPickerInputs = ({ color, setColor, addRecent = true }: ColorPickerInputProps) => {
   const { addRecentColor } = useColorContext();
 
   const hue = useMemo(() => Math.round(color.hsv.h), [color]);
@@ -169,17 +170,17 @@ const ColorPickerInputs = ({ color, setColor }: ColorPickerInputProps) => {
   }, [hexFocus, color]);
 
   const onHexBlur = useCallback(() => {
-    addRecentColor(color.hex);
+    if (addRecent) addRecentColor(color.hex);
     setHexFocus(false);
-  }, [color]);
+  }, [color, addRecent]);
 
   const onHexFocus = useCallback(() => {
     setHexFocus(true);
   }, []);
 
   const onInputBlue = useCallback(() => {
-    addRecentColor(color.hex);
-  }, [color]);
+    if (addRecent) addRecentColor(color.hex);
+  }, [color, addRecent]);
 
   return (
     <div className={styles.wrapper}>

@@ -9,22 +9,24 @@ import { useColorContext } from '@/context/ColorContext';
 type ColorButtonProps = {
   hex: string;
   onClick: (hex: string, rightClick: boolean) => void;
+  addRecent?: boolean;
 };
 
-const ColorButton = ({ hex, onClick }: ColorButtonProps) => {
+const ColorButton = ({ hex, onClick, addRecent = true }: ColorButtonProps) => {
   const { addRecentColor } = useColorContext();
 
   const onLeftClick = useCallback(() => {
-    addRecentColor(hex);
+    if (addRecent) addRecentColor(hex);
     onClick(hex, false);
-  }, [hex, addRecentColor]);
+  }, [hex, addRecentColor, addRecent]);
+
   const onRightClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
-      addRecentColor(hex);
+      if (addRecent) addRecentColor(hex);
       onClick(hex, true);
     },
-    [hex, addRecentColor],
+    [hex, addRecentColor, addRecent],
   );
 
   return (

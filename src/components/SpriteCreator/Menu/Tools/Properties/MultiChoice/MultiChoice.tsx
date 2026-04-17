@@ -41,8 +41,8 @@ const MultiChoice = ({ multiChoiceProperties, value, onChange }: MultiChoiceProp
   }, [multiChoiceOpen, updateDropdownPosition]);
 
   const handleChoiceSelect = useCallback(
-    (choice: string | null) => {
-      onChange(choice);
+    (id: string | null) => {
+      onChange(id);
       setMultiChoiceOpen(false);
     },
     [onChange],
@@ -88,6 +88,10 @@ const MultiChoice = ({ multiChoiceProperties, value, onChange }: MultiChoiceProp
     return false;
   }, [multiChoiceProperties]);
 
+  const selectedText = useMemo(() => {
+    return multiChoiceProperties.choices.find((c) => c.id === value)?.text ?? 'Select...';
+  }, [value, multiChoiceProperties]);
+
   return (
     <div className={styles.wrapper}>
       <PropertyLabel label={label} />
@@ -98,7 +102,7 @@ const MultiChoice = ({ multiChoiceProperties, value, onChange }: MultiChoiceProp
           onClick={toggleMultiChoiceMenu}
           disabled={disabled}
         >
-          <span className={styles.choiceText}>{value || 'Select...'}</span>
+          <span className={styles.choiceText}>{selectedText}</span>
           <span
             className={`${styles.dropdownArrow} ${multiChoiceOpen ? styles.dropdownArrowOpen : ''}`}
           >
@@ -120,10 +124,10 @@ const MultiChoice = ({ multiChoiceProperties, value, onChange }: MultiChoiceProp
             {multiChoiceProperties.choices.map((choice, index) => (
               <button
                 key={index}
-                onClick={() => handleChoiceSelect(choice)}
-                className={value === choice ? styles.selectedOption : ''}
+                onClick={() => handleChoiceSelect(choice.id)}
+                className={value === choice.id ? styles.selectedOption : ''}
               >
-                {choice}
+                {choice.text}
               </button>
             ))}
           </div>
